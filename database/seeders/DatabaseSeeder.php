@@ -13,8 +13,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Chạy các seeders theo thứ tự
+        $this->call([
+            UserSeeder::class,
+            CategorySeeder::class,
+            TagSeeder::class,
+            RecipeSeeder::class,
+        ]);
 
+        // Tạo thêm user test nếu cần
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
