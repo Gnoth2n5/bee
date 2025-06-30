@@ -1,0 +1,1 @@
+<img src="/favicon.ico" alt="BeeFood" {{ $attributes->merge(['class' => 'w-20 h-20']) }} /> 
