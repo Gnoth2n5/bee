@@ -31,7 +31,7 @@
             <a href="{{ route('recipes.index') }}" 
                class="inline-flex items-center px-6 py-3 border border-orange-500 text-orange-600 rounded-lg hover:bg-orange-500 hover:text-white transition-colors">
                 Xem tất cả danh mục
-                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor">
+                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
             </a>
