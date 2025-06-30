@@ -8,6 +8,7 @@ use App\Http\Controllers\RatingController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\CollectionController;
 use App\Livewire\HomePage;
+use App\Livewire\Recipes\RecipeDetail;
 
 Route::get('/', HomePage::class)->name('home');
 
@@ -21,7 +22,7 @@ Route::view('profile', 'profile')
 
 // Recipe routes
 Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
-Route::get('/recipes/{recipe:slug}', [RecipeController::class, 'show'])->name('recipes.show');
+Route::get('/recipes/{recipe}', RecipeDetail::class)->name('recipes.show');
 
 // Protected routes
 Route::middleware(['auth'])->group(function () {
