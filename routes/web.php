@@ -7,8 +7,9 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\CollectionController;
+use App\Livewire\HomePage;
 
-Route::view('/', 'welcome');
+Route::get('/', HomePage::class)->name('home');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])

@@ -262,6 +262,18 @@ class Recipe extends Model
     }
 
     /**
+     * Check if recipe is favorited by user.
+     */
+    public function isFavoritedBy(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        
+        return $this->favorites()->where('user_id', $user->id)->exists();
+    }
+
+    /**
      * Get the primary image.
      */
     public function getPrimaryImageAttribute()
