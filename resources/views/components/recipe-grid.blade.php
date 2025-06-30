@@ -42,7 +42,7 @@
                         <option value="medium">Trung bình</option>
                         <option value="hard">Khó</option>
                     </select>
-                    <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                    
                 </div>
 
                 <!-- Cooking Time Filter -->
