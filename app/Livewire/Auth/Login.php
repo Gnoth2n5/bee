@@ -2,34 +2,44 @@
 
 namespace App\Livewire\Auth;
 
-use Illuminate\Support\Facades\Auth;
+use App\Services\AuthService;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Rule;
 
 #[Layout('layouts.guest')]
 class Login extends Component
 {
+    #[Rule('required|email')]
     public $email = '';
+
+    #[Rule('required|min:6')]
     public $password = '';
+
     public $remember = false;
-    public $error = '';
+    public $isLoading = false;
 
     public function login()
     {
-        $this->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ], [
-            'email.required' => 'Vui lòng nhập email.',
-            'email.email' => 'Email không hợp lệ.',
-            'password.required' => 'Vui lòng nhập mật khẩu.'
-        ]);
+        $this->isLoading = true;
 
-        if (Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
-            session()->regenerate();
-            return redirect()->intended('/');
+        try {
+            $this->validate();
+
+            $authService = app(AuthService::class);
+            
+            if ($authService->login($this->email, $this->password, $this->remember)) {
+                return redirect()->intended('/')->with('success', 'Đăng nhập thành công! Chào mừng bạn quay lại BeeFood.');
+            }
+
+            $this->addError('email', __('auth.failed'));
+            $this->addError('password', __('auth.failed'));
+
+        } catch (\Exception $e) {
+            $this->addError('general', 'Có lỗi xảy ra. Vui lòng thử lại.');
+        } finally {
+            $this->isLoading = false;
         }
-        $this->addError('error', 'Email hoặc mật khẩu không đúng.');
     }
 
     public function render()

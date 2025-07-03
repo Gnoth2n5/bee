@@ -1,6 +1,7 @@
 <?php
 
 use Livewire\Volt\Component;
+use App\Services\AuthService;
 
 new class extends Component
 {
@@ -14,9 +15,8 @@ new class extends Component
     
     public function logout()
     {
-        auth()->logout();
-        session()->invalidate();
-        session()->regenerateToken();
+        $authService = app(AuthService::class);
+        $authService->logout();
         
         return $this->redirect('/', navigate: true);
     }

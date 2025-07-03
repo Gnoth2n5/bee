@@ -2,45 +2,55 @@
 
 namespace App\Livewire\Auth;
 
-use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Rule;
 
 #[Layout('layouts.guest')]
 class Register extends Component
 {
+    #[Rule('required|string|max:255')]
     public $name = '';
+
+    #[Rule('required|email|unique:users,email')]
     public $email = '';
+
+    #[Rule('required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/')]
     public $password = '';
+
+    #[Rule('required|same:password')]
     public $password_confirmation = '';
+
+    public $isLoading = false;
 
     public function register()
     {
-        $this->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
-        ], [
-            'name.required' => 'Vui lòng nhập tên.',
-            'email.required' => 'Vui lòng nhập email.',
-            'email.email' => 'Email không hợp lệ.',
-            'email.unique' => 'Email đã tồn tại.',
-            'password.required' => 'Vui lòng nhập mật khẩu.',
-            'password.min' => 'Mật khẩu tối thiểu 6 ký tự.',
-            'password.confirmed' => 'Mật khẩu xác nhận không khớp.'
-        ]);
+        $this->isLoading = true;
 
-        $user = User::create([
-            'name' => $this->name,
-            'email' => $this->email,
-            'password' => Hash::make($this->password),
-        ]);
+        try {
+            $this->validate();
 
-        Auth::login($user);
-        session()->regenerate();
-        return redirect('/');
+            $authService = app(AuthService::class);
+            
+            $user = $authService->register([
+                'name' => $this->name,
+                'email' => $this->email,
+                'password' => $this->password,
+            ]);
+
+            // Login user
+            Auth::login($user);
+            session()->regenerate();
+
+            return redirect('/')->with('success', 'Đăng ký thành công! Chào mừng bạn đến với BeeFood.');
+
+        } catch (\Exception $e) {
+            $this->addError('general', 'Có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.');
+        } finally {
+            $this->isLoading = false;
+        }
     }
 
     public function render()

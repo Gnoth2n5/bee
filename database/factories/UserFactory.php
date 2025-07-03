@@ -29,6 +29,12 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'avatar' => null,
+            'bio' => fake()->sentence(),
+            'preferences' => [],
+            'status' => 'active',
+            'last_login_at' => now(),
+            'login_count' => fake()->numberBetween(0, 100),
         ];
     }
 
@@ -40,5 +46,29 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Configure the model factory.
+     *
+     * @return $this
+     */
+    public function configure()
+    {
+        return $this->afterCreating(function ($user) {
+            // Create user profile
+            $user->profile()->create([
+                'phone' => fake()->phoneNumber(),
+                'address' => fake()->address(),
+                'city' => fake()->city(),
+                'country' => 'Vietnam',
+                'dietary_preferences' => [],
+                'allergies' => [],
+                'health_conditions' => [],
+                'cooking_experience' => fake()->randomElement(['beginner', 'intermediate', 'advanced']),
+                'timezone' => 'Asia/Ho_Chi_Minh',
+                'language' => 'vi',
+            ]);
+        });
     }
 }
