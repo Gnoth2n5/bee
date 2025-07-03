@@ -125,11 +125,15 @@ new class extends Component
                                 data-dropdown-toggle="user-dropdown" 
                                 data-dropdown-placement="bottom">
                             <span class="sr-only">Open user menu</span>
-                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
-                                <span class="text-sm font-medium text-white">
-                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                                </span>
-                            </div>
+                            @if(auth()->user()->avatar)
+                                <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
+                            @else
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                                    <span class="text-sm font-medium text-white">
+                                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                    </span>
+                                </div>
+                            @endif
                         </button>
                     </div>
                     
@@ -155,7 +159,7 @@ new class extends Component
                         
                         <hr class="my-1 border-gray-200 dark:border-gray-600">
                         
-                        <a href="#" 
+                        <a href="{{ route('profile') }}" 
                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white" 
                            role="menuitem" 
                            tabindex="-1" 

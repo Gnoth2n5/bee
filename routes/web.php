@@ -16,7 +16,7 @@ Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::view('profile', 'profile')
+Route::get('profile', App\Livewire\Profile\ProfilePage::class)
     ->middleware(['auth'])
     ->name('profile');
 
