@@ -117,10 +117,10 @@ class AuthTest extends TestCase
             ->set('password_confirmation', '456')
             ->call('register')
             ->assertHasErrors([
-                'name' => 'required',
-                'email' => 'email',
-                'password' => 'min',
-                'password_confirmation' => 'same',
+                'name' => 'Trường họ tên là bắt buộc.',
+                'email' => 'Trường email phải là một địa chỉ email hợp lệ.',
+                'password' => 'Trường mật khẩu phải có ít nhất 8 ký tự.',
+                'password_confirmation' => 'Trường xác nhận mật khẩu và mật khẩu phải giống nhau.',
             ]);
     }
 
@@ -131,8 +131,8 @@ class AuthTest extends TestCase
             ->set('password', '')
             ->call('login')
             ->assertHasErrors([
-                'email' => 'required',
-                'password' => 'required',
+                'email' => 'Trường email là bắt buộc.',
+                'password' => 'Trường mật khẩu là bắt buộc.',
             ]);
     }
 
