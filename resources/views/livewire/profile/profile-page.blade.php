@@ -62,15 +62,5 @@
     </div>
 
     <!-- Flash Messages -->
-    @if(session()->has('success'))
-        <div class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session()->has('error'))
-        <div class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
-            {{ session('error') }}
-        </div>
-    @endif
+    <x-flash-message />
 </div> 
