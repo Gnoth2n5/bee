@@ -2,7 +2,7 @@
 
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
     @forelse($collections as $collection)
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+        <a href="{{ route('collections.show', $collection) }}" class="block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
             <div class="p-6">
                 <h3 class="font-semibold text-gray-900 mb-2">{{ $collection->name }}</h3>
                 <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ $collection->description }}</p>
@@ -11,7 +11,7 @@
                     <span>{{ $collection->created_at->diffForHumans() }}</span>
                 </div>
             </div>
-        </div>
+        </a>
     @empty
         <div class="col-span-full text-center py-12">
             <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">

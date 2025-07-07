@@ -65,17 +65,7 @@ class CollectionController extends Controller
                         ->with('success', 'Bộ sưu tập đã được tạo thành công.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Collection $collection): View
-    {
-        $this->authorize('view', $collection);
 
-        $collection = $this->collectionService->getCollectionWithRecipes($collection);
-
-        return view('collections.show', compact('collection'));
-    }
 
     /**
      * Show the form for editing the specified resource.

@@ -274,6 +274,22 @@ class Recipe extends Model
     }
 
     /**
+     * Check if recipe is in collection.
+     */
+    public function isInCollection(Collection $collection): bool
+    {
+        return $this->collections()->where('collection_id', $collection->id)->exists();
+    }
+
+    /**
+     * Get collections that contain this recipe for a specific user.
+     */
+    public function getUserCollections(User $user)
+    {
+        return $this->collections()->where('user_id', $user->id)->get();
+    }
+
+    /**
      * Get the primary image.
      */
     public function getPrimaryImageAttribute()

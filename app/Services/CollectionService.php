@@ -7,7 +7,6 @@ use App\Models\Recipe;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class CollectionService
 {
@@ -18,7 +17,6 @@ class CollectionService
     {
         $collection = new Collection($data);
         $collection->user_id = $user->id;
-        $collection->slug = Str::slug($data['name']);
         $collection->is_public = $data['is_public'] ?? false;
 
         // Handle cover image
@@ -37,7 +35,6 @@ class CollectionService
     public function update(Collection $collection, array $data): Collection
     {
         $collection->update($data);
-        $collection->slug = Str::slug($data['name']);
         $collection->is_public = $data['is_public'] ?? false;
 
         // Handle cover image

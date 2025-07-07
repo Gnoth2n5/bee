@@ -173,8 +173,8 @@
                     <x-heroicon-o-share class="w-5 h-5" />
                     Chia sẻ
                 </button>
-                <!-- Nút lưu công thức -->
-                <button class="bg-white border border-orange-500 text-orange-600 px-5 py-2 rounded-lg font-semibold hover:bg-orange-50 transition">Lưu công thức</button>
+                <!-- Component bộ sưu tập -->
+                @livewire('recipes.recipe-collection-manager', ['recipe' => $recipe])
 
                 <!-- Modal chia sẻ -->
                 <div x-show="open" @click.away="open = false" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" style="display: none;">

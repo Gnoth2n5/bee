@@ -45,7 +45,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/favorites', App\Livewire\Favorites\FavoritesPage::class)->name('favorites.index');
 
     // Collections
-    Route::resource('collections', CollectionController::class);
+    Route::get('/collections/{collection}', \App\Livewire\Collections\CollectionDetail::class)->name('collections.show');
+    Route::resource('collections', CollectionController::class)->except(['show']);
     Route::post('/collections/{collection}/recipes/{recipe}', [CollectionController::class, 'addRecipe'])->name('collections.add-recipe');
     Route::delete('/collections/{collection}/recipes/{recipe}', [CollectionController::class, 'removeRecipe'])->name('collections.remove-recipe');
 });

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Collection extends Model
 {
@@ -12,6 +13,7 @@ class Collection extends Model
     protected $fillable = [
         'user_id',
         'name',
+        'slug',
         'description',
         'is_public',
         'cover_image',
@@ -22,6 +24,26 @@ class Collection extends Model
         'is_public' => 'boolean',
         'recipe_count' => 'integer'
     ];
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($collection) {
+            if (empty($collection->slug)) {
+                $collection->slug = Str::slug($collection->name);
+            }
+        });
+
+        static::updating(function ($collection) {
+            if ($collection->isDirty('name') && empty($collection->slug)) {
+                $collection->slug = Str::slug($collection->name);
+            }
+        });
+    }
 
     /**
      * Get the user that owns the collection.
@@ -94,5 +116,13 @@ class Collection extends Model
     public function isPrivate()
     {
         return !$this->is_public;
+    }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 } 
