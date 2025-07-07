@@ -35,6 +35,27 @@
             @else
                 <div class="bg-gray-200 w-full h-full flex items-center justify-center text-gray-400 text-2xl">No Image</div>
             @endif
+            
+            <!-- Nút yêu thích -->
+            <div class="absolute top-4 right-4">
+                <button 
+                    wire:click="toggleFavorite"
+                    wire:loading.attr="disabled"
+                    class="w-12 h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all duration-200 group"
+                    aria-label="Yêu thích"
+                >
+                    @if(auth()->check() && $recipe->isFavoritedBy(auth()->user()))
+                        <svg class="w-6 h-6 text-red-500 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    @else
+                        <svg class="w-6 h-6 text-gray-600 group-hover:text-red-500 group-hover:scale-110 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    @endif
+                </button>
+            </div>
+            
             <div class="absolute bottom-4 left-6 bg-white/80 px-6 py-3 rounded-xl flex flex-col md:flex-row md:items-center gap-2 shadow">
                 <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mr-4">{{ $recipe->title }}</h1>
                 <div class="flex items-center gap-2 text-sm text-gray-600">

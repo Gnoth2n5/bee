@@ -37,5 +37,40 @@
             </main>
             <x-footer />
         </div>
+
+        <script>
+        // Handle remove favorite buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-favorite-btn')) {
+                e.preventDefault();
+                const button = e.target.closest('.remove-favorite-btn');
+                const recipeId = button.getAttribute('data-recipe-id');
+                
+                if (confirm('Bạn có chắc muốn xóa công thức này khỏi danh sách yêu thích?')) {
+                    fetch(`/recipes/${recipeId}/favorite`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Reload page to update the list
+                            window.location.reload();
+                        } else {
+                            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                    });
+                }
+            }
+        });
+        </script>
     </body>
 </html>

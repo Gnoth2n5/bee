@@ -229,7 +229,7 @@ class ProfilePage extends Component
     public function getRecipesProperty()
     {
         return Recipe::where('user_id', $this->user->id)
-            ->with(['category', 'tags', 'images'])
+            ->with(['categories', 'tags', 'images'])
             ->latest()
             ->paginate(12);
     }
@@ -245,7 +245,7 @@ class ProfilePage extends Component
     public function getFavoritesProperty()
     {
         return Favorite::where('user_id', $this->user->id)
-            ->with(['recipe.category', 'recipe.images'])
+            ->with(['recipe.categories', 'recipe.images', 'recipe.user.profile'])
             ->latest()
             ->paginate(12);
     }

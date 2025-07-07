@@ -17,7 +17,7 @@
             <div class="p-4">
                 <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2">{{ $recipe->title }}</h3>
                 <div class="flex items-center justify-between text-sm text-gray-500">
-                    <span>{{ $recipe->category->name ?? 'Không phân loại' }}</span>
+                    <span>{{ $recipe->categories->first()->name ?? 'Không phân loại' }}</span>
                     <span>{{ $recipe->created_at->diffForHumans() }}</span>
                 </div>
             </div>

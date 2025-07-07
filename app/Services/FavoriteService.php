@@ -45,7 +45,7 @@ class FavoriteService
     public function getUserFavorites(User $user, int $perPage = 12)
     {
         return Favorite::where('user_id', $user->id)
-                      ->with(['recipe.user', 'recipe.categories', 'recipe.tags'])
+                      ->with(['recipe.user.profile', 'recipe.categories', 'recipe.tags', 'recipe.images'])
                       ->orderBy('created_at', 'desc')
                       ->paginate($perPage);
     }
