@@ -9,7 +9,9 @@ use App\Services\RecipeService;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Url;
+use Livewire\Attributes\Layout;
 
+#[Layout('layouts.app')]
 class RecipeList extends Component
 {
     use WithPagination;
@@ -29,19 +31,33 @@ class RecipeList extends Component
     #[Url(as: 'sort')]
     public $sort = 'latest';
 
-    public $perPage = 12;
+    #[Url(as: 'tags')]
+    public $selectedTags = [];
 
-    protected $queryString = [
-        'category' => ['except' => ''],
-        'difficulty' => ['except' => ''],
-        'cookingTime' => ['except' => ''],
-        'search' => ['except' => ''],
-        'sort' => ['except' => 'latest'],
-    ];
+    #[Url(as: 'min_rating')]
+    public $minRating = '';
+
+    #[Url(as: 'max_calories')]
+    public $maxCalories = '';
+
+    #[Url(as: 'servings')]
+    public $servings = '';
+
+    #[Url(as: 'price_range')]
+    public $priceRange = '';
+
+    public $perPage = 12;
+    public $showAdvancedFilters = false;
+    public $viewMode = 'grid'; // grid, list
+
+
 
     public function mount()
     {
         // Initialize filters from URL parameters
+        if (is_string($this->selectedTags)) {
+            $this->selectedTags = explode(',', $this->selectedTags);
+        }
     }
 
     public function updatedSearch()
@@ -69,10 +85,96 @@ class RecipeList extends Component
         $this->resetPage();
     }
 
+    public function updatedSelectedTags()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedMinRating()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedMaxCalories()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedServings()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPriceRange()
+    {
+        $this->resetPage();
+    }
+
+    public function toggleAdvancedFilters()
+    {
+        $this->showAdvancedFilters = !$this->showAdvancedFilters;
+    }
+
+    public function toggleViewMode()
+    {
+        $this->viewMode = $this->viewMode === 'grid' ? 'list' : 'grid';
+    }
+
+    public function toggleTag($tagId)
+    {
+        if (in_array($tagId, $this->selectedTags)) {
+            $this->selectedTags = array_diff($this->selectedTags, [$tagId]);
+        } else {
+            $this->selectedTags[] = $tagId;
+        }
+        $this->resetPage();
+    }
+
     public function clearFilters()
     {
-        $this->reset(['category', 'difficulty', 'cookingTime', 'search', 'sort']);
+        $this->reset([
+            'category', 
+            'difficulty', 
+            'cookingTime', 
+            'search', 
+            'sort',
+            'selectedTags',
+            'minRating',
+            'maxCalories',
+            'servings',
+            'priceRange'
+        ]);
         $this->resetPage();
+    }
+
+    public function confirmToggleFavorite($recipeId)
+    {
+        if (!\Illuminate\Support\Facades\Auth::check()) {
+            $this->redirect(route('login'));
+            return;
+        }
+
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $recipe = \App\Models\Recipe::find($recipeId);
+
+        if (!$recipe) {
+            return;
+        }
+
+        $favorite = \App\Models\Favorite::where('user_id', $user->id)
+                                       ->where('recipe_id', $recipeId)
+                                       ->first();
+
+        if ($favorite) {
+            $favorite->delete();
+            $this->dispatch('favorite-removed', recipeId: $recipeId);
+        } else {
+            \App\Models\Favorite::create([
+                'user_id' => $user->id,
+                'recipe_id' => $recipeId,
+            ]);
+            $this->dispatch('favorite-added', recipeId: $recipeId);
+        }
     }
 
     public function render()
@@ -83,13 +185,18 @@ class RecipeList extends Component
             'cooking_time' => $this->cookingTime,
             'search' => $this->search,
             'sort' => $this->sort,
+            'tags' => $this->selectedTags,
+            'min_rating' => $this->minRating,
+            'max_calories' => $this->maxCalories,
+            'servings' => $this->servings,
+            'price_range' => $this->priceRange,
         ];
 
         $recipeService = app(RecipeService::class);
         $recipes = $recipeService->getFilteredRecipes($filters, $this->perPage);
         
         $categories = Category::where('parent_id', null)->with('children')->get();
-        $tags = Tag::orderBy('usage_count', 'desc')->limit(20)->get();
+        $tags = Tag::orderBy('usage_count', 'desc')->limit(30)->get();
 
         return view('livewire.recipes.recipe-list', [
             'recipes' => $recipes,

@@ -155,6 +155,33 @@ class RecipeService
             $this->applySearchFilter($query, $filters['search']);
         }
 
+        // Tags filter
+        if (!empty($filters['tags']) && is_array($filters['tags'])) {
+            $query->whereHas('tags', function ($q) use ($filters) {
+                $q->whereIn('id', $filters['tags']);
+            });
+        }
+
+        // Min rating filter
+        if (!empty($filters['min_rating'])) {
+            $query->where('average_rating', '>=', $filters['min_rating']);
+        }
+
+        // Max calories filter
+        if (!empty($filters['max_calories'])) {
+            $query->where('calories', '<=', $filters['max_calories']);
+        }
+
+        // Servings filter
+        if (!empty($filters['servings'])) {
+            $query->where('servings', $filters['servings']);
+        }
+
+        // Price range filter (placeholder for future implementation)
+        if (!empty($filters['price_range'])) {
+            // TODO: Implement price range filter when price field is added
+        }
+
         // Sort
         $this->applySorting($query, $filters['sort'] ?? 'latest');
     }
@@ -200,6 +227,12 @@ class RecipeService
                 break;
             case 'rating':
                 $query->orderBy('average_rating', 'desc');
+                break;
+            case 'cooking_time':
+                $query->orderBy('cooking_time', 'asc');
+                break;
+            case 'title':
+                $query->orderBy('title', 'asc');
                 break;
             case 'oldest':
                 $query->orderBy('created_at', 'asc');

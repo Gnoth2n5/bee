@@ -21,7 +21,7 @@ Route::get('profile', App\Livewire\Profile\ProfilePage::class)
     ->name('profile');
 
 // Recipe routes
-Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
+Route::get('/recipes', App\Livewire\Recipes\RecipeList::class)->name('recipes.index');
 Route::get('/recipes/{recipe}', RecipeDetail::class)->name('recipes.show');
 
 // Protected routes
