@@ -23,7 +23,6 @@ class StoreRatingRequest extends FormRequest
     {
         return [
             'rating' => ['required', 'integer', 'between:1,5'],
-            'comment' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -36,7 +35,6 @@ class StoreRatingRequest extends FormRequest
             'rating.required' => 'Đánh giá là bắt buộc.',
             'rating.integer' => 'Đánh giá phải là số nguyên.',
             'rating.between' => 'Đánh giá phải từ 1 đến 5 sao.',
-            'comment.max' => 'Bình luận không được vượt quá 1000 ký tự.',
         ];
     }
 
@@ -47,7 +45,6 @@ class StoreRatingRequest extends FormRequest
     {
         return [
             'rating' => 'đánh giá',
-            'comment' => 'bình luận',
         ];
     }
 } 

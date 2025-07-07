@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Rating;
+use App\Policies\RatingPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,5 +25,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Set application locale
         App::setLocale('vi');
+        
+        // Register policies
+        Gate::policy(Rating::class, RatingPolicy::class);
     }
 }
