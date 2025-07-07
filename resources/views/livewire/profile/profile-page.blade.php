@@ -32,7 +32,15 @@
                     @endif
 
                     @if($activeTab === 'collections')
-                        <x-profile.collections-tab :collections="$this->collections" />
+                        <x-profile.collections-tab 
+                            :collections="$this->collections"
+                            :showCreateModal="$showCreateModal"
+                            :newName="$newName"
+                            :newDescription="$newDescription"
+                            :newIsPublic="$newIsPublic"
+                            :newCoverImage="$newCoverImage"
+                            :newCoverImagePreview="$newCoverImagePreview"
+                        />
                     @endif
 
                     @if($activeTab === 'favorites')

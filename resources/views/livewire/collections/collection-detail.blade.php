@@ -2,52 +2,113 @@
     <!-- Header với thông tin bộ sưu tập -->
     <div class="bg-white rounded-xl shadow overflow-hidden mb-8">
         <div class="flex flex-col md:flex-row items-stretch min-h-[180px]">
-            <div class="w-full md:w-64 bg-gray-200 flex items-center justify-center md:rounded-l-xl overflow-hidden" style="min-height:100%;height:auto;">
-                @if($collection->cover_image)
-                    <img src="{{ Storage::url($collection->cover_image) }}" alt="{{ $collection->name }}" class="w-full h-full object-cover" style="min-height:100%;height:100%;" />
+            <div class="w-full md:w-64 bg-gray-200 flex items-center justify-center md:rounded-l-xl overflow-hidden relative" style="min-height:100%;height:auto;">
+                @if($isEditing)
+                    @if($editCoverImagePreview)
+                        <div class="relative w-full h-full">
+                            <img src="{{ $editCoverImagePreview }}" alt="Preview" class="w-full h-full object-cover" style="min-height:100%;height:100%;" />
+                            <!-- Nút X để huỷ file -->
+                            <button type="button" wire:click="resetEditCoverImage" class="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow border border-gray-200">
+                                <x-heroicon-o-x-mark class="w-4 h-4" />
+                            </button>
+                        </div>
+                    @elseif($collection->cover_image)
+                        <img src="{{ Storage::url($collection->cover_image) }}" alt="Ảnh bìa" class="w-full h-full object-cover" style="min-height:100%;height:100%;" />
+                    @else
+                        <x-heroicon-o-rectangle-stack class="w-16 h-16 text-gray-400" />
+                    @endif
+                    <!-- Nút đổi ảnh -->
+                    <label for="editCoverImageInput" class="absolute bottom-2 right-2 bg-white/80 hover:bg-white shadow rounded-full p-2 cursor-pointer border border-gray-200 flex items-center justify-center transition">
+                        <x-heroicon-o-camera class="w-5 h-5 text-gray-700" />
+                        <input id="editCoverImageInput" type="file" wire:model="editCoverImage" accept="image/*" class="hidden" />
+                    </label>
                 @else
-                    <x-heroicon-o-rectangle-stack class="w-16 h-16 text-gray-400" />
+                    @if($collection->cover_image)
+                        <img src="{{ Storage::url($collection->cover_image) }}" alt="{{ $collection->name }}" class="w-full h-full object-cover" style="min-height:100%;height:100%;" />
+                    @else
+                        <x-heroicon-o-rectangle-stack class="w-16 h-16 text-gray-400" />
+                    @endif
                 @endif
             </div>
             <div class="flex-1 p-6 flex flex-col justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ $collection->name }}</h1>
-                    <div class="flex items-center gap-2 mb-2">
-                        @if($collection->is_public)
-                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Công khai</span>
-                        @else
-                            <span class="px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">Riêng tư</span>
-                        @endif
-                        <span class="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded-full">{{ $collection->recipe_count }} công thức</span>
+                @if($isEditing)
+                    <form wire:submit.prevent="updateCollection" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tên bộ sưu tập <span class="text-red-500">*</span></label>
+                            <input type="text" wire:model.defer="editName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" maxlength="255">
+                            @error('editName')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                            <textarea wire:model.defer="editDescription" rows="3" maxlength="1000" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"></textarea>
+                            @error('editDescription')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" wire:model.defer="editIsPublic" class="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 focus:ring-2">
+                                <span class="ml-2 text-sm text-gray-700">Công khai bộ sưu tập</span>
+                            </label>
+                            <span class="text-xs text-gray-500">Bộ sưu tập công khai sẽ hiển thị cho tất cả mọi người</span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ảnh bìa</label>
+                            @if($editCoverImagePreview)
+                                <img src="{{ $editCoverImagePreview }}" alt="Preview" class="w-16 h-16 object-cover rounded-lg border" />
+                            @elseif($collection->cover_image)
+                                <img src="{{ Storage::url($collection->cover_image) }}" alt="Ảnh bìa" class="w-16 h-16 object-cover rounded-lg border" />
+                            @endif
+                            @error('editCoverImage')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                            @if($editCoverImage)
+                                <p class="text-xs text-gray-400 mt-1">Đang xem trước ảnh mới...</p>
+                            @endif
+                        </div>
+                        <div class="flex gap-2 mt-4">
+                            <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg font-semibold transition">Lưu</button>
+                            <button type="button" wire:click="cancelEdit" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-5 py-2 rounded-lg font-semibold transition">Huỷ</button>
+                        </div>
+                    </form>
+                @else
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ $collection->name }}</h1>
+                        <div class="flex items-center gap-2 mb-2">
+                            @if($collection->is_public)
+                                <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Công khai</span>
+                            @else
+                                <span class="px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">Riêng tư</span>
+                            @endif
+                            <span class="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded-full">{{ $collection->recipe_count }} công thức</span>
+                        </div>
+                        <p class="text-gray-700 mb-4">{{ $collection->description ?: 'Chưa có mô tả' }}</p>
                     </div>
-                    <p class="text-gray-700 mb-4">{{ $collection->description ?: 'Chưa có mô tả' }}</p>
-                </div>
-                <div class="flex items-center gap-3 mt-2">
-                    <div class="flex items-center gap-2">
-                        @if($collection->user->profile && $collection->user->profile->avatar)
-                            <img src="{{ Storage::url($collection->user->profile->avatar) }}" alt="{{ $collection->user->name }}" class="w-8 h-8 rounded-full object-cover" />
-                        @else
-                            <span class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">{{ strtoupper(substr($collection->user->name,0,1)) }}</span>
-                        @endif
-                        <span class="font-medium text-gray-800">{{ $collection->user->name }}</span>
+                    <div class="flex items-center gap-3 mt-2">
+                        <div class="flex items-center gap-2">
+                            @if($collection->user->profile && $collection->user->profile->avatar)
+                                <img src="{{ Storage::url($collection->user->profile->avatar) }}" alt="{{ $collection->user->name }}" class="w-8 h-8 rounded-full object-cover" />
+                            @else
+                                <span class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">{{ strtoupper(substr($collection->user->name,0,1)) }}</span>
+                            @endif
+                            <span class="font-medium text-gray-800">{{ $collection->user->name }}</span>
+                        </div>
+                        <span class="text-xs text-gray-400">Tạo lúc {{ $collection->created_at->format('d/m/Y') }}</span>
                     </div>
-                    <span class="text-xs text-gray-400">Tạo lúc {{ $collection->created_at->format('d/m/Y') }}</span>
-                </div>
-                @if($isOwner)
-                    <div class="mt-4 flex gap-2">
-                        <a href="{{ route('collections.edit', $collection) }}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2">
-                            <x-heroicon-o-pencil-square class="w-4 h-4" />
-                            Chỉnh sửa
-                        </a>
-                        <button 
-                            wire:click="deleteCollection"
-                            wire:confirm="Bạn có chắc muốn xóa bộ sưu tập này? Hành động này không thể hoàn tác."
-                            class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2"
-                        >
-                            <x-heroicon-o-trash class="w-4 h-4" />
-                            Xóa
-                        </button>
-                    </div>
+                    @if($isOwner)
+                        <div class="mt-4 flex gap-2">
+                            <button wire:click="showEdit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2">
+                                <x-heroicon-o-pencil-square class="w-4 h-4" />
+                                Chỉnh sửa
+                            </button>
+                            <button 
+                                wire:click="deleteCollection"
+                                wire:confirm="Bạn có chắc muốn xóa bộ sưu tập này? Hành động này không thể hoàn tác."
+                                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2"
+                            >
+                                <x-heroicon-o-trash class="w-4 h-4" />
+                                Xóa
+                            </button>
+                        </div>
+                    @endif
                 @endif
             </div>
         </div>

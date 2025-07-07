@@ -7,6 +7,7 @@ use App\Models\UserProfile;
 use App\Models\Recipe;
 use App\Models\Collection;
 use App\Models\Favorite;
+use App\Services\CollectionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -43,6 +44,14 @@ class ProfilePage extends Component
     
     // Tabs
     public $activeTab = 'recipes';
+    
+    // Collection creation
+    public $showCreateModal = false;
+    public $newName = '';
+    public $newDescription = '';
+    public $newIsPublic = false;
+    public $newCoverImage;
+    public $newCoverImagePreview;
     
     // Dietary options
     public $dietaryOptions = [
@@ -268,6 +277,79 @@ class ProfilePage extends Component
             session()->flash('success', 'Đã xóa công thức khỏi danh sách yêu thích!');
             $this->dispatch('flash-message', message: 'Đã xóa công thức khỏi danh sách yêu thích!', type: 'success');
         }
+    }
+
+    // Collection creation methods
+    public function updatedNewCoverImage()
+    {
+        $this->validate([
+            'newCoverImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ], [
+            'newCoverImage.image' => 'File phải là hình ảnh.',
+            'newCoverImage.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
+            'newCoverImage.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
+        ]);
+
+        if ($this->newCoverImage) {
+            $this->newCoverImagePreview = $this->newCoverImage->temporaryUrl();
+        }
+    }
+
+    public function createCollection()
+    {
+        $this->validate([
+            'newName' => 'required|string|max:255',
+            'newDescription' => 'nullable|string|max:1000',
+            'newIsPublic' => 'boolean',
+            'newCoverImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ], [
+            'newName.required' => 'Tên bộ sưu tập là bắt buộc.',
+            'newName.max' => 'Tên bộ sưu tập không được vượt quá 255 ký tự.',
+            'newDescription.max' => 'Mô tả không được vượt quá 1000 ký tự.',
+            'newCoverImage.image' => 'File phải là hình ảnh.',
+            'newCoverImage.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
+            'newCoverImage.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
+        ]);
+
+        try {
+            $collectionService = app(CollectionService::class);
+            
+            $collectionData = [
+                'name' => $this->newName,
+                'description' => $this->newDescription,
+                'is_public' => $this->newIsPublic,
+            ];
+
+            if ($this->newCoverImage) {
+                $collectionData['cover_image'] = $this->newCoverImage;
+            }
+
+            $collection = $collectionService->create($collectionData, $this->user);
+            
+            // Reset form
+            $this->resetCollectionForm();
+            
+            // Cập nhật số lượng collections
+            $this->collectionsCount = Collection::where('user_id', $this->user->id)->count();
+            
+            session()->flash('success', 'Đã tạo bộ sưu tập "' . $collection->name . '" thành công!');
+            $this->dispatch('flash-message', message: 'Đã tạo bộ sưu tập "' . $collection->name . '" thành công!', type: 'success');
+            
+        } catch (\Exception $e) {
+            session()->flash('error', 'Có lỗi xảy ra khi tạo bộ sưu tập: ' . $e->getMessage());
+            $this->dispatch('flash-message', message: 'Có lỗi xảy ra khi tạo bộ sưu tập: ' . $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function resetCollectionForm()
+    {
+        $this->newName = '';
+        $this->newDescription = '';
+        $this->newIsPublic = false;
+        $this->newCoverImage = null;
+        $this->newCoverImagePreview = null;
+        $this->showCreateModal = false;
+        $this->resetValidation();
     }
 
     public function render()
