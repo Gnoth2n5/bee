@@ -1,8 +1,3 @@
-@extends('layouts.app')
-
-@section('title', 'Công thức yêu thích - BeeFood')
-
-@section('content')
 <div class="min-h-screen bg-gray-50">
     <!-- Header -->
     <div class="bg-white border-b border-gray-200">
@@ -15,7 +10,7 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <span class="text-sm text-gray-500">
-                            {{ $favorites->total() }} công thức
+                            {{ $this->favorites->total() }} công thức
                         </span>
                         <a href="{{ route('recipes.index') }}" 
                            class="inline-flex items-center px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors">
@@ -32,18 +27,18 @@
 
     <!-- Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        @if($favorites->count() > 0)
+        @if($this->favorites->count() > 0)
             <!-- Recipe Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                @foreach($favorites as $favorite)
-                    <x-recipe-card :recipe="$favorite->recipe" :showRemoveButton="true" />
+                @foreach($this->favorites as $favorite)
+                    <x-favorite-recipe-card :recipe="$favorite->recipe" />
                 @endforeach
             </div>
 
             <!-- Pagination -->
-            @if($favorites->hasPages())
+            @if($this->favorites->hasPages())
                 <div class="mt-8">
-                    {{ $favorites->links() }}
+                    {{ $this->favorites->links() }}
                 </div>
             @endif
         @else
@@ -64,5 +59,4 @@
             </div>
         @endif
     </div>
-</div>
-@endsection 
+</div> 

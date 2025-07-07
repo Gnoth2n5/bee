@@ -31,7 +31,29 @@ class RecipeDetail extends Component
         
         $this->recipe->refresh();
         
-        session()->flash('message', $result['message']);
+        session()->flash('success', $result['message']);
+        $this->dispatch('flash-message', message: $result['message'], type: 'success');
+    }
+
+    public function confirmToggleFavorite()
+    {
+        if (!Auth::check()) {
+            session()->flash('message', 'Vui lòng đăng nhập để thêm vào yêu thích.');
+            return redirect()->route('login');
+        }
+
+        $isFavorited = $this->recipe->isFavoritedBy(Auth::user());
+        
+        if ($isFavorited) {
+            $this->dispatch('confirm-remove-favorite', recipeSlug: $this->recipe->slug, componentId: $this->getId(), action: 'toggle');
+        } else {
+            $this->toggleFavorite();
+        }
+    }
+
+    public function removeFavorite($recipeSlug)
+    {
+        $this->toggleFavorite();
     }
 
     public function render()

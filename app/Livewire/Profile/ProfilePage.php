@@ -250,6 +250,26 @@ class ProfilePage extends Component
             ->paginate(12);
     }
 
+    // Xác nhận xóa công thức yêu thích
+    public function confirmRemoveFavorite($recipeSlug)
+    {
+        $this->dispatch('confirm-remove-favorite', recipeSlug: $recipeSlug, componentId: $this->getId());
+    }
+
+    // Xóa công thức yêu thích qua Livewire
+    public function removeFavorite($recipeSlug)
+    {
+        $user = $this->user;
+        $recipe = \App\Models\Recipe::where('slug', $recipeSlug)->first();
+        if ($recipe) {
+            app(\App\Services\FavoriteService::class)->removeFavorite($recipe, $user);
+            // Cập nhật lại số lượng yêu thích
+            $this->favoritesCount = Favorite::where('user_id', $user->id)->count();
+            session()->flash('success', 'Đã xóa công thức khỏi danh sách yêu thích!');
+            $this->dispatch('flash-message', message: 'Đã xóa công thức khỏi danh sách yêu thích!', type: 'success');
+        }
+    }
+
     public function render()
     {
         return view('livewire.profile.profile-page');

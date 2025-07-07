@@ -64,9 +64,31 @@ class HomePage extends Component
 
         $recipe = Recipe::findOrFail($recipeId);
         $favoriteService = app(FavoriteService::class);
-        $favoriteService->toggle($recipe, Auth::user());
+        $result = $favoriteService->toggle($recipe, Auth::user());
         
+        session()->flash('success', $result['message']);
         $this->dispatch('favorite-toggled', recipeId: $recipeId);
+        $this->dispatch('flash-message', message: $result['message'], type: 'success');
+    }
+
+    public function confirmToggleFavorite($recipeId)
+    {
+        $recipe = Recipe::findOrFail($recipeId);
+        $isFavorited = $recipe->isFavoritedBy(Auth::user());
+        
+        if ($isFavorited) {
+            $this->dispatch('confirm-remove-favorite', recipeSlug: $recipe->slug, componentId: $this->getId(), action: 'toggle');
+        } else {
+            $this->toggleFavorite($recipeId);
+        }
+    }
+
+    public function removeFavorite($recipeSlug)
+    {
+        $recipe = Recipe::where('slug', $recipeSlug)->first();
+        if ($recipe) {
+            $this->toggleFavorite($recipe->id);
+        }
     }
 
     public function getHasActiveFiltersProperty()

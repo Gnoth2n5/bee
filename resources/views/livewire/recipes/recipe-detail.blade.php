@@ -39,7 +39,7 @@
             <!-- Nút yêu thích -->
             <div class="absolute top-4 right-4">
                 <button 
-                    wire:click="toggleFavorite"
+                    wire:click="confirmToggleFavorite"
                     wire:loading.attr="disabled"
                     class="w-12 h-12 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all duration-200 group"
                     aria-label="Yêu thích"

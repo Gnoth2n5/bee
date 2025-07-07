@@ -5,7 +5,7 @@ use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\RatingController;
-use App\Http\Controllers\FavoriteController;
+
 use App\Http\Controllers\CollectionController;
 use App\Livewire\HomePage;
 use App\Livewire\Recipes\RecipeDetail;
@@ -42,8 +42,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/recipes/{recipe}/rate', [RatingController::class, 'destroy'])->name('recipes.rate.destroy');
 
     // Favorites
-    Route::post('/recipes/{recipe}/favorite', [FavoriteController::class, 'toggle'])->name('recipes.favorite');
-    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::get('/favorites', App\Livewire\Favorites\FavoritesPage::class)->name('favorites.index');
 
     // Collections
     Route::resource('collections', CollectionController::class);

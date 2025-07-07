@@ -2,7 +2,9 @@
 
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     @forelse($favorites as $favorite)
-        <x-recipe-card :recipe="$favorite->recipe" :showRemoveButton="true" />
+        @if($favorite->recipe)
+            <x-favorite-recipe-card :recipe="$favorite->recipe" />
+        @endif
     @empty
         <div class="col-span-full text-center py-12">
             <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
