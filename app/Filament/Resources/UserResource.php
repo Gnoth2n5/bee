@@ -158,7 +158,7 @@ class UserResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\Action::make('ban')
                         ->label('Cấm người dùng')
-                        ->icon('heroicon-o-ban')
+                        ->icon('heroicon-o-no-symbol')
                         ->color('danger')
                         ->requiresConfirmation()
                         ->action(fn (User $record) => $record->update(['status' => 'banned']))
@@ -175,7 +175,7 @@ class UserResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\BulkAction::make('ban')
                         ->label('Cấm người dùng')
-                        ->icon('heroicon-o-ban')
+                        ->icon('heroicon-o-no-symbol')
                         ->color('danger')
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each->update(['status' => 'banned'])),

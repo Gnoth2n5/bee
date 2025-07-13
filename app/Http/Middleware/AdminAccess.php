@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminAccess
@@ -15,16 +16,16 @@ class AdminAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('filament.admin.auth.login');
         }
 
-        $user = auth()->user();
-        
+        $user = Auth::user();
+
         if (!$user->hasRole(['admin', 'manager'])) {
             abort(403, 'Bạn không có quyền truy cập vào trang này.');
         }
 
         return $next($request);
     }
-} 
+}

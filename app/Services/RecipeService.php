@@ -15,14 +15,20 @@ class RecipeService
      */
     public function create(array $data, User $user): Recipe
     {
-        $recipe = new Recipe($data);
+        // Xử lý dữ liệu trước khi tạo
+        $recipeData = $this->prepareRecipeData($data);
+        
+        $recipe = new Recipe($recipeData);
         $recipe->user_id = $user->id;
         $recipe->slug = Str::slug($data['title']);
-        $recipe->status = 'pending';
+        $recipe->status = $data['status'] ?? 'pending';
         $recipe->save();
 
         // Attach categories and tags
-        $recipe->categories()->attach($data['category_ids']);
+        if (!empty($data['category_ids'])) {
+            $recipe->categories()->attach($data['category_ids']);
+        }
+        
         if (!empty($data['tag_ids'])) {
             $recipe->tags()->attach($data['tag_ids']);
         }
@@ -40,14 +46,22 @@ class RecipeService
      */
     public function update(Recipe $recipe, array $data): Recipe
     {
-        $recipe->update($data);
+        // Xử lý dữ liệu trước khi cập nhật
+        $recipeData = $this->prepareRecipeData($data);
+        
+        $recipe->update($recipeData);
         $recipe->slug = Str::slug($data['title']);
-        $recipe->status = 'pending';
+        $recipe->status = $data['status'] ?? 'pending';
         $recipe->save();
 
         // Sync categories and tags
-        $recipe->categories()->sync($data['category_ids']);
-        $recipe->tags()->sync($data['tag_ids'] ?? []);
+        if (isset($data['category_ids'])) {
+            $recipe->categories()->sync($data['category_ids']);
+        }
+        
+        if (isset($data['tag_ids'])) {
+            $recipe->tags()->sync($data['tag_ids']);
+        }
 
         // Handle featured image
         if (isset($data['featured_image']) && $data['featured_image'] instanceof UploadedFile) {
@@ -262,5 +276,42 @@ class RecipeService
     public function incrementViewCount(Recipe $recipe): void
     {
         $recipe->increment('view_count');
+    }
+
+    /**
+     * Prepare recipe data for saving.
+     */
+    protected function prepareRecipeData(array $data): array
+    {
+        $recipeData = $data;
+
+        // Xử lý ingredients
+        if (isset($data['ingredients']) && is_array($data['ingredients'])) {
+            $recipeData['ingredients'] = array_values(array_filter($data['ingredients'], function ($item) {
+                return !empty($item['name']) && !empty($item['amount']);
+            }));
+        }
+
+        // Xử lý instructions
+        if (isset($data['instructions']) && is_array($data['instructions'])) {
+            $recipeData['instructions'] = array_values(array_filter($data['instructions'], function ($item) {
+                return !empty($item['instruction']);
+            }));
+            
+            // Đánh số lại các bước
+            foreach ($recipeData['instructions'] as $index => &$instruction) {
+                $instruction['step'] = $index + 1;
+            }
+        }
+
+        // Tính toán total_time
+        $cookingTime = $data['cooking_time'] ?? 0;
+        $preparationTime = $data['preparation_time'] ?? 0;
+        $recipeData['total_time'] = $cookingTime + $preparationTime;
+
+        // Loại bỏ các trường không cần thiết
+        unset($recipeData['category_ids'], $recipeData['tag_ids']);
+
+        return $recipeData;
     }
 } 

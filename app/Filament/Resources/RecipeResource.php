@@ -8,6 +8,7 @@ use App\Models\Recipe;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Services\RecipeService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class RecipeResource extends Resource
 {
@@ -74,7 +76,9 @@ class RecipeResource extends Resource
                         Forms\Components\TextInput::make('total_time')
                             ->label('Tổng thời gian (phút)')
                             ->numeric()
-                            ->minValue(0),
+                            ->minValue(0)
+                            ->disabled()
+                            ->dehydrated(false),
                         Forms\Components\Select::make('difficulty')
                             ->label('Độ khó')
                             ->options([
@@ -96,23 +100,65 @@ class RecipeResource extends Resource
                             ->minValue(0),
                     ])->columns(3),
                 
-                Forms\Components\Section::make('Nội dung công thức')
+                Forms\Components\Section::make('Nguyên liệu')
                     ->schema([
-                        Forms\Components\RichEditor::make('ingredients')
-                            ->label('Nguyên liệu')
-                            ->required()
-                            ->columnSpanFull(),
-                        Forms\Components\RichEditor::make('instructions')
-                            ->label('Hướng dẫn')
-                            ->required()
-                            ->columnSpanFull(),
+                        Forms\Components\Repeater::make('ingredients')
+                            ->label('Danh sách nguyên liệu')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Tên nguyên liệu')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder('Ví dụ: Thịt bò, Gạo, Rau cải...'),
+                                Forms\Components\TextInput::make('amount')
+                                    ->label('Số lượng')
+                                    ->required()
+                                    ->maxLength(50)
+                                    ->placeholder('Ví dụ: 500, 2, 1kg...'),
+                                Forms\Components\TextInput::make('unit')
+                                    ->label('Đơn vị')
+                                    ->maxLength(50)
+                                    ->placeholder('g, kg, cái, quả, muỗng...'),
+                            ])
+                            ->defaultItems(1)
+                            ->minItems(1)
+                            ->maxItems(50)
+                            ->reorderable(false)
+                            ->columnSpanFull()
+                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
+                    ]),
+                
+                Forms\Components\Section::make('Hướng dẫn nấu ăn')
+                    ->schema([
+                        Forms\Components\Repeater::make('instructions')
+                            ->label('Các bước thực hiện')
+                            ->schema([
+                                Forms\Components\Textarea::make('instruction')
+                                    ->label('Hướng dẫn')
+                                    ->required()
+                                    ->maxLength(1000)
+                                    ->rows(3)
+                                    ->placeholder('Mô tả chi tiết bước thực hiện...'),
+                            ])
+                            ->defaultItems(1)
+                            ->minItems(1)
+                            ->maxItems(20)
+                            ->reorderable(true)
+                            ->columnSpanFull()
+                            ->itemLabel(fn (array $state): ?string => 'Bước: ' . Str::limit($state['instruction'] ?? '', 50)),
+                    ]),
+                
+                Forms\Components\Section::make('Mẹo và ghi chú')
+                    ->schema([
                         Forms\Components\Textarea::make('tips')
                             ->label('Mẹo nấu ăn')
                             ->maxLength(1000)
+                            ->rows(3)
                             ->columnSpanFull(),
                         Forms\Components\Textarea::make('notes')
                             ->label('Ghi chú')
                             ->maxLength(1000)
+                            ->rows(3)
                             ->columnSpanFull(),
                     ]),
                 
@@ -122,6 +168,7 @@ class RecipeResource extends Resource
                             ->label('Ảnh đại diện')
                             ->image()
                             ->imageEditor()
+                            ->directory('recipes')
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make('video_url')
                             ->label('URL Video')
@@ -131,16 +178,17 @@ class RecipeResource extends Resource
                 
                 Forms\Components\Section::make('Phân loại')
                     ->schema([
-                        Forms\Components\Select::make('categories')
+                        Forms\Components\Select::make('category_ids')
                             ->label('Danh mục')
                             ->multiple()
-                            ->relationship('categories', 'name')
+                            ->options(Category::pluck('name', 'id'))
                             ->preload()
-                            ->searchable(),
-                        Forms\Components\Select::make('tags')
+                            ->searchable()
+                            ->required(),
+                        Forms\Components\Select::make('tag_ids')
                             ->label('Thẻ')
                             ->multiple()
-                            ->relationship('tags', 'name')
+                            ->options(Tag::pluck('name', 'id'))
                             ->preload()
                             ->searchable(),
                     ])->columns(2),
@@ -202,11 +250,17 @@ class RecipeResource extends Resource
                     ->label('Tiêu đề')
                     ->searchable()
                     ->sortable()
-                    ->limit(50),
+                    ->limit(50)
+                    ->weight('bold'),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Tác giả')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('categories.name')
+                    ->label('Danh mục')
+                    ->badge()
+                    ->separator(',')
+                    ->limit(2),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Trạng thái')
                     ->badge()
@@ -232,10 +286,15 @@ class RecipeResource extends Resource
                     ->label('Khẩu phần')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('cooking_time')
+                    ->label('Thời gian nấu')
+                    ->formatStateUsing(fn (int $state): string => $state . ' phút')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('view_count')
                     ->label('Lượt xem')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('average_rating')
                     ->label('Đánh giá TB')
                     ->numeric(
@@ -243,9 +302,15 @@ class RecipeResource extends Resource
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
                     )
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tạo lúc')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Cập nhật lúc')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -294,84 +359,136 @@ class RecipeResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\Action::make('approve')
-                        ->label('Phê duyệt')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('success')
-                        ->requiresConfirmation()
-                        ->action(fn (Recipe $record) => $record->update([
-                            'status' => 'approved',
-                            'approved_at' => now(),
-                            'approved_by' => auth()->user()->id,
-                        ]))
-                        ->visible(fn (Recipe $record) => $record->status === 'pending'),
-                    Tables\Actions\Action::make('reject')
-                        ->label('Từ chối')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->form([
-                            Forms\Components\Textarea::make('rejection_reason')
-                                ->label('Lý do từ chối')
-                                ->required(),
-                        ])
-                        ->action(function (Recipe $record, array $data) {
-                            $record->update([
-                                'status' => 'rejected',
-                                'rejection_reason' => $data['rejection_reason'],
-                            ]);
-                        })
-                        ->visible(fn (Recipe $record) => $record->status === 'pending'),
-                    Tables\Actions\Action::make('publish')
-                        ->label('Xuất bản')
-                        ->icon('heroicon-o-globe-alt')
-                        ->color('info')
-                        ->requiresConfirmation()
-                        ->action(fn (Recipe $record) => $record->update([
+                Tables\Actions\ViewAction::make()
+                    ->label('Xem')
+                    ->icon('heroicon-o-eye'),
+                Tables\Actions\EditAction::make()
+                    ->label('Sửa')
+                    ->icon('heroicon-o-pencil'),
+                Tables\Actions\Action::make('approve')
+                    ->label('Phê duyệt')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Phê duyệt công thức')
+                    ->modalDescription('Bạn có chắc chắn muốn phê duyệt công thức này?')
+                    ->modalSubmitActionLabel('Phê duyệt')
+                    ->action(function (Recipe $record) {
+                        app(RecipeService::class)->approve($record, Auth::user());
+                    })
+                    ->visible(fn (Recipe $record): bool => $record->status === 'pending'),
+                Tables\Actions\Action::make('reject')
+                    ->label('Từ chối')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->form([
+                        Forms\Components\Textarea::make('reason')
+                            ->label('Lý do từ chối')
+                            ->required()
+                            ->maxLength(500)
+                            ->placeholder('Nhập lý do từ chối công thức...'),
+                    ])
+                    ->modalHeading('Từ chối công thức')
+                    ->modalDescription('Vui lòng cung cấp lý do từ chối công thức này.')
+                    ->modalSubmitActionLabel('Từ chối')
+                    ->action(function (Recipe $record, array $data) {
+                        app(RecipeService::class)->reject($record, Auth::user(), $data['reason']);
+                    })
+                    ->visible(fn (Recipe $record): bool => $record->status === 'pending'),
+                Tables\Actions\Action::make('publish')
+                    ->label('Xuất bản')
+                    ->icon('heroicon-o-globe-alt')
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->modalHeading('Xuất bản công thức')
+                    ->modalDescription('Bạn có chắc chắn muốn xuất bản công thức này?')
+                    ->modalSubmitActionLabel('Xuất bản')
+                    ->action(function (Recipe $record) {
+                        $record->update([
                             'status' => 'published',
                             'published_at' => now(),
-                        ]))
-                        ->visible(fn (Recipe $record) => $record->status === 'approved'),
-                ]),
+                        ]);
+                    })
+                    ->visible(fn (Recipe $record): bool => $record->status === 'approved'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Xóa')
+                    ->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('approve')
-                        ->label('Phê duyệt')
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Xóa đã chọn')
+                        ->icon('heroicon-o-trash'),
+                    Tables\Actions\BulkAction::make('approve_selected')
+                        ->label('Phê duyệt đã chọn')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
                         ->requiresConfirmation()
+                        ->modalHeading('Phê duyệt công thức đã chọn')
+                        ->modalDescription('Bạn có chắc chắn muốn phê duyệt tất cả công thức đã chọn?')
+                        ->modalSubmitActionLabel('Phê duyệt')
                         ->action(function (Collection $records) {
-                            $records->each(function ($record) {
-                                $record->update([
-                                    'status' => 'approved',
-                                    'approved_at' => now(),
-                                    'approved_by' => auth()->user()->id,
-                                ]);
-                            });
+                            $service = app(RecipeService::class);
+                            $user = Auth::user();
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if ($record->status === 'pending') {
+                                    $service->approve($record, $user);
+                                    $count++;
+                                }
+                            }
+                            return $count . ' công thức đã được phê duyệt.';
                         }),
-                    Tables\Actions\BulkAction::make('reject')
-                        ->label('Từ chối')
+                    Tables\Actions\BulkAction::make('reject_selected')
+                        ->label('Từ chối đã chọn')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->form([
-                            Forms\Components\Textarea::make('rejection_reason')
+                            Forms\Components\Textarea::make('reason')
                                 ->label('Lý do từ chối')
-                                ->required(),
+                                ->required()
+                                ->maxLength(500)
+                                ->placeholder('Nhập lý do từ chối các công thức...'),
                         ])
+                        ->modalHeading('Từ chối công thức đã chọn')
+                        ->modalDescription('Vui lòng cung cấp lý do từ chối các công thức đã chọn.')
+                        ->modalSubmitActionLabel('Từ chối')
                         ->action(function (Collection $records, array $data) {
-                            $records->each(function ($record) use ($data) {
-                                $record->update([
-                                    'status' => 'rejected',
-                                    'rejection_reason' => $data['rejection_reason'],
-                                ]);
-                            });
+                            $service = app(RecipeService::class);
+                            $user = Auth::user();
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if ($record->status === 'pending') {
+                                    $service->reject($record, $user, $data['reason']);
+                                    $count++;
+                                }
+                            }
+                            return $count . ' công thức đã được từ chối.';
                         }),
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('publish_selected')
+                        ->label('Xuất bản đã chọn')
+                        ->icon('heroicon-o-globe-alt')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Xuất bản công thức đã chọn')
+                        ->modalDescription('Bạn có chắc chắn muốn xuất bản tất cả công thức đã chọn?')
+                        ->modalSubmitActionLabel('Xuất bản')
+                        ->action(function (Collection $records) {
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if ($record->status === 'approved') {
+                                    $record->update([
+                                        'status' => 'published',
+                                        'published_at' => now(),
+                                    ]);
+                                    $count++;
+                                }
+                            }
+                            return $count . ' công thức đã được xuất bản.';
+                        }),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
@@ -386,10 +503,11 @@ class RecipeResource extends Resource
         return [
             'index' => Pages\ListRecipes::route('/'),
             'create' => Pages\CreateRecipe::route('/create'),
+            'view' => Pages\ViewRecipe::route('/{record}'),
             'edit' => Pages\EditRecipe::route('/{record}/edit'),
         ];
     }
-    
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
