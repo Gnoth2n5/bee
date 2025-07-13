@@ -34,13 +34,13 @@ class TagResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->label('Tên thẻ')
                             ->required()
-                            ->maxLength(255)
+                            ->maxLength(100)
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug')
                             ->required()
-                            ->maxLength(255)
+                            ->maxLength(100)
                             ->unique(ignoreRecord: true),
                         Forms\Components\Textarea::make('description')
                             ->label('Mô tả')
@@ -49,27 +49,11 @@ class TagResource extends Resource
                         Forms\Components\ColorPicker::make('color')
                             ->label('Màu sắc')
                             ->default('#3B82F6'),
-                        Forms\Components\Toggle::make('is_active')
-                            ->label('Kích hoạt')
-                            ->default(true),
-                        Forms\Components\TextInput::make('sort_order')
-                            ->label('Thứ tự sắp xếp')
+                        Forms\Components\TextInput::make('usage_count')
+                            ->label('Số lần sử dụng')
                             ->numeric()
-                            ->default(0),
-                    ])->columns(2),
-                
-                Forms\Components\Section::make('SEO')
-                    ->schema([
-                        Forms\Components\TextInput::make('meta_title')
-                            ->label('Meta Title')
-                            ->maxLength(255),
-                        Forms\Components\Textarea::make('meta_description')
-                            ->label('Meta Description')
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make('meta_keywords')
-                            ->label('Meta Keywords')
-                            ->maxLength(500),
+                            ->default(0)
+                            ->disabled(),
                     ])->columns(2),
             ]);
     }
@@ -92,12 +76,8 @@ class TagResource extends Resource
                     ->sortable(),
                 Tables\Columns\ColorColumn::make('color')
                     ->label('Màu sắc'),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Trạng thái')
-                    ->boolean()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('sort_order')
-                    ->label('Thứ tự')
+                Tables\Columns\TextColumn::make('usage_count')
+                    ->label('Số lần sử dụng')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -107,39 +87,20 @@ class TagResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Trạng thái')
-                    ->placeholder('Tất cả')
-                    ->trueLabel('Đang hoạt động')
-                    ->falseLabel('Không hoạt động'),
+                //
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
-                    Tables\Actions\Action::make('toggle_status')
-                        ->label('Chuyển trạng thái')
-                        ->icon('heroicon-o-arrow-path')
-                        ->action(fn (Tag $record) => $record->update(['is_active' => !$record->is_active]))
-                        ->color(fn (Tag $record) => $record->is_active ? 'warning' : 'success'),
                 ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('activate')
-                        ->label('Kích hoạt')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('success')
-                        ->action(fn (Collection $records) => $records->each->update(['is_active' => true])),
-                    Tables\Actions\BulkAction::make('deactivate')
-                        ->label('Tắt kích hoạt')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->action(fn (Collection $records) => $records->each->update(['is_active' => false])),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('sort_order', 'asc');
+            ->defaultSort('name', 'asc');
     }
 
     public static function getRelations(): array

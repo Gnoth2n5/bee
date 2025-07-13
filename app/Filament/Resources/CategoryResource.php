@@ -37,6 +37,11 @@ class CategoryResource extends Resource
                             ->maxLength(255)
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
+                        Forms\Components\TextInput::make('icon')
+                            ->label('Icon Heroicon (ví dụ: heroicon-o-bookmark)')
+                            ->maxLength(100),
+                        Forms\Components\ColorPicker::make('color')
+                            ->label('Màu sắc'),
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug')
                             ->required()
@@ -51,6 +56,13 @@ class CategoryResource extends Resource
                             ->image()
                             ->imageEditor()
                             ->columnSpanFull(),
+                        Forms\Components\Select::make('parent_id')
+                            ->label('Danh mục cha')
+                            ->options(fn () => \App\Models\Category::pluck('name', 'id')->toArray())
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Không có')
+                            ->disableOptionWhen(fn ($value, $get) => $value == $get('id')),
                         Forms\Components\Toggle::make('is_active')
                             ->label('Kích hoạt')
                             ->default(true),
@@ -58,20 +70,6 @@ class CategoryResource extends Resource
                             ->label('Thứ tự sắp xếp')
                             ->numeric()
                             ->default(0),
-                    ])->columns(2),
-                
-                Forms\Components\Section::make('SEO')
-                    ->schema([
-                        Forms\Components\TextInput::make('meta_title')
-                            ->label('Meta Title')
-                            ->maxLength(255),
-                        Forms\Components\Textarea::make('meta_description')
-                            ->label('Meta Description')
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make('meta_keywords')
-                            ->label('Meta Keywords')
-                            ->maxLength(500),
                     ])->columns(2),
             ]);
     }

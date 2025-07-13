@@ -42,20 +42,16 @@ class RatingResource extends Resource
                             ->options(Recipe::pluck('title', 'id'))
                             ->searchable()
                             ->required(),
-                        Forms\Components\TextInput::make('rating')
+                        Forms\Components\Select::make('rating')
                             ->label('Điểm đánh giá')
-                            ->numeric()
-                            ->minValue(1)
-                            ->maxValue(5)
-                            ->required()
-                            ->step(0.5),
-                        Forms\Components\Textarea::make('comment')
-                            ->label('Nhận xét')
-                            ->maxLength(1000)
-                            ->columnSpanFull(),
-                        Forms\Components\Toggle::make('is_approved')
-                            ->label('Đã phê duyệt')
-                            ->default(true),
+                            ->options([
+                                1 => '1 sao',
+                                2 => '2 sao',
+                                3 => '3 sao',
+                                4 => '4 sao',
+                                5 => '5 sao',
+                            ])
+                            ->required(),
                     ])->columns(2),
             ]);
     }
@@ -75,27 +71,15 @@ class RatingResource extends Resource
                     ->limit(50),
                 Tables\Columns\TextColumn::make('rating')
                     ->label('Điểm')
-                    ->numeric(
-                        decimalPlaces: 1,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    )
+                    ->formatStateUsing(fn (int $state): string => str_repeat('⭐', $state))
                     ->sortable()
                     ->badge()
-                    ->color(fn (float $state): string => match (true) {
-                        $state >= 4.5 => 'success',
-                        $state >= 3.5 => 'warning',
-                        $state >= 2.5 => 'info',
+                    ->color(fn (int $state): string => match (true) {
+                        $state >= 4 => 'success',
+                        $state >= 3 => 'warning',
+                        $state >= 2 => 'info',
                         default => 'danger',
                     }),
-                Tables\Columns\TextColumn::make('comment')
-                    ->label('Nhận xét')
-                    ->limit(100)
-                    ->searchable(),
-                Tables\Columns\IconColumn::make('is_approved')
-                    ->label('Đã phê duyệt')
-                    ->boolean()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tạo lúc')
                     ->dateTime('d/m/Y H:i')
@@ -103,19 +87,14 @@ class RatingResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_approved')
-                    ->label('Trạng thái phê duyệt')
-                    ->placeholder('Tất cả')
-                    ->trueLabel('Đã phê duyệt')
-                    ->falseLabel('Chưa phê duyệt'),
                 Tables\Filters\SelectFilter::make('rating')
                     ->label('Điểm đánh giá')
                     ->options([
-                        '5' => '5 sao',
-                        '4' => '4 sao',
-                        '3' => '3 sao',
-                        '2' => '2 sao',
-                        '1' => '1 sao',
+                        5 => '5 sao',
+                        4 => '4 sao',
+                        3 => '3 sao',
+                        2 => '2 sao',
+                        1 => '1 sao',
                     ]),
                 Tables\Filters\SelectFilter::make('user')
                     ->label('Người đánh giá')
@@ -132,32 +111,10 @@ class RatingResource extends Resource
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
-                    Tables\Actions\Action::make('approve')
-                        ->label('Phê duyệt')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('success')
-                        ->action(fn (Rating $record) => $record->update(['is_approved' => true]))
-                        ->visible(fn (Rating $record) => !$record->is_approved),
-                    Tables\Actions\Action::make('reject')
-                        ->label('Từ chối')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->action(fn (Rating $record) => $record->update(['is_approved' => false]))
-                        ->visible(fn (Rating $record) => $record->is_approved),
                 ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('approve')
-                        ->label('Phê duyệt')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('success')
-                        ->action(fn (Collection $records) => $records->each->update(['is_approved' => true])),
-                    Tables\Actions\BulkAction::make('reject')
-                        ->label('Từ chối')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->action(fn (Collection $records) => $records->each->update(['is_approved' => false])),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])

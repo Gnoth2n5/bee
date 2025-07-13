@@ -9,14 +9,22 @@
             @foreach($categories as $category)
             <a href="{{ route('recipes.index', ['category' => $category->slug]) }}" 
                class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group flex flex-col">
-                <div class="aspect-square rounded-t-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                    @if($category->icon)
-                        <i class="{{ $category->icon }} text-white text-3xl"></i>
+                <div class="aspect-square rounded-t-lg overflow-hidden bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                    @if($category->image)
+                        <img src="{{ asset('storage/' . $category->image) }}" 
+                             alt="{{ $category->name }}" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                     @else
-                        <svg class="w-10 h-10 text-white mx-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h6" />
-                            <circle cx="12" cy="12" r="10" />
-                        </svg>
+                        <div class="w-full h-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                            @if($category->icon)
+                                <i class="{{ $category->icon }} text-white text-3xl"></i>
+                            @else
+                                <svg class="w-10 h-10 text-white mx-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h6" />
+                                    <circle cx="12" cy="12" r="10" />
+                                </svg>
+                            @endif
+                        </div>
                     @endif
                 </div>
                 <div class="p-4 text-center flex-1 flex flex-col justify-center">
