@@ -119,7 +119,7 @@ class TagResource extends Resource
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\Action::make('toggle_status')
                         ->label('Chuyển trạng thái')
-                        ->icon('heroicon-o-toggle-left')
+                        ->icon('heroicon-o-arrow-path')
                         ->action(fn (Tag $record) => $record->update(['is_active' => !$record->is_active]))
                         ->color(fn (Tag $record) => $record->is_active ? 'warning' : 'success'),
                 ]),

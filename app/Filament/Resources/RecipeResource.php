@@ -358,60 +358,62 @@ class RecipeResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->label('Xem')
-                    ->icon('heroicon-o-eye'),
-                Tables\Actions\EditAction::make()
-                    ->label('Sửa')
-                    ->icon('heroicon-o-pencil'),
-                Tables\Actions\Action::make('approve')
-                    ->label('Phê duyệt')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Phê duyệt công thức')
-                    ->modalDescription('Bạn có chắc chắn muốn phê duyệt công thức này?')
-                    ->modalSubmitActionLabel('Phê duyệt')
-                    ->action(function (Recipe $record) {
-                        app(RecipeService::class)->approve($record, Auth::user());
-                    })
-                    ->visible(fn (Recipe $record): bool => $record->status === 'pending'),
-                Tables\Actions\Action::make('reject')
-                    ->label('Từ chối')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->form([
-                        Forms\Components\Textarea::make('reason')
-                            ->label('Lý do từ chối')
-                            ->required()
-                            ->maxLength(500)
-                            ->placeholder('Nhập lý do từ chối công thức...'),
-                    ])
-                    ->modalHeading('Từ chối công thức')
-                    ->modalDescription('Vui lòng cung cấp lý do từ chối công thức này.')
-                    ->modalSubmitActionLabel('Từ chối')
-                    ->action(function (Recipe $record, array $data) {
-                        app(RecipeService::class)->reject($record, Auth::user(), $data['reason']);
-                    })
-                    ->visible(fn (Recipe $record): bool => $record->status === 'pending'),
-                Tables\Actions\Action::make('publish')
-                    ->label('Xuất bản')
-                    ->icon('heroicon-o-globe-alt')
-                    ->color('info')
-                    ->requiresConfirmation()
-                    ->modalHeading('Xuất bản công thức')
-                    ->modalDescription('Bạn có chắc chắn muốn xuất bản công thức này?')
-                    ->modalSubmitActionLabel('Xuất bản')
-                    ->action(function (Recipe $record) {
-                        $record->update([
-                            'status' => 'published',
-                            'published_at' => now(),
-                        ]);
-                    })
-                    ->visible(fn (Recipe $record): bool => $record->status === 'approved'),
-                Tables\Actions\DeleteAction::make()
-                    ->label('Xóa')
-                    ->icon('heroicon-o-trash'),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->label('Xem')
+                        ->icon('heroicon-o-eye'),
+                    Tables\Actions\EditAction::make()
+                        ->label('Sửa')
+                        ->icon('heroicon-o-pencil'),
+                    Tables\Actions\Action::make('approve')
+                        ->label('Phê duyệt')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Phê duyệt công thức')
+                        ->modalDescription('Bạn có chắc chắn muốn phê duyệt công thức này?')
+                        ->modalSubmitActionLabel('Phê duyệt')
+                        ->action(function (Recipe $record) {
+                            app(RecipeService::class)->approve($record, Auth::user());
+                        })
+                        ->visible(fn (Recipe $record): bool => $record->status === 'pending'),
+                    Tables\Actions\Action::make('reject')
+                        ->label('Từ chối')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->form([
+                            Forms\Components\Textarea::make('reason')
+                                ->label('Lý do từ chối')
+                                ->required()
+                                ->maxLength(500)
+                                ->placeholder('Nhập lý do từ chối công thức...'),
+                        ])
+                        ->modalHeading('Từ chối công thức')
+                        ->modalDescription('Vui lòng cung cấp lý do từ chối công thức này.')
+                        ->modalSubmitActionLabel('Từ chối')
+                        ->action(function (Recipe $record, array $data) {
+                            app(RecipeService::class)->reject($record, Auth::user(), $data['reason']);
+                        })
+                        ->visible(fn (Recipe $record): bool => $record->status === 'pending'),
+                    Tables\Actions\Action::make('publish')
+                        ->label('Xuất bản')
+                        ->icon('heroicon-o-globe-alt')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Xuất bản công thức')
+                        ->modalDescription('Bạn có chắc chắn muốn xuất bản công thức này?')
+                        ->modalSubmitActionLabel('Xuất bản')
+                        ->action(function (Recipe $record) {
+                            $record->update([
+                                'status' => 'published',
+                                'published_at' => now(),
+                            ]);
+                        })
+                        ->visible(fn (Recipe $record): bool => $record->status === 'approved'),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('Xóa')
+                        ->icon('heroicon-o-trash'),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
