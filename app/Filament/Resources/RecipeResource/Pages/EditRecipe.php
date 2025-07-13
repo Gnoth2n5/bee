@@ -19,9 +19,6 @@ class EditRecipe extends EditRecord
         $data['category_ids'] = $this->record->categories->pluck('id')->toArray();
         $data['tag_ids'] = $this->record->tags->pluck('id')->toArray();
 
-        Log::info('DEBUG category_ids:', [$data['category_ids']]);
-        Log::info('DEBUG tag_ids:', [$data['tag_ids']]);
-
         return $data;
     }
 
