@@ -9,6 +9,14 @@ use App\Models\Recipe;
 class RatingPolicy
 {
     /**
+     * Determine whether the user can view any ratings.
+     */
+    public function viewAny(User $user): bool
+    {
+        return true; // Tất cả user đều có thể xem đánh giá
+    }
+
+    /**
      * Determine whether the user can create ratings.
      */
     public function create(User $user): bool
@@ -30,13 +38,5 @@ class RatingPolicy
     public function delete(User $user, Rating $rating): bool
     {
         return $user->id === $rating->user_id;
-    }
-
-    /**
-     * Determine whether the user can view ratings for a recipe.
-     */
-    public function viewAny(User $user, Recipe $recipe): bool
-    {
-        return true; // Tất cả user đều có thể xem đánh giá
     }
 } 

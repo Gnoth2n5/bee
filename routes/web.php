@@ -57,8 +57,6 @@ Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.
     Route::post('/recipes/{recipe}/approve', [RecipeController::class, 'approve'])->name('recipes.approve');
     Route::post('/recipes/{recipe}/reject', [RecipeController::class, 'reject'])->name('recipes.reject');
     
-    Route::resource('categories', CategoryController::class);
-    Route::resource('tags', TagController::class);
 });
 
 require __DIR__.'/auth.php';
