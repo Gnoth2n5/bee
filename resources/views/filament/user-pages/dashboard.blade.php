@@ -27,7 +27,7 @@
                     <div class="font-bold text-lg">{{ $latestRecipe->title }}</div>
                     <div class="text-gray-500 text-sm mb-1">Tạo lúc: {{ $latestRecipe->created_at->format('d/m/Y H:i') }}</div>
                     <div class="line-clamp-2 text-gray-700">{{ $latestRecipe->summary }}</div>
-                    <a href="{{ route('filament.user.resources.user-recipe-resource.edit', $latestRecipe->id) }}" class="inline-block mt-2 text-primary-600 hover:underline text-sm">Chỉnh sửa</a>
+                    <a href="{{ route('filament.user.resources.user-recipes.edit', $latestRecipe->id) }}" class="inline-block mt-2 text-primary-600 hover:underline text-sm">Chỉnh sửa</a>
                 </div>
             @else
                 <div class="text-gray-400">Bạn chưa có công thức nào.</div>
