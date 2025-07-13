@@ -144,8 +144,7 @@ class RecipeResource extends Resource
                             ->minItems(1)
                             ->maxItems(20)
                             ->reorderable(true)
-                            ->columnSpanFull()
-                            ->itemLabel(fn (array $state): ?string => 'Bước: ' . Str::limit($state['instruction'] ?? '', 50)),
+                            ->columnSpanFull(),
                     ]),
                 
                 Forms\Components\Section::make('Mẹo và ghi chú')

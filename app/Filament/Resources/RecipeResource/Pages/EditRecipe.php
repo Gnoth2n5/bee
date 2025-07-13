@@ -7,6 +7,7 @@ use App\Services\RecipeService;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class EditRecipe extends EditRecord
 {
@@ -14,14 +15,12 @@ class EditRecipe extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        // Chuyển đổi dữ liệu từ relationship sang array IDs cho form
-        if (isset($data['categories'])) {
-            $data['category_ids'] = $data['categories']->pluck('id')->toArray();
-        }
+        // Lấy trực tiếp từ quan hệ đã load
+        $data['category_ids'] = $this->record->categories->pluck('id')->toArray();
+        $data['tag_ids'] = $this->record->tags->pluck('id')->toArray();
 
-        if (isset($data['tags'])) {
-            $data['tag_ids'] = $data['tags']->pluck('id')->toArray();
-        }
+        Log::info('DEBUG category_ids:', [$data['category_ids']]);
+        Log::info('DEBUG tag_ids:', [$data['tag_ids']]);
 
         return $data;
     }
@@ -63,6 +62,11 @@ class EditRecipe extends EditRecord
         $recipeService = app(RecipeService::class);
         
         return $recipeService->update($record, $data);
+    }
+
+    public function getRecord(): \Illuminate\Database\Eloquent\Model
+    {
+        return parent::getRecord()->load(['categories', 'tags']);
     }
 
     protected function getHeaderActions(): array
