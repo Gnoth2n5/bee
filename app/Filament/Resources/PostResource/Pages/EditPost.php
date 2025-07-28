@@ -14,7 +14,12 @@ class EditPost extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
-                ->label('Xóa bài viết'),
+                ->label('Xóa bài viết')
+                ->requiresConfirmation()
+                ->modalHeading('Xóa bài viết')
+                ->modalDescription('Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.')
+                ->modalSubmitActionLabel('Xóa')
+                ->modalCancelActionLabel('Hủy'),
         ];
     }
 

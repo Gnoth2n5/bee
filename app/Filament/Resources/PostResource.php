@@ -183,6 +183,13 @@ class PostResource extends Resource
                         ->color('warning')
                         ->visible(fn(Post $record) => $record->status !== 'archived')
                         ->action(fn(Post $record) => $record->update(['status' => 'archived'])),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('Xóa bài viết')
+                        ->requiresConfirmation()
+                        ->modalHeading('Xóa bài viết')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.')
+                        ->modalSubmitActionLabel('Xóa')
+                        ->modalCancelActionLabel('Hủy'),
                 ]),
             ])
             ->bulkActions([
@@ -226,7 +233,13 @@ class PostResource extends Resource
                             }
                             return $count . ' bài viết đã được lưu trữ.';
                         }),
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Xóa đã chọn')
+                        ->requiresConfirmation()
+                        ->modalHeading('Xóa bài viết đã chọn')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa tất cả bài viết đã chọn? Hành động này không thể hoàn tác.')
+                        ->modalSubmitActionLabel('Xóa')
+                        ->modalCancelActionLabel('Hủy'),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
