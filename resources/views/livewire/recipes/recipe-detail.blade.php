@@ -64,8 +64,8 @@
                 class="absolute bottom-4 left-6 bg-white/80 px-6 py-3 rounded-xl flex flex-col md:flex-row md:items-center gap-2 shadow">
                 <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mr-4">{{ $recipe->title }}</h1>
                 <div class="flex items-center gap-2 text-sm text-gray-600">
-                    @if ($profile && $profile->avatar)
-                        <img src="{{ Storage::url($profile->avatar) }}" alt="{{ $user->name }}"
+                    @if ($user->hasAvatar())
+                        <img src="{{ $user->getAvatarUrl() }}" alt="{{ $user->name }}"
                             class="w-7 h-7 rounded-full object-cover" />
                     @else
                         <span

@@ -60,6 +60,7 @@ class GoogleController extends Controller
                         'google_id' => $googleUser->getId(),
                         'google_token' => $googleUser->token,
                         'google_refresh_token' => $googleUser->refreshToken,
+                        'avatar' => $googleUser->getAvatar(), // Cập nhật avatar từ Google
                     ]);
                 } else {
                     // Tạo user mới

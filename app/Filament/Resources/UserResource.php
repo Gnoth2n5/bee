@@ -76,7 +76,8 @@ class UserResource extends Resource
                             ->imageEditor()
                             ->circleCropper()
                             ->disk('public')
-                            ->visibility('public'),
+                            ->visibility('public')
+                            ->helperText('Nếu user đăng nhập bằng Google, avatar sẽ được lấy từ Google. Upload file mới sẽ ghi đè avatar Google.'),
                         Forms\Components\Textarea::make('bio')
                             ->label('Tiểu sử')
                             ->maxLength(500)
@@ -103,7 +104,10 @@ class UserResource extends Resource
                 Tables\Columns\ImageColumn::make('avatar')
                     ->label('Avatar')
                     ->circular()
-                    ->size(40),
+                    ->size(40)
+                    ->getStateUsing(function ($record) {
+                        return $record->getAvatarUrl();
+                    }),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên')
                     ->searchable()

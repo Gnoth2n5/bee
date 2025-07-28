@@ -64,8 +64,8 @@
 
         <div class="flex items-center justify-between mb-3">
             <div class="flex items-center space-x-2">
-                @if($recipe->user->profile && $recipe->user->profile->avatar)
-                    <img src="{{ Storage::url($recipe->user->profile->avatar) }}" 
+                @if($recipe->user->hasAvatar())
+                    <img src="{{ $recipe->user->getAvatarUrl() }}" 
                          alt="{{ $recipe->user->name }}" 
                          class="w-6 h-6 rounded-full object-cover" />
                 @else

@@ -125,8 +125,8 @@ new class extends Component
                                 data-dropdown-toggle="user-dropdown" 
                                 data-dropdown-placement="bottom">
                             <span class="sr-only">Open user menu</span>
-                            @if(auth()->user()->avatar)
-                                <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
+                            @if(auth()->user()->hasAvatar())
+                                <img src="{{ auth()->user()->getAvatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-8 h-8 rounded-full object-cover">
                             @else
                                 <div class="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
                                     <span class="text-sm font-medium text-white">

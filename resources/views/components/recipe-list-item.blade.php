@@ -91,8 +91,8 @@
 
                     <!-- Author -->
                     <div class="flex items-center space-x-1">
-                        @if($recipe->user->profile && $recipe->user->profile->avatar)
-                            <img src="{{ Storage::url($recipe->user->profile->avatar) }}" 
+                        @if($recipe->user->hasAvatar())
+                            <img src="{{ $recipe->user->getAvatarUrl() }}" 
                                  alt="{{ $recipe->user->name }}" 
                                  class="w-5 h-5 rounded-full object-cover" />
                         @else
