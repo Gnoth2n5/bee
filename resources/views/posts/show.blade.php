@@ -109,7 +109,7 @@
 
                     <!-- Footer bài viết -->
                     <div class="mt-8 pt-8 border-t border-gray-200">
-                        <livewire:posts.post-actions :post="$post" />
+                        <!-- Có thể thêm các action khác ở đây nếu cần -->
                     </div>
                 </article>
             </div>

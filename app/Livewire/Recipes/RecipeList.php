@@ -168,13 +168,18 @@ class RecipeList extends Component
         if ($favorite) {
             $favorite->delete();
             $this->dispatch('favorite-removed', recipeId: $recipeId);
+            $this->dispatch('flash-message', message: 'Đã xóa khỏi danh sách yêu thích!', type: 'success');
         } else {
             \App\Models\Favorite::create([
                 'user_id' => $user->id,
                 'recipe_id' => $recipeId,
             ]);
             $this->dispatch('favorite-added', recipeId: $recipeId);
+            $this->dispatch('flash-message', message: 'Đã thêm vào danh sách yêu thích!', type: 'success');
         }
+        
+        // Refresh component để cập nhật UI
+        $this->dispatch('$refresh');
     }
 
     public function render()

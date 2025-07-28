@@ -75,4 +75,6 @@ Route::post('/admin/logout', [AdminLogoutController::class, 'logout'])->name('fi
 // Filament user logout route
 Route::post('/user/logout', [AdminLogoutController::class, 'logout'])->name('filament.user.auth.logout');
 
+
+
 require __DIR__ . '/auth.php';
