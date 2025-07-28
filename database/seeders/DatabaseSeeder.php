@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             TagSeeder::class,
             RolePermissionSeeder::class,
             RecipeSeeder::class,
+            PostSeeder::class,
         ]);
 
         // Tạo thêm user test nếu cần

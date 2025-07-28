@@ -16,6 +16,9 @@
         subtitle="Khám phá những món ăn ngon nhất từ cộng đồng BeeFood"
     />
 
+    <!-- Post Section -->
+    <livewire:posts.post-section />
+
     <!-- Call to Action Section -->
     <section class="py-16 bg-orange-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
