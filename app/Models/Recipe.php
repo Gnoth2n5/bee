@@ -269,7 +269,6 @@ class Recipe extends Model
         if (!$user) {
             return false;
         }
-        
         return $this->favorites()->where('user_id', $user->id)->exists();
     }
 

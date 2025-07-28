@@ -53,6 +53,30 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the favorites for this post.
+     */
+    public function favorites()
+    {
+        return $this->morphMany(Favorite::class, 'favorable');
+    }
+
+    /**
+     * Check if the post is favorited by a user.
+     */
+    public function isFavoritedBy(User $user): bool
+    {
+        return $this->favorites()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Get the favorite count for this post.
+     */
+    public function getFavoriteCountAttribute(): int
+    {
+        return $this->favorites()->count();
+    }
+
     public function scopePublished($query)
     {
         return $query->where('status', 'published')

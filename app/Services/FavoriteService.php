@@ -8,18 +8,14 @@ use App\Models\User;
 
 class FavoriteService
 {
-    /**
-     * Toggle favorite status for a recipe.
-     */
     public function toggle(Recipe $recipe, User $user): array
     {
         $favorite = Favorite::where('user_id', $user->id)
-                           ->where('recipe_id', $recipe->id)
-                           ->first();
+            ->where('recipe_id', $recipe->id)
+            ->first();
 
         if ($favorite) {
             $favorite->delete();
-            $recipe->updateFavoriteCount();
             $isFavorited = false;
             $message = 'Đã xóa khỏi danh sách yêu thích.';
         } else {
@@ -27,7 +23,6 @@ class FavoriteService
                 'user_id' => $user->id,
                 'recipe_id' => $recipe->id,
             ]);
-            $recipe->updateFavoriteCount();
             $isFavorited = true;
             $message = 'Đã thêm vào danh sách yêu thích.';
         }
@@ -35,62 +30,29 @@ class FavoriteService
         return [
             'is_favorited' => $isFavorited,
             'message' => $message,
-            'favorite_count' => $recipe->fresh()->favorite_count
+            'favorite_count' => $recipe->fresh()->favorites()->count(),
         ];
     }
 
-    /**
-     * Get user's favorite recipes.
-     */
-    public function getUserFavorites(User $user, int $perPage = 12)
+    public function getUserFavorites(User $user)
     {
         return Favorite::where('user_id', $user->id)
-                      ->with(['recipe.user.profile', 'recipe.categories', 'recipe.tags', 'recipe.images'])
-                      ->orderBy('created_at', 'desc')
-                      ->paginate($perPage);
+            ->with('recipe')
+            ->latest()
+            ->paginate(12);
     }
 
-    /**
-     * Check if user has favorited a recipe.
-     */
     public function isFavorited(Recipe $recipe, User $user): bool
     {
         return Favorite::where('user_id', $user->id)
-                      ->where('recipe_id', $recipe->id)
-                      ->exists();
+            ->where('recipe_id', $recipe->id)
+            ->exists();
     }
 
-    /**
-     * Get favorite count for a recipe.
-     */
-    public function getFavoriteCount(Recipe $recipe): int
+    public function removeFavorite(Recipe $recipe, User $user): void
     {
-        return $recipe->favorites()->count();
+        Favorite::where('user_id', $user->id)
+            ->where('recipe_id', $recipe->id)
+            ->delete();
     }
-
-    /**
-     * Get user's favorite count.
-     */
-    public function getUserFavoriteCount(User $user): int
-    {
-        return Favorite::where('user_id', $user->id)->count();
-    }
-
-    /**
-     * Remove favorite.
-     */
-    public function removeFavorite(Recipe $recipe, User $user): bool
-    {
-        $favorite = Favorite::where('user_id', $user->id)
-                           ->where('recipe_id', $recipe->id)
-                           ->first();
-
-        if ($favorite) {
-            $favorite->delete();
-            $recipe->updateFavoriteCount();
-            return true;
-        }
-
-        return false;
-    }
-} 
+}

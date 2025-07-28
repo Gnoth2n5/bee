@@ -102,6 +102,48 @@
                     </div>
                 `;
                 
+                document.body.appendChild(flashElement);
+                
+                // Tự động xóa sau 3 giây
+                setTimeout(() => {
+                    if (flashElement.parentElement) {
+                        flashElement.remove();
+                    }
+                }, 3000);
+            });
+
+            // Handle show message (for post actions)
+            Livewire.on('show-message', (data) => {
+                const message = data.message;
+                const type = data.type || 'success';
+                
+                // Tạo flash message element
+                const flashElement = document.createElement('div');
+                flashElement.className = 'fixed bottom-4 right-4 z-50';
+                flashElement.innerHTML = `
+                    <div class="bg-${type === 'success' ? 'green' : type === 'warning' ? 'yellow' : 'red'}-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>${message}</span>
+                        <button onclick="this.parentElement.parentElement.remove()" class="ml-2 hover:text-${type === 'success' ? 'green' : type === 'warning' ? 'yellow' : 'red'}-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                
+                document.body.appendChild(flashElement);
+                
+                // Tự động xóa sau 3 giây
+                setTimeout(() => {
+                    if (flashElement.parentElement) {
+                        flashElement.remove();
+                    }
+                }, 3000);
+            });
+                
                 // Thêm vào body
                 document.body.appendChild(flashElement);
                 

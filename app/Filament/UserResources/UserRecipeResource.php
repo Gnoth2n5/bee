@@ -100,7 +100,7 @@ class UserRecipeResource extends Resource
                             ->maxItems(50)
                             ->reorderable(false)
                             ->columnSpanFull()
-                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
+                            ->itemLabel(fn(array $state): ?string => $state['name'] ?? null),
                     ]),
 
                 Forms\Components\Section::make('Hướng dẫn nấu ăn')
@@ -221,4 +221,4 @@ class UserRecipeResource extends Resource
             'edit' => UserRecipeResource\Pages\EditUserRecipe::route('/{record}/edit'),
         ];
     }
-} 
+}

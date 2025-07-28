@@ -133,10 +133,10 @@ class RecipeList extends Component
     public function clearFilters()
     {
         $this->reset([
-            'category', 
-            'difficulty', 
-            'cookingTime', 
-            'search', 
+            'category',
+            'difficulty',
+            'cookingTime',
+            'search',
             'sort',
             'selectedTags',
             'minRating',
@@ -162,8 +162,8 @@ class RecipeList extends Component
         }
 
         $favorite = \App\Models\Favorite::where('user_id', $user->id)
-                                       ->where('recipe_id', $recipeId)
-                                       ->first();
+            ->where('recipe_id', $recipeId)
+            ->first();
 
         if ($favorite) {
             $favorite->delete();
@@ -194,7 +194,7 @@ class RecipeList extends Component
 
         $recipeService = app(RecipeService::class);
         $recipes = $recipeService->getFilteredRecipes($filters, $this->perPage);
-        
+
         $categories = Category::where('parent_id', null)->with('children')->get();
         $tags = Tag::orderBy('usage_count', 'desc')->limit(30)->get();
 
@@ -204,4 +204,4 @@ class RecipeList extends Component
             'tags' => $tags,
         ]);
     }
-} 
+}
