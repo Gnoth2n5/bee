@@ -23,6 +23,11 @@ class PostService
 
     public function createPost($data)
     {
+        // Chỉ admin/manager mới có thể tạo bài viết
+        if (!Auth::user()->hasRole(['admin', 'manager'])) {
+            throw new \Exception('Bạn không có quyền tạo bài viết.');
+        }
+
         $data['user_id'] = Auth::id();
 
         if ($data['status'] === 'published' && !isset($data['published_at'])) {
@@ -34,6 +39,11 @@ class PostService
 
     public function updatePost($post, $data)
     {
+        // Chỉ admin/manager mới có thể cập nhật bài viết
+        if (!Auth::user()->hasRole(['admin', 'manager'])) {
+            throw new \Exception('Bạn không có quyền cập nhật bài viết.');
+        }
+
         if ($data['status'] === 'published' && $post->status !== 'published') {
             $data['published_at'] = now();
         }
@@ -44,6 +54,11 @@ class PostService
 
     public function deletePost($post)
     {
+        // Chỉ admin/manager mới có thể xóa bài viết
+        if (!Auth::user()->hasRole(['admin', 'manager'])) {
+            throw new \Exception('Bạn không có quyền xóa bài viết.');
+        }
+
         return $post->delete();
     }
 

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Models\Rating;
 use App\Models\Post;
 use App\Policies\RatingPolicy;
+use App\Policies\PostPolicy;
 use App\Observers\PostObserver;
 
 class AppServiceProvider extends ServiceProvider
@@ -30,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         
         // Register policies
         Gate::policy(Rating::class, RatingPolicy::class);
+        Gate::policy(Post::class, PostPolicy::class);
         
         // Register observers
         Post::observe(PostObserver::class);

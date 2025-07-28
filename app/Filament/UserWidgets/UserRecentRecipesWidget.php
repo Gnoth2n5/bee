@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Auth;
 
 class UserRecentRecipesWidget extends BaseWidget
 {
-    protected static ?int $sort = 5;
+    protected static ?string $heading = 'Công thức gần đây';
+    protected static ?int $sort = 1;
     protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
@@ -23,10 +24,6 @@ class UserRecentRecipesWidget extends BaseWidget
                     ->limit(5)
             )
             ->columns([
-                Tables\Columns\ImageColumn::make('featured_image')
-                    ->label('Ảnh')
-                    ->circular()
-                    ->size(40),
                 Tables\Columns\TextColumn::make('title')
                     ->label('Tiêu đề')
                     ->limit(50)
@@ -42,14 +39,6 @@ class UserRecentRecipesWidget extends BaseWidget
                         'published' => 'info',
                         default => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('view_count')
-                    ->label('Lượt xem')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('average_rating')
-                    ->label('Điểm TB')
-                    ->numeric(1)
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tạo lúc')
                     ->dateTime('d/m/Y H:i')
