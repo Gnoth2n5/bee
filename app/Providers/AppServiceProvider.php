@@ -6,7 +6,9 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Rating;
+use App\Models\Post;
 use App\Policies\RatingPolicy;
+use App\Observers\PostObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,12 +23,15 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+        public function boot(): void
     {
         // Set application locale
         App::setLocale('vi');
         
         // Register policies
         Gate::policy(Rating::class, RatingPolicy::class);
+        
+        // Register observers
+        Post::observe(PostObserver::class);
     }
 }

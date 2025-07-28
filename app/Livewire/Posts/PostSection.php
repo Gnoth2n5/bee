@@ -5,6 +5,9 @@ namespace App\Livewire\Posts;
 use App\Models\Post;
 use App\Services\PostService;
 use Livewire\Component;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Polling;
+use Illuminate\Support\Facades\Cache;
 
 class PostSection extends Component
 {
@@ -22,6 +25,34 @@ class PostSection extends Component
         $postService = new PostService();
         $this->popularPosts = $postService->getPopularPosts(5);
         $this->latestPosts = $postService->getLatestPosts(10);
+    }
+
+    #[On('post-created')]
+    #[On('post-updated')]
+    #[On('post-deleted')]
+    public function refreshPosts()
+    {
+        $this->loadPosts();
+    }
+
+    // Polling để tự động refresh dữ liệu mỗi 30 giây
+    #[Polling('30s')]
+    public function pollForUpdates()
+    {
+        // Kiểm tra xem có event nào được trigger không
+        $events = ['post-created', 'post-updated', 'post-deleted'];
+        $shouldRefresh = false;
+        
+        foreach ($events as $event) {
+            if (Cache::has("post_event_{$event}")) {
+                Cache::forget("post_event_{$event}");
+                $shouldRefresh = true;
+            }
+        }
+        
+        if ($shouldRefresh) {
+            $this->loadPosts();
+        }
     }
 
     public function nextSlide()

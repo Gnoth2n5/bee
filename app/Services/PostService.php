@@ -9,12 +9,16 @@ class PostService
 {
     public function getPopularPosts($limit = 5)
     {
-        return Post::popular()->limit($limit)->get();
+        return cache()->remember("posts.popular.{$limit}", 300, function () use ($limit) {
+            return Post::popular()->limit($limit)->get();
+        });
     }
 
     public function getLatestPosts($limit = 10)
     {
-        return Post::latest()->limit($limit)->get();
+        return cache()->remember("posts.latest.{$limit}", 300, function () use ($limit) {
+            return Post::latest()->limit($limit)->get();
+        });
     }
 
     public function createPost($data)

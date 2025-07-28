@@ -2,15 +2,30 @@
 
 @section('title', 'Bài viết - BeeFood')
 
+@section('meta')
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+@endsection
+
 @section('content')
 <div class="bg-gray-50 min-h-screen">
     <!-- Header -->
     <div class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center">
-                <h1 class="text-4xl font-bold text-gray-900 mb-4">
-                    Bài viết
-                </h1>
+                <div class="flex items-center justify-center mb-4">
+                    <h1 class="text-4xl font-bold text-gray-900">
+                        Bài viết
+                    </h1>
+                    <button onclick="window.location.reload()" 
+                            class="ml-4 p-2 text-gray-500 hover:text-orange-600 transition-colors duration-200"
+                            title="Làm mới trang">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                </div>
                 <p class="text-lg text-gray-600 max-w-2xl mx-auto">
                     Khám phá những bài viết hay nhất về ẩm thực, công thức nấu ăn và mẹo vặt trong bếp
                 </p>

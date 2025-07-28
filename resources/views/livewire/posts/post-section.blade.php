@@ -3,9 +3,18 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Tiêu đề section -->
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-gray-900 mb-4">
-                    Bài viết nổi bật
-                </h2>
+                <div class="flex items-center justify-center mb-4">
+                    <h2 class="text-3xl font-bold text-gray-900">
+                        Bài viết nổi bật
+                    </h2>
+                    <button wire:click="loadPosts" 
+                            class="ml-4 p-2 text-gray-500 hover:text-orange-600 transition-colors duration-200"
+                            title="Làm mới dữ liệu">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                </div>
                 <p class="text-lg text-gray-600 max-w-2xl mx-auto">
                     Khám phá những bài viết hay nhất về ẩm thực, công thức nấu ăn và mẹo vặt trong bếp
                 </p>

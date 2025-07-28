@@ -41,7 +41,21 @@ class PostResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn(string $state, callable $set) => $set('slug', Str::slug($state))),
+                            ->afterStateUpdated(function (string $state, callable $set) {
+                                if (!empty($state)) {
+                                    $slug = Str::slug($state);
+                                    // Kiểm tra xem slug đã tồn tại chưa
+                                    $existingPost = \App\Models\Post::where('slug', $slug)->first();
+                                    if ($existingPost) {
+                                        $counter = 1;
+                                        while (\App\Models\Post::where('slug', $slug . '-' . $counter)->exists()) {
+                                            $counter++;
+                                        }
+                                        $slug = $slug . '-' . $counter;
+                                    }
+                                    $set('slug', $slug);
+                                }
+                            }),
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug')
                             ->required()
@@ -63,7 +77,9 @@ class PostResource extends Resource
                             ->label('Ảnh đại diện')
                             ->image()
                             ->imageEditor()
+                            ->disk('public')
                             ->directory('posts')
+                            ->visibility('public')
                             ->columnSpanFull(),
                     ]),
 
@@ -80,7 +96,9 @@ class PostResource extends Resource
                             ->required(),
                         Forms\Components\DateTimePicker::make('published_at')
                             ->label('Thời gian xuất bản')
-                            ->nullable(),
+                            ->nullable()
+                            ->maxDate(now())
+                            ->helperText('Không thể set thời gian xuất bản trong tương lai'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('SEO')
@@ -149,6 +167,8 @@ class PostResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\TrashedFilter::make()
+                    ->label('Trạng thái xóa'),
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Trạng thái')
                     ->options([
@@ -182,14 +202,27 @@ class PostResource extends Resource
                         ->icon('heroicon-o-archive-box')
                         ->color('warning')
                         ->visible(fn(Post $record) => $record->status !== 'archived')
-                        ->action(fn(Post $record) => $record->update(['status' => 'archived'])),
+                        ->action(function (Post $record) {
+                            $record->update(['status' => 'archived']);
+                        }),
                     Tables\Actions\DeleteAction::make()
                         ->label('Xóa bài viết')
                         ->requiresConfirmation()
                         ->modalHeading('Xóa bài viết')
-                        ->modalDescription('Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa bài viết này? Bài viết sẽ được chuyển vào thùng rác.')
                         ->modalSubmitActionLabel('Xóa')
                         ->modalCancelActionLabel('Hủy'),
+                    Tables\Actions\RestoreAction::make()
+                        ->label('Khôi phục')
+                        ->color('success'),
+                    Tables\Actions\ForceDeleteAction::make()
+                        ->label('Xóa vĩnh viễn')
+                        ->requiresConfirmation()
+                        ->modalHeading('Xóa vĩnh viễn')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa vĩnh viễn bài viết này? Hành động này không thể hoàn tác.')
+                        ->modalSubmitActionLabel('Xóa vĩnh viễn')
+                        ->modalCancelActionLabel('Hủy')
+                        ->color('danger'),
                 ]),
             ])
             ->bulkActions([
