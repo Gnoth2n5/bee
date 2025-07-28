@@ -28,7 +28,10 @@ class User extends Authenticatable
         'status',
         'email_verified_at',
         'last_login_at',
-        'login_count'
+        'login_count',
+        'google_id',
+        'google_token',
+        'google_refresh_token'
     ];
 
     /**

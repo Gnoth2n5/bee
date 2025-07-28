@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use App\Livewire\Auth\Login;
@@ -12,11 +13,18 @@ Route::middleware('guest')->group(function () {
     Route::get('login', Login::class)->name('login');
     Route::get('forgot-password', ForgotPassword::class)->name('password.request');
 
+    // Google OAuth routes
+    Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.redirect');
+    Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback'])->name('google.callback');
+
     Volt::route('reset-password/{token}', 'pages.auth.reset-password')
         ->name('password.reset');
 });
 
 Route::middleware('auth')->group(function () {
+    // Google logout route
+    Route::post('auth/google/logout', [GoogleController::class, 'logout'])->name('google.logout');
+
     Volt::route('verify-email', 'pages.auth.verify-email')
         ->name('verification.notice');
 
