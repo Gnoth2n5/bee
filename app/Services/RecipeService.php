@@ -17,7 +17,7 @@ class RecipeService
     {
         // Xử lý dữ liệu trước khi tạo
         $recipeData = $this->prepareRecipeData($data);
-        
+
         $recipe = new Recipe($recipeData);
         $recipe->user_id = $user->id;
         $recipe->slug = Str::slug($data['title']);
@@ -28,7 +28,7 @@ class RecipeService
         if (!empty($data['category_ids'])) {
             $recipe->categories()->attach($data['category_ids']);
         }
-        
+
         if (!empty($data['tag_ids'])) {
             $recipe->tags()->attach($data['tag_ids']);
         }
@@ -48,7 +48,7 @@ class RecipeService
     {
         // Xử lý dữ liệu trước khi cập nhật
         $recipeData = $this->prepareRecipeData($data);
-        
+
         $recipe->update($recipeData);
         $recipe->slug = Str::slug($data['title']);
         $recipe->status = $data['status'] ?? 'pending';
@@ -58,7 +58,7 @@ class RecipeService
         if (isset($data['category_ids'])) {
             $recipe->categories()->sync($data['category_ids']);
         }
-        
+
         if (isset($data['tag_ids'])) {
             $recipe->tags()->sync($data['tag_ids']);
         }
@@ -132,9 +132,9 @@ class RecipeService
      */
     public function getFilteredRecipes(array $filters = [], int $perPage = 12)
     {
-        $query = Recipe::with(['user', 'categories', 'tags', 'images'])
-                      ->where('status', 'approved')
-                      ->whereNotNull('published_at');
+        $query = Recipe::with(['user', 'categories', 'tags', 'images', 'favorites'])
+            ->where('status', 'approved')
+            ->whereNotNull('published_at');
 
         // Apply filters
         $this->applyFilters($query, $filters);
@@ -225,8 +225,8 @@ class RecipeService
     {
         $query->where(function ($q) use ($search) {
             $q->where('title', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%")
-              ->orWhere('summary', 'like', "%{$search}%");
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhere('summary', 'like', "%{$search}%");
         });
     }
 
@@ -262,12 +262,12 @@ class RecipeService
     public function getRelatedRecipes(Recipe $recipe, int $limit = 6)
     {
         return Recipe::where('status', 'approved')
-                    ->where('id', '!=', $recipe->id)
-                    ->whereHas('categories', function ($q) use ($recipe) {
-                        $q->whereIn('categories.id', $recipe->categories->pluck('id'));
-                    })
-                    ->limit($limit)
-                    ->get();
+            ->where('id', '!=', $recipe->id)
+            ->whereHas('categories', function ($q) use ($recipe) {
+                $q->whereIn('categories.id', $recipe->categories->pluck('id'));
+            })
+            ->limit($limit)
+            ->get();
     }
 
     /**
@@ -297,7 +297,7 @@ class RecipeService
             $recipeData['instructions'] = array_values(array_filter($data['instructions'], function ($item) {
                 return !empty($item['instruction']);
             }));
-            
+
             // Đánh số lại các bước
             foreach ($recipeData['instructions'] as $index => &$instruction) {
                 $instruction['step'] = $index + 1;
@@ -314,4 +314,4 @@ class RecipeService
 
         return $recipeData;
     }
-} 
+}

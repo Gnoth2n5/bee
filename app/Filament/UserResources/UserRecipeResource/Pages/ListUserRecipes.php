@@ -3,8 +3,8 @@
 namespace App\Filament\UserResources\UserRecipeResource\Pages;
 
 use App\Filament\UserResources\UserRecipeResource;
-use Filament\Resources\Pages\ListRecords;
 use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
 
 class ListUserRecipes extends ListRecords
 {
@@ -16,4 +16,4 @@ class ListUserRecipes extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
-} 
+}

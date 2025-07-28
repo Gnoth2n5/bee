@@ -27,7 +27,7 @@ class FavoritesPage extends Component
     {
         $user = \Illuminate\Support\Facades\Auth::user();
         $recipe = \App\Models\Recipe::where('slug', $recipeSlug)->first();
-        
+
         if ($recipe) {
             app(FavoriteService::class)->removeFavorite($recipe, $user);
             session()->flash('success', 'Đã xóa công thức khỏi danh sách yêu thích!');
@@ -38,7 +38,7 @@ class FavoritesPage extends Component
     public function getFavoritesProperty()
     {
         return Favorite::where('user_id', \Illuminate\Support\Facades\Auth::id())
-            ->with(['recipe.categories', 'recipe.images', 'recipe.user.profile'])
+            ->with(['recipe.categories', 'recipe.images', 'recipe.user.profile', 'recipe.favorites'])
             ->latest()
             ->paginate(12);
     }
@@ -47,4 +47,4 @@ class FavoritesPage extends Component
     {
         return view('livewire.favorites.favorites-page');
     }
-} 
+}

@@ -28,7 +28,10 @@ class User extends Authenticatable
         'status',
         'email_verified_at',
         'last_login_at',
-        'login_count'
+        'login_count',
+        'google_id',
+        'google_token',
+        'google_refresh_token'
     ];
 
     /**
@@ -94,5 +97,13 @@ class User extends Authenticatable
     public function collections()
     {
         return $this->hasMany(Collection::class);
+    }
+
+    /**
+     * Get the posts for the user.
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
     }
 }

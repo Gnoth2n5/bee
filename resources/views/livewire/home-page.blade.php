@@ -16,6 +16,9 @@
         subtitle="Khám phá những món ăn ngon nhất từ cộng đồng BeeFood"
     />
 
+    <!-- Post Section -->
+    <livewire:posts.post-section />
+
     <!-- Call to Action Section -->
     <section class="py-16 bg-orange-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -25,7 +28,7 @@
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 @auth
-                    <a href="{{ route('recipes.create') }}" 
+                    <a href="{{ route('filament.user.resources.user-recipes.create') }}" 
                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 transition-colors">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

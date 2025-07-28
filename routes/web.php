@@ -7,10 +7,18 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\RatingController;
 
 use App\Http\Controllers\CollectionController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\AdminLogoutController;
 use App\Livewire\HomePage;
 use App\Livewire\Recipes\RecipeDetail;
 
 Route::get('/', HomePage::class)->name('home');
+
+// Post routes
+Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+Route::get('/posts/{slug}', [PostController::class, 'show'])->name('posts.show');
+
+
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -56,7 +64,17 @@ Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.
     Route::get('/recipes/pending', [RecipeController::class, 'pending'])->name('recipes.pending');
     Route::post('/recipes/{recipe}/approve', [RecipeController::class, 'approve'])->name('recipes.approve');
     Route::post('/recipes/{recipe}/reject', [RecipeController::class, 'reject'])->name('recipes.reject');
-    
 });
 
-require __DIR__.'/auth.php';
+// Admin logout route
+Route::post('/admin/logout', [AdminLogoutController::class, 'logout'])->name('admin.logout');
+
+// Filament admin logout route
+Route::post('/admin/logout', [AdminLogoutController::class, 'logout'])->name('filament.admin.auth.logout');
+
+// Filament user logout route
+Route::post('/user/logout', [AdminLogoutController::class, 'logout'])->name('filament.user.auth.logout');
+
+
+
+require __DIR__ . '/auth.php';

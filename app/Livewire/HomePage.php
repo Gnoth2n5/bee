@@ -65,17 +65,20 @@ class HomePage extends Component
         $recipe = Recipe::findOrFail($recipeId);
         $favoriteService = app(FavoriteService::class);
         $result = $favoriteService->toggle($recipe, Auth::user());
-        
+
         session()->flash('success', $result['message']);
         $this->dispatch('favorite-toggled', recipeId: $recipeId);
         $this->dispatch('flash-message', message: $result['message'], type: 'success');
+
+        // Refresh component để cập nhật UI
+        $this->dispatch('$refresh');
     }
 
     public function confirmToggleFavorite($recipeId)
     {
         $recipe = Recipe::findOrFail($recipeId);
         $isFavorited = $recipe->isFavoritedBy(Auth::user());
-        
+
         if ($isFavorited) {
             $this->dispatch('confirm-remove-favorite', recipeSlug: $recipe->slug, componentId: $this->getId(), action: 'toggle');
         } else {
@@ -108,16 +111,16 @@ class HomePage extends Component
     public function getCategoriesProperty()
     {
         return Category::where('parent_id', null)
-                      ->with(['children', 'recipes'])
-                      ->withCount('recipes')
-                      ->limit(6)
-                      ->get();
+            ->with(['children', 'recipes'])
+            ->withCount('recipes')
+            ->limit(6)
+            ->get();
     }
 
     public function getRecipesProperty()
     {
         $recipeService = app(RecipeService::class);
-        
+
         $filters = [
             'search' => $this->search,
             'sort' => $this->sort,
@@ -136,4 +139,4 @@ class HomePage extends Component
             'stats' => $this->stats,
         ]);
     }
-} 
+}
