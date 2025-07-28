@@ -94,4 +94,4 @@ class UserPanelProvider extends PanelProvider
                     ->sort(0),
             ]);
     }
-} 
+}

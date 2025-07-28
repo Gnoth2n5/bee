@@ -199,6 +199,23 @@ new class extends Component
                             </div>
                         </a>
                         
+                        @if(auth()->user()->hasRole(['admin', 'manager']))
+                            <hr class="my-1 border-gray-200 dark:border-gray-600">
+                            
+                            <a href="{{ route('filament.admin.pages.dashboard') }}" 
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white" 
+                               role="menuitem" 
+                               tabindex="-1" 
+                               id="user-menu-item-admin">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                    </svg>
+                                    <span>Quản trị hệ thống</span>
+                                </div>
+                            </a>
+                        @endif
+                        
                         <hr class="my-1 border-gray-200 dark:border-gray-600">
                         
                         <button wire:click="logout"
@@ -300,6 +317,18 @@ new class extends Component
                         <span>Quản lý công thức</span>
                     </div>
                 </a>
+                
+                @if(auth()->user()->hasRole(['admin', 'manager']))
+                    <a href="{{ route('filament.admin.pages.dashboard') }}" 
+                       class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 {{ request()->routeIs('filament.admin.*') ? 'text-orange-600' : '' }}">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            <span>Quản trị hệ thống</span>
+                        </div>
+                    </a>
+                @endif
                 
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open" 
