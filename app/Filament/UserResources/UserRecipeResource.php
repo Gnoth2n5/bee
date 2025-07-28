@@ -13,6 +13,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 
 class UserRecipeResource extends Resource
 {
@@ -166,6 +167,28 @@ class UserRecipeResource extends Resource
                             ->preload()
                             ->searchable(),
                     ])->columns(2),
+
+                Forms\Components\Section::make('Trạng thái công thức')
+                    ->schema([
+                        Forms\Components\Placeholder::make('status_info')
+                            ->label('Thông tin trạng thái')
+                            ->content(function (?Recipe $record) {
+                                if (!$record) {
+                                    return 'Công thức mới sẽ được gửi để phê duyệt sau khi tạo.';
+                                }
+
+                                return match ($record->status) {
+                                    'draft' => '📝 Công thức đang ở trạng thái bản nháp. Bạn có thể chỉnh sửa và gửi để phê duyệt.',
+                                    'pending' => '⏳ Công thức đã được gửi để phê duyệt. Vui lòng chờ admin hoặc manager xem xét.',
+                                    'approved' => '✅ Công thức đã được phê duyệt thành công!',
+                                    'rejected' => '❌ Công thức bị từ chối. Lý do: ' . ($record->rejection_reason ?? 'Không có lý do cụ thể'),
+                                    'published' => '🌐 Công thức đã được xuất bản và có thể xem trên trang chủ.',
+                                    default => '❓ Trạng thái không xác định.',
+                                };
+                            }),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
             ]);
     }
 
@@ -194,23 +217,105 @@ class UserRecipeResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
                     ->dateTime('d/m/Y'),
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Trạng thái')
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'approved',
+                        'danger' => 'rejected',
+                        'secondary' => 'draft',
+                        'info' => 'published',
+                    ])
+                    ->formatStateUsing(function (string $state): string {
+                        return match ($state) {
+                            'draft' => 'Bản nháp',
+                            'pending' => 'Đang chờ duyệt',
+                            'approved' => 'Đã được duyệt',
+                            'rejected' => 'Bị từ chối',
+                            'published' => 'Đã xuất bản',
+                            default => $state,
+                        };
+                    }),
+                Tables\Columns\TextColumn::make('rejection_reason')
+                    ->label('Lý do từ chối')
+                    ->limit(50)
+                    ->visible(fn(?Recipe $record): bool => $record && $record->status === 'rejected')
+                    ->color('danger'),
+                Tables\Columns\TextColumn::make('approver.name')
+                    ->label('Người phê duyệt')
+                    ->visible(fn(?Recipe $record): bool => $record && in_array($record->status, ['approved', 'rejected']))
+                    ->color('success'),
+                Tables\Columns\TextColumn::make('approved_at')
+                    ->label('Thời gian phê duyệt')
+                    ->dateTime('d/m/Y H:i')
+                    ->visible(fn(?Recipe $record): bool => $record && in_array($record->status, ['approved', 'rejected']))
+                    ->color('success'),
             ])
             ->filters([
-                // Có thể thêm filter nếu cần
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Trạng thái')
+                    ->options([
+                        'draft' => 'Bản nháp',
+                        'pending' => 'Đang chờ duyệt',
+                        'approved' => 'Đã được duyệt',
+                        'rejected' => 'Bị từ chối',
+                        'published' => 'Đã xuất bản',
+                    ])
+                    ->placeholder('Tất cả trạng thái'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label('Xem')
+                    ->icon('heroicon-o-eye'),
+                Tables\Actions\EditAction::make()
+                    ->label('Sửa')
+                    ->icon('heroicon-o-pencil'),
+                Tables\Actions\Action::make('submit_for_approval')
+                    ->label('Gửi phê duyệt')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Gửi công thức để phê duyệt')
+                    ->modalDescription('Bạn có chắc chắn muốn gửi công thức này để admin hoặc manager phê duyệt?')
+                    ->modalSubmitActionLabel('Gửi phê duyệt')
+                    ->action(function (Recipe $record) {
+                        $record->update(['status' => 'pending']);
+                    })
+                    ->visible(fn(?Recipe $record): bool => $record && $record->status === 'draft'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Xóa')
+                    ->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\BulkAction::make('submit_selected_for_approval')
+                    ->label('Gửi phê duyệt đã chọn')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Gửi công thức đã chọn để phê duyệt')
+                    ->modalDescription('Bạn có chắc chắn muốn gửi tất cả công thức đã chọn để admin hoặc manager phê duyệt?')
+                    ->modalSubmitActionLabel('Gửi phê duyệt')
+                    ->action(function (Collection $records) {
+                        $count = 0;
+                        foreach ($records as $record) {
+                            if ($record->status === 'draft') {
+                                $record->update(['status' => 'pending']);
+                                $count++;
+                            }
+                        }
+                        return $count . ' công thức đã được gửi để phê duyệt.';
+                    })
+                    ->deselectRecordsAfterCompletion(),
             ]);
     }
 
     public static function getEloquentQuery(): Builder
     {
-        // Chỉ lấy công thức của user hiện tại
-        return parent::getEloquentQuery()->where('user_id', Auth::id());
+        // Chỉ lấy công thức của user hiện tại và load relationships
+        return parent::getEloquentQuery()
+            ->where('user_id', Auth::id())
+            ->with(['categories', 'tags', 'approver']);
     }
 
     public static function getPages(): array
@@ -218,6 +323,7 @@ class UserRecipeResource extends Resource
         return [
             'index' => UserRecipeResource\Pages\ListUserRecipes::route('/'),
             'create' => UserRecipeResource\Pages\CreateUserRecipe::route('/create'),
+            'view' => UserRecipeResource\Pages\ViewUserRecipe::route('/{record}'),
             'edit' => UserRecipeResource\Pages\EditUserRecipe::route('/{record}/edit'),
         ];
     }
