@@ -18,7 +18,7 @@ class RecipePolicy
         return true; // Anyone can view recipes
     }
 
-    /**
+        /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, Recipe $recipe): bool
@@ -30,7 +30,7 @@ class RecipePolicy
 
         // Draft/pending recipes can only be viewed by owner or admins
         return $user->id === $recipe->user_id || 
-               $user->hasPermissionTo('recipe.approve');
+               $user->hasRole(['manager', 'admin']);
     }
 
     /**
@@ -48,12 +48,11 @@ class RecipePolicy
     {
         // Owner can update their own recipes
         if ($user->id === $recipe->user_id) {
-            return $user->hasPermissionTo('recipe.edit');
+            return $user->hasRole(['user', 'manager', 'admin']);
         }
 
         // Admins/managers can update any recipe
-        return $user->hasPermissionTo('recipe.edit') && 
-               $user->hasPermissionTo('recipe.approve');
+        return $user->hasRole(['manager', 'admin']);
     }
 
     /**
@@ -63,12 +62,11 @@ class RecipePolicy
     {
         // Owner can delete their own recipes
         if ($user->id === $recipe->user_id) {
-            return $user->hasPermissionTo('recipe.delete');
+            return $user->hasRole(['user', 'manager', 'admin']);
         }
 
         // Admins can delete any recipe
-        return $user->hasPermissionTo('recipe.delete') && 
-               $user->hasPermissionTo('recipe.approve');
+        return $user->hasRole(['manager', 'admin']);
     }
 
     /**
@@ -76,7 +74,7 @@ class RecipePolicy
      */
     public function restore(User $user, Recipe $recipe): bool
     {
-        return $user->hasPermissionTo('recipe.approve');
+        return $user->hasRole(['manager', 'admin']);
     }
 
     /**
@@ -84,8 +82,7 @@ class RecipePolicy
      */
     public function forceDelete(User $user, Recipe $recipe): bool
     {
-        return $user->hasPermissionTo('recipe.delete') && 
-               $user->hasPermissionTo('recipe.approve');
+        return $user->hasRole(['manager', 'admin']);
     }
 
     /**
@@ -93,7 +90,7 @@ class RecipePolicy
      */
     public function approve(User $user, Recipe $recipe): bool
     {
-        return $user->hasPermissionTo('recipe.approve');
+        return $user->hasRole(['manager', 'admin']);
     }
 
     /**
@@ -101,6 +98,6 @@ class RecipePolicy
      */
     public function reject(User $user, Recipe $recipe): bool
     {
-        return $user->hasPermissionTo('recipe.reject');
+        return $user->hasRole(['manager', 'admin']);
     }
 }

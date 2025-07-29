@@ -7,16 +7,19 @@ use App\Models\Category;
 use App\Models\User;
 use App\Services\RecipeService;
 use App\Services\FavoriteService;
+use App\Services\GeminiService;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Auth;
 
 #[Layout('layouts.app')]
 class HomePage extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     #[Url(as: 'search')]
     public $search = '';
@@ -46,6 +49,13 @@ class HomePage extends Component
 
     public function performSearch()
     {
+        $this->resetPage();
+    }
+
+    #[On('search-performed')]
+    public function handleSearchPerformed($search)
+    {
+        $this->search = $search;
         $this->resetPage();
     }
 

@@ -32,6 +32,7 @@ class Recipe extends Model
         'approved_by',
         'approved_at',
         'rejection_reason',
+        'auto_approve_at',
         'meta_title',
         'meta_description',
         'meta_keywords',
@@ -46,6 +47,7 @@ class Recipe extends Model
         'ingredients' => 'array',
         'instructions' => 'array',
         'approved_at' => 'datetime',
+        'auto_approve_at' => 'datetime',
         'published_at' => 'datetime',
         'cooking_time' => 'integer',
         'preparation_time' => 'integer',
@@ -69,7 +71,7 @@ class Recipe extends Model
             if (empty($recipe->slug)) {
                 $recipe->slug = Str::slug($recipe->title);
             }
-            
+
             if (empty($recipe->total_time) && ($recipe->cooking_time || $recipe->preparation_time)) {
                 $recipe->total_time = ($recipe->cooking_time ?? 0) + ($recipe->preparation_time ?? 0);
             }
@@ -152,7 +154,7 @@ class Recipe extends Model
     public function scopePublished($query)
     {
         return $query->where('status', 'approved')
-                    ->whereNotNull('published_at');
+            ->whereNotNull('published_at');
     }
 
     /**
@@ -209,7 +211,7 @@ class Recipe extends Model
     public function scopePopular($query)
     {
         return $query->orderBy('view_count', 'desc')
-                    ->orderBy('favorite_count', 'desc');
+            ->orderBy('favorite_count', 'desc');
     }
 
     /**
@@ -218,7 +220,7 @@ class Recipe extends Model
     public function scopeTopRated($query)
     {
         return $query->orderBy('average_rating', 'desc')
-                    ->orderBy('rating_count', 'desc');
+            ->orderBy('rating_count', 'desc');
     }
 
     /**
@@ -331,4 +333,4 @@ class Recipe extends Model
     {
         return 'slug';
     }
-} 
+}

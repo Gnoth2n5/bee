@@ -87,14 +87,24 @@ class RecipeService
     /**
      * Approve a recipe.
      */
-    public function approve(Recipe $recipe, User $approver): Recipe
+    public function approve(Recipe $recipe, ?User $approver = null, string $reason = 'Phê duyệt bởi admin'): Recipe
     {
         $recipe->update([
             'status' => 'approved',
-            'approved_by' => $approver->id,
+            'approved_by' => $approver?->id,
             'approved_at' => now(),
             'published_at' => now(),
         ]);
+
+        // Log approval reason if provided
+        if ($reason) {
+            Log::info("Recipe {$recipe->id} approved: {$reason}", [
+                'recipe_id' => $recipe->id,
+                'title' => $recipe->title,
+                'approver_id' => $approver?->id,
+                'reason' => $reason
+            ]);
+        }
 
         return $recipe;
     }
