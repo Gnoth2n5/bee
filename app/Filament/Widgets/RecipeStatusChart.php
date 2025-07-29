@@ -38,6 +38,12 @@ class RecipeStatusChart extends ChartWidget
         ];
     }
 
+    protected function getMaxHeight(): ?string
+    {
+        return '16rem';
+    }
+
+
     protected function getType(): string
     {
         return 'doughnut';

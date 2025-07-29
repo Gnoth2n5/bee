@@ -42,6 +42,11 @@ class UserGrowthChart extends ChartWidget
         ];
     }
 
+    protected function getMaxHeight(): ?string
+    {
+        return '16rem';
+    }
+
     protected function getType(): string
     {
         return 'line';
