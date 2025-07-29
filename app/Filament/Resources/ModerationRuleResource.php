@@ -42,8 +42,8 @@ class ModerationRuleResource extends Resource
                             ->label('Từ khóa cấm')
                             ->required()
                             ->rows(4)
-                            ->placeholder('Nhập các từ khóa cấm, phân cách bằng dấu phẩy. Ví dụ: từ xấu, từ không phù hợp, spam')
-                            ->helperText('Các từ khóa sẽ được kiểm tra không phân biệt chữ hoa/thường. Phân cách nhiều từ bằng dấu phẩy.'),
+                            ->placeholder('Nhập các từ khóa cấm, phân cách bằng dấu phẩy')
+                            ->helperText('Phân cách nhiều từ bằng dấu phẩy'),
 
                         Forms\Components\Select::make('action')
                             ->label('Hành động khi vi phạm')
@@ -53,17 +53,15 @@ class ModerationRuleResource extends Resource
                                 'auto_approve' => 'Vẫn phê duyệt tự động',
                             ])
                             ->default('reject')
-                            ->required()
-                            ->helperText('Hành động sẽ được thực hiện khi phát hiện vi phạm quy tắc này'),
+                            ->required(),
 
                         Forms\Components\Textarea::make('description')
                             ->label('Mô tả')
                             ->rows(3)
-                            ->placeholder('Mô tả chi tiết về quy tắc này')
-                            ->helperText('Giải thích lý do tại sao quy tắc này được tạo ra'),
+                            ->placeholder('Mô tả về quy tắc này'),
                     ])->columns(1),
 
-                Forms\Components\Section::make('Cấu hình kiểm tra')
+                Forms\Components\Section::make('Cấu hình')
                     ->schema([
                         Forms\Components\CheckboxList::make('fields_to_check')
                             ->label('Các trường cần kiểm tra')
@@ -77,8 +75,7 @@ class ModerationRuleResource extends Resource
                                 'notes' => 'Ghi chú',
                             ])
                             ->default(['title', 'description', 'summary', 'ingredients', 'instructions', 'tips', 'notes'])
-                            ->columns(2)
-                            ->helperText('Chọn các trường sẽ được kiểm tra từ khóa cấm'),
+                            ->columns(2),
 
                         Forms\Components\TextInput::make('priority')
                             ->label('Độ ưu tiên')
@@ -86,28 +83,12 @@ class ModerationRuleResource extends Resource
                             ->default(1)
                             ->minValue(1)
                             ->maxValue(10)
-                            ->helperText('Số càng cao càng ưu tiên. Quy tắc có độ ưu tiên cao hơn sẽ được áp dụng trước.'),
+                            ->helperText('Số càng cao càng ưu tiên'),
 
                         Forms\Components\Toggle::make('is_active')
                             ->label('Kích hoạt quy tắc')
-                            ->default(true)
-                            ->helperText('Chỉ các quy tắc được kích hoạt mới được áp dụng'),
+                            ->default(true),
                     ])->columns(2),
-
-                Forms\Components\Section::make('Thông tin tạo')
-                    ->schema([
-                        Forms\Components\Select::make('created_by')
-                            ->label('Người tạo')
-                            ->options(User::whereHas('roles', function ($query) {
-                                $query->whereIn('name', ['admin', 'manager']);
-                            })->pluck('name', 'id'))
-                            ->default(Auth::id())
-                            ->searchable()
-                            ->disabled()
-                            ->dehydrated(false),
-                    ])->columns(1)
-                    ->collapsible()
-                    ->collapsed(),
             ]);
     }
 
@@ -156,18 +137,8 @@ class ModerationRuleResource extends Resource
                     ->trueColor('success')
                     ->falseColor('danger'),
 
-                Tables\Columns\TextColumn::make('creator.name')
-                    ->label('Người tạo')
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tạo lúc')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Cập nhật lúc')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -248,7 +219,8 @@ class ModerationRuleResource extends Resource
                         ->requiresConfirmation(),
                 ]),
             ])
-            ->defaultSort('priority', 'desc');
+            ->defaultSort('priority', 'desc')
+            ->paginated([10, 25, 50]);
     }
 
     public static function getRelations(): array

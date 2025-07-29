@@ -8,31 +8,37 @@ use Illuminate\Support\Carbon;
 
 class UserGrowthChart extends ChartWidget
 {
-    protected static ?string $heading = 'Tăng trưởng người dùng';
+    protected static ?string $heading = 'Tăng trưởng người dùng (30 ngày)';
+
     protected static ?int $sort = 3;
+
+    // Thêm thuộc tính này để biểu đồ chiếm 1/2 chiều rộng
+    protected int|string|array $columnSpan = '1/2';
 
     protected function getData(): array
     {
-        $days = collect();
-        $users = collect();
+        $data = [];
+        $labels = [];
 
         for ($i = 29; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $days->push($date->format('d/m'));
-            $users->push(User::whereDate('created_at', $date)->count());
+            $date = now()->subDays($i);
+            $count = User::whereDate('created_at', $date)->count();
+            
+            $data[] = $count;
+            $labels[] = $date->format('d/m');
         }
 
         return [
             'datasets' => [
                 [
                     'label' => 'Người dùng mới',
-                    'data' => $users->toArray(),
-                    'borderColor' => '#3b82f6',
+                    'data' => $data,
+                    'borderColor' => 'rgb(59, 130, 246)',
                     'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
                     'fill' => true,
                 ],
             ],
-            'labels' => $days->toArray(),
+            'labels' => $labels,
         ];
     }
 

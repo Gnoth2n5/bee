@@ -23,4 +23,16 @@ class EditModerationRule extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        // Đảm bảo keywords được format đúng
+        if (isset($data['keywords'])) {
+            $keywords = array_map('trim', explode(',', $data['keywords']));
+            $keywords = array_filter($keywords);
+            $data['keywords'] = implode(', ', $keywords);
+        }
+
+        return $data;
+    }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Log;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -14,10 +15,10 @@ Schedule::command('recipes:auto-moderate')
     ->withoutOverlapping()
     ->runInBackground()
     ->onSuccess(function () {
-        \Log::info('Auto moderation scheduled task completed successfully');
+        Log::info('Auto moderation scheduled task completed successfully');
     })
     ->onFailure(function () {
-        \Log::error('Auto moderation scheduled task failed');
+        Log::error('Auto moderation scheduled task failed');
     });
 
 // Schedule scheduled approvals every 2 minutes (for testing)
@@ -26,8 +27,8 @@ Schedule::command('recipes:process-scheduled-approvals')
     ->withoutOverlapping()
     ->runInBackground()
     ->onSuccess(function () {
-        \Log::info('Scheduled approvals task completed successfully');
+        Log::info('Scheduled approvals task completed successfully');
     })
     ->onFailure(function () {
-        \Log::error('Scheduled approvals task failed');
+        Log::error('Scheduled approvals task failed');
     });
