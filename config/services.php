@@ -37,4 +37,8 @@ return [
         'redirect' => rtrim(env('APP_URL'), '/') . '/auth/google/callback',
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+    ],
+
 ];

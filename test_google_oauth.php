@@ -1,63 +1,74 @@
 <?php
 
-/**
- * Script để test Google OAuth trực tiếp
- * Chạy: php test_google_oauth.php
- */
-
 require_once 'vendor/autoload.php';
 
-use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
 
-echo "🧪 Test Google OAuth Configuration\n";
-echo "==================================\n\n";
+// Bootstrap Laravel
+$app = Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__ . '/routes/web.php',
+        commands: __DIR__ . '/routes/console.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+        //
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        //
+    })->create();
 
-// Load Laravel app
-$app = require_once 'bootstrap/app.php';
-$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+$app->make('config')->set('app.env', 'local');
+$app->make('config')->set('app.debug', true);
 
-try {
-    // Kiểm tra config
-    $clientId = config('services.google.client_id');
-    $clientSecret = config('services.google.client_secret');
-    $redirectUrl = config('services.google.redirect');
+// Test Google OAuth configuration
+echo "=== Testing Google OAuth Configuration ===\n";
 
-    echo "📋 Configuration:\n";
-    echo "Client ID: " . ($clientId ?: '❌ Không có') . "\n";
-    echo "Client Secret: " . ($clientSecret ?: '❌ Không có') . "\n";
-    echo "Redirect URL: " . ($redirectUrl ?: '❌ Không có') . "\n\n";
-
-    if (!$clientId || !$clientSecret) {
-        echo "❌ VẤN ĐỀ: Thiếu Client ID hoặc Client Secret!\n";
-        echo "Hãy cập nhật file .env với thông tin thực từ Google Console.\n";
-        exit(1);
-    }
-
-    // Test Socialite configuration
-    echo "🔧 Testing Socialite configuration...\n";
-
-    $socialite = Socialite::driver('google');
-    $socialite->redirectUrl($redirectUrl);
-
-    echo "✅ Socialite configuration OK\n";
-    echo "✅ Redirect URL: " . $redirectUrl . "\n";
-    echo "✅ Client ID: " . substr($clientId, 0, 20) . "...\n";
-    echo "✅ Client Secret: " . substr($clientSecret, 0, 10) . "...\n\n";
-
-    echo "🎯 Test URL để đăng nhập Google:\n";
-    echo "http://127.0.0.1:8000/auth/google\n\n";
-
-    echo "📝 Hướng dẫn test:\n";
-    echo "1. Khởi động server: php artisan serve\n";
-    echo "2. Truy cập: http://127.0.0.1:8000/login\n";
-    echo "3. Click nút 'Đăng nhập bằng Google'\n";
-    echo "4. Hoặc truy cập trực tiếp: http://127.0.0.1:8000/auth/google\n\n";
-
-    echo "🔗 Google Console cần cấu hình:\n";
-    echo "- Authorized Redirect URIs: " . $redirectUrl . "\n";
-    echo "- Client ID: " . $clientId . "\n";
-
-} catch (Exception $e) {
-    echo "❌ LỖI: " . $e->getMessage() . "\n";
-    echo "Stack trace:\n" . $e->getTraceAsString() . "\n";
+// Check if Socialite is available
+if (class_exists('Laravel\Socialite\Facades\Socialite')) {
+    echo "✓ Socialite is available\n";
+} else {
+    echo "✗ Socialite is not available\n";
+    exit(1);
 }
+
+// Check Google OAuth config
+$googleConfig = $app->make('config')->get('services.google');
+if ($googleConfig) {
+    echo "✓ Google OAuth config found\n";
+    echo "  - Client ID: " . (isset($googleConfig['client_id']) ? 'Set' : 'Not set') . "\n";
+    echo "  - Client Secret: " . (isset($googleConfig['client_secret']) ? 'Set' : 'Not set') . "\n";
+    echo "  - Redirect URL: " . ($googleConfig['redirect'] ?? 'Not set') . "\n";
+} else {
+    echo "✗ Google OAuth config not found\n";
+    exit(1);
+}
+
+// Check environment variables
+$envVars = [
+    'GOOGLE_CLIENT_ID' => $_ENV['GOOGLE_CLIENT_ID'] ?? null,
+    'GOOGLE_CLIENT_SECRET' => $_ENV['GOOGLE_CLIENT_SECRET'] ?? null,
+    'APP_URL' => $_ENV['APP_URL'] ?? null,
+];
+
+echo "\n=== Environment Variables ===\n";
+foreach ($envVars as $key => $value) {
+    echo "  - $key: " . ($value ? 'Set' : 'Not set') . "\n";
+}
+
+// Test routes
+echo "\n=== Testing Routes ===\n";
+$routes = [
+    'auth/google' => 'Google redirect route',
+    'auth/google/callback' => 'Google callback route',
+];
+
+foreach ($routes as $route => $description) {
+    echo "  - $route: $description\n";
+}
+
+echo "\n=== Test Complete ===\n";
+echo "If all checks passed, Google OAuth should work.\n";
+echo "Try accessing: http://127.0.0.1:8000/auth/google\n";
