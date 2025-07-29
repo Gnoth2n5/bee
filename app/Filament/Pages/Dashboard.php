@@ -40,6 +40,9 @@ class Dashboard extends BaseDashboard
             \App\Filament\Widgets\SystemHealthCards::class,
             \App\Filament\Widgets\PerformanceCards::class,
             \App\Filament\Widgets\SystemInfoCards::class,
+            \App\Filament\Widgets\ModerationStatsWidget::class,
+            \App\Filament\Widgets\CategoryTagStatsWidget::class,
+            \App\Filament\Widgets\ScheduledApprovalsWidget::class,
         ];
     }
 
@@ -53,6 +56,8 @@ class Dashboard extends BaseDashboard
             \App\Filament\Widgets\TopCategoriesChart::class,
             \App\Filament\Widgets\RatingDistributionChart::class,
             \App\Filament\Widgets\RecentActivityWidget::class,
+            \App\Filament\Widgets\ModerationRulesWidget::class,
+            \App\Filament\Widgets\PopularCategoriesWidget::class,
         ];
     }
 }
