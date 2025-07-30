@@ -9,7 +9,8 @@
                     :profile="$profile" 
                     :isEditing="$isEditing" 
                     :avatar="$avatar" 
-                    :experienceOptions="$experienceOptions" 
+                    :experienceOptions="$experienceOptions"
+                    :nearestCity="$nearestCity"
                 />
 
                 <!-- Stats Component -->
@@ -47,10 +48,11 @@
                         <x-profile.favorites-tab :favorites="$this->favorites" />
                     @endif
 
-                    @if($activeTab === 'settings' && $isEditing)
+                    @if($activeTab === 'settings')
                         <x-profile.settings-tab 
                             :name="$name"
                             :email="$email"
+                            :province="$province"
                             :bio="$bio"
                             :phone="$phone"
                             :address="$address"
@@ -71,4 +73,29 @@
 
     <!-- Flash Messages -->
     <x-flash-message />
-</div> 
+</div>
+
+<script>
+document.addEventListener('livewire:init', () => {
+    Livewire.on('get-user-location', () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    console.log('Location obtained:', latitude, longitude);
+                    
+                    // Gửi tọa độ về Livewire component
+                    @this.setUserLocation(latitude, longitude);
+                },
+                (error) => {
+                    console.error('Geolocation error:', error);
+                    alert('Không thể lấy vị trí của bạn. Vui lòng kiểm tra quyền truy cập vị trí.');
+                }
+            );
+        } else {
+            alert('Trình duyệt của bạn không hỗ trợ định vị địa lý.');
+        }
+    });
+});
+</script> 

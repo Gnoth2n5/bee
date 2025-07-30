@@ -15,10 +15,21 @@ new class extends Component
     
     public function logout()
     {
-        $authService = app(AuthService::class);
-        $authService->logout();
+        \Log::info('Logout method called');
         
-        return $this->redirect('/', navigate: true);
+        try {
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            
+            \Log::info('Logout successful');
+            session()->flash('success', 'Đăng xuất thành công!');
+            
+            return $this->redirect('/', navigate: true);
+        } catch (\Exception $e) {
+            \Log::error('Logout error: ' . $e->getMessage());
+            session()->flash('error', 'Có lỗi khi đăng xuất: ' . $e->getMessage());
+        }
     }
 }; ?>
 
@@ -60,6 +71,8 @@ new class extends Component
                         <span>Công thức</span>
                     </div>
                 </a>
+                
+
                 
                 @auth
                     <a href="{{ route('profile', ['tab' => 'recipes']) }}" 
@@ -218,18 +231,21 @@ new class extends Component
                         
                         <hr class="my-1 border-gray-200 dark:border-gray-600">
                         
-                        <button wire:click="logout"
-                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white" 
-                                role="menuitem" 
-                                tabindex="-1" 
-                                id="user-menu-item-3">
-                            <div class="flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                                </svg>
-                                <span>Đăng xuất</span>
-                            </div>
-                        </button>
+                        <form method="POST" action="{{ route('logout') }}" class="w-full">
+                            @csrf
+                            <button type="submit"
+                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white" 
+                                    role="menuitem" 
+                                    tabindex="-1" 
+                                    id="user-menu-item-3">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                    </svg>
+                                    <span>Đăng xuất</span>
+                                </div>
+                            </button>
+                        </form>
                     </div>
                 </div>
             @else

@@ -1,4 +1,4 @@
-@props(['name', 'email', 'bio', 'phone', 'address', 'city', 'country', 'cooking_experience', 'dietary_preferences', 'allergies', 'health_conditions', 'experienceOptions', 'dietaryOptions'])
+@props(['name', 'email', 'province', 'bio', 'phone', 'address', 'city', 'country', 'cooking_experience', 'dietary_preferences', 'allergies', 'health_conditions', 'experienceOptions', 'dietaryOptions'])
 
 <div class="max-w-4xl mx-auto">
     <form wire:submit.prevent="saveProfile" class="">
@@ -45,7 +45,12 @@
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Địa chỉ</h3>
                     <div class="grid grid-cols-1 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Thành phố</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tỉnh/Thành phố</label>
+                            <input wire:model.defer="province" type="text" class="w-full rounded-lg border border-gray-300 focus:ring-orange-500 focus:border-orange-500" placeholder="Ví dụ: Hà Nội, TP. Hồ Chí Minh, Ninh Bình...">
+                            @error('province') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Thành phố/Quận</label>
                             <input wire:model.defer="city" type="text" class="w-full rounded-lg border border-gray-300 focus:ring-orange-500 focus:border-orange-500">
                             @error('city') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>

@@ -2,187 +2,45 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Category;
-use App\Models\User;
 
 class CategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $admin = User::where('email', 'admin@beefood.com')->first();
+        $categories = [
+            // Categories cho thời tiết nóng và độ ẩm cao (>=24°C, >70%)
+            ['name' => 'Súp', 'slug' => 'sup', 'description' => 'Các món súp mát, nhẹ', 'icon' => 'heroicon-o-beaker', 'color' => '#3B82F6', 'sort_order' => 1],
+            ['name' => 'Salad', 'slug' => 'salad', 'description' => 'Các món salad tươi mát', 'icon' => 'heroicon-o-leaf', 'color' => '#10B981', 'sort_order' => 2],
+            ['name' => 'Món mát', 'slug' => 'mon-mat', 'description' => 'Các món ăn mát, giải nhiệt', 'icon' => 'heroicon-o-snowflake', 'color' => '#06B6D4', 'sort_order' => 3],
+            ['name' => 'Tráng miệng', 'slug' => 'trang-mieng', 'description' => 'Các món tráng miệng mát', 'icon' => 'heroicon-o-cake', 'color' => '#F59E0B', 'sort_order' => 4],
+            ['name' => 'Đồ uống', 'slug' => 'do-uong', 'description' => 'Các loại đồ uống mát', 'icon' => 'heroicon-o-glass', 'color' => '#8B5CF6', 'sort_order' => 5],
 
-        // Main categories
-        $mainCategories = [
-            [
-                'name' => 'Món Chính',
-                'slug' => 'mon-chinh',
-                'description' => 'Các món ăn chính trong bữa ăn',
-                'icon' => 'utensils',
-                'color' => '#FF6B6B',
-                'sort_order' => 1
-            ],
-            [
-                'name' => 'Món Khai Vị',
-                'slug' => 'mon-khai-vi',
-                'description' => 'Các món ăn khai vị, salad',
-                'icon' => 'leaf',
-                'color' => '#4ECDC4',
-                'sort_order' => 2
-            ],
-            [
-                'name' => 'Món Tráng Miệng',
-                'slug' => 'mon-trang-mieng',
-                'description' => 'Bánh, kem, chè và các món ngọt',
-                'icon' => 'birthday-cake',
-                'color' => '#FFE66D',
-                'sort_order' => 3
-            ],
-            [
-                'name' => 'Món Canh',
-                'slug' => 'mon-canh',
-                'description' => 'Các loại canh, súp',
-                'icon' => 'bowl-rice',
-                'color' => '#95E1D3',
-                'sort_order' => 4
-            ],
-            [
-                'name' => 'Món Nướng',
-                'slug' => 'mon-nuong',
-                'description' => 'Các món nướng, BBQ',
-                'icon' => 'fire',
-                'color' => '#FF8A80',
-                'sort_order' => 5
-            ],
-            [
-                'name' => 'Món Chiên',
-                'slug' => 'mon-chien',
-                'description' => 'Các món chiên, xào',
-                'icon' => 'frying-pan',
-                'color' => '#FFB74D',
-                'sort_order' => 6
-            ]
+            // Categories cho thời tiết nóng và độ ẩm thấp (>=24°C, <=70%)
+            ['name' => 'Canh', 'slug' => 'canh', 'description' => 'Các món canh nước', 'icon' => 'heroicon-o-fire', 'color' => '#EF4444', 'sort_order' => 6],
+            ['name' => 'Món nước', 'slug' => 'mon-nuoc', 'description' => 'Các món có nhiều nước', 'icon' => 'heroicon-o-droplet', 'color' => '#3B82F6', 'sort_order' => 7],
+            ['name' => 'Cháo', 'slug' => 'chao', 'description' => 'Các món cháo', 'icon' => 'heroicon-o-mug-hot', 'color' => '#F97316', 'sort_order' => 8],
+
+            // Categories cho thời tiết lạnh (<15°C)
+            ['name' => 'Lẩu', 'slug' => 'lau', 'description' => 'Các món lẩu nóng', 'icon' => 'heroicon-o-fire', 'color' => '#DC2626', 'sort_order' => 9],
+            ['name' => 'Súp nóng', 'slug' => 'sup-nong', 'description' => 'Các món súp nóng', 'icon' => 'heroicon-o-beaker', 'color' => '#EA580C', 'sort_order' => 10],
+            ['name' => 'Món nóng', 'slug' => 'mon-nong', 'description' => 'Các món ăn nóng', 'icon' => 'heroicon-o-fire', 'color' => '#B91C1C', 'sort_order' => 11],
+            ['name' => 'Thịt', 'slug' => 'thit', 'description' => 'Các món thịt giàu dinh dưỡng', 'icon' => 'heroicon-o-cube', 'color' => '#7C2D12', 'sort_order' => 12],
+
+            // Categories chung
+            ['name' => 'Món chính', 'slug' => 'mon-chinh', 'description' => 'Các món ăn chính', 'icon' => 'heroicon-o-home', 'color' => '#059669', 'sort_order' => 13],
+            ['name' => 'Món phụ', 'slug' => 'mon-phu', 'description' => 'Các món ăn phụ', 'icon' => 'heroicon-o-star', 'color' => '#D97706', 'sort_order' => 14],
+            ['name' => 'Món chay', 'slug' => 'mon-chay', 'description' => 'Các món ăn chay', 'icon' => 'heroicon-o-heart', 'color' => '#059669', 'sort_order' => 15],
         ];
 
-        foreach ($mainCategories as $categoryData) {
-            Category::create([
-                'name' => $categoryData['name'],
-                'slug' => $categoryData['slug'],
-                'description' => $categoryData['description'],
-                'icon' => $categoryData['icon'],
-                'color' => $categoryData['color'],
-                'parent_id' => null,
-                'level' => 0,
-                'sort_order' => $categoryData['sort_order'],
-                'is_active' => true,
-                'created_by' => $admin->id
-            ]);
+        foreach ($categories as $category) {
+            Category::updateOrCreate(
+                ['slug' => $category['slug']],
+                $category
+            );
         }
 
-        // Sub-categories for Món Chính
-        $monChinh = Category::where('slug', 'mon-chinh')->first();
-        $subCategories = [
-            [
-                'name' => 'Cơm',
-                'slug' => 'com',
-                'description' => 'Các món cơm',
-                'icon' => 'rice',
-                'color' => '#FF6B6B',
-                'parent_id' => $monChinh->id,
-                'level' => 1,
-                'sort_order' => 1
-            ],
-            [
-                'name' => 'Phở',
-                'slug' => 'pho',
-                'description' => 'Các loại phở',
-                'icon' => 'bowl-food',
-                'color' => '#FF6B6B',
-                'parent_id' => $monChinh->id,
-                'level' => 1,
-                'sort_order' => 2
-            ],
-            [
-                'name' => 'Bún',
-                'slug' => 'bun',
-                'description' => 'Các món bún',
-                'icon' => 'noodles',
-                'color' => '#FF6B6B',
-                'parent_id' => $monChinh->id,
-                'level' => 1,
-                'sort_order' => 3
-            ],
-            [
-                'name' => 'Mì',
-                'slug' => 'mi',
-                'description' => 'Các loại mì',
-                'icon' => 'pasta',
-                'color' => '#FF6B6B',
-                'parent_id' => $monChinh->id,
-                'level' => 1,
-                'sort_order' => 4
-            ]
-        ];
-
-        foreach ($subCategories as $subCategoryData) {
-            Category::create([
-                'name' => $subCategoryData['name'],
-                'slug' => $subCategoryData['slug'],
-                'description' => $subCategoryData['description'],
-                'icon' => $subCategoryData['icon'],
-                'color' => $subCategoryData['color'],
-                'parent_id' => $subCategoryData['parent_id'],
-                'level' => $subCategoryData['level'],
-                'sort_order' => $subCategoryData['sort_order'],
-                'is_active' => true,
-                'created_by' => $admin->id
-            ]);
-        }
-
-        // Sub-categories for Món Khai Vị
-        $monKhaiVi = Category::where('slug', 'mon-khai-vi')->first();
-        $khaiViCategories = [
-            [
-                'name' => 'Salad',
-                'slug' => 'salad',
-                'description' => 'Các loại salad',
-                'icon' => 'salad',
-                'color' => '#4ECDC4',
-                'parent_id' => $monKhaiVi->id,
-                'level' => 1,
-                'sort_order' => 1
-            ],
-            [
-                'name' => 'Gỏi',
-                'slug' => 'goi',
-                'description' => 'Các món gỏi',
-                'icon' => 'leaf',
-                'color' => '#4ECDC4',
-                'parent_id' => $monKhaiVi->id,
-                'level' => 1,
-                'sort_order' => 2
-            ]
-        ];
-
-        foreach ($khaiViCategories as $categoryData) {
-            Category::create([
-                'name' => $categoryData['name'],
-                'slug' => $categoryData['slug'],
-                'description' => $categoryData['description'],
-                'icon' => $categoryData['icon'],
-                'color' => $categoryData['color'],
-                'parent_id' => $categoryData['parent_id'],
-                'level' => $categoryData['level'],
-                'sort_order' => $categoryData['sort_order'],
-                'is_active' => true,
-                'created_by' => $admin->id
-            ]);
-        }
-
-        $this->command->info('Categories seeded successfully!');
+        $this->command->info('✅ Categories seeded successfully!');
     }
 }

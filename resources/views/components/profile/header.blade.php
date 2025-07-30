@@ -1,4 +1,4 @@
-@props(['user', 'profile', 'isEditing', 'avatar', 'experienceOptions'])
+@props(['user', 'profile', 'isEditing', 'avatar', 'experienceOptions', 'nearestCity'])
 
 <div class="relative p-6 sm:p-8">
     <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between">
@@ -100,6 +100,17 @@
             @else
                 <button wire:click="toggleEdit" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
                     Chỉnh sửa hồ sơ
+                </button>
+            @endif
+            
+            <!-- Nút lấy vị trí -->
+            @if(!$nearestCity)
+                <button wire:click="getUserLocationFromBrowser" 
+                        class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                    </svg>
+                    Lấy vị trí của tôi
                 </button>
             @endif
         </div>

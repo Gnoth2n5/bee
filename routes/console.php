@@ -31,3 +31,15 @@ Schedule::command('recipes:process-scheduled-approvals')
     ->onFailure(function () {
         \Log::error('Scheduled approvals task failed');
     });
+
+// Schedule daily weather update at 6 AM
+Schedule::command('weather:daily-update')
+    ->dailyAt('06:00')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->onSuccess(function () {
+        \Log::info('Daily weather update completed successfully');
+    })
+    ->onFailure(function () {
+        \Log::error('Daily weather update failed');
+    });

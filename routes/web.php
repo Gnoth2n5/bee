@@ -32,6 +32,9 @@ Route::get('profile', App\Livewire\Profile\ProfilePage::class)
 Route::get('/recipes', App\Livewire\Recipes\RecipeList::class)->name('recipes.index');
 Route::get('/recipes/{recipe}', RecipeDetail::class)->name('recipes.show');
 
+// Weather-based recipe suggestions
+Route::get('/weather-suggestions', App\Livewire\WeatherRecipeSuggestions::class)->name('weather.suggestions');
+
 // Protected routes
 Route::middleware(['auth'])->group(function () {
     // Recipe management

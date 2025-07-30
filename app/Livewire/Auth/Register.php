@@ -25,6 +25,13 @@ class Register extends Component
 
     public $isLoading = false;
 
+    // Location properties
+    public $userLatitude = null;
+    public $userLongitude = null;
+    public $nearestCity = null;
+    public $city = '';
+    public $country = 'Vietnam';
+
     public function register()
     {
         $this->isLoading = true;
@@ -33,11 +40,13 @@ class Register extends Component
             $this->validate();
 
             $authService = app(AuthService::class);
-            
+
             $user = $authService->register([
                 'name' => $this->name,
                 'email' => $this->email,
                 'password' => $this->password,
+                'city' => $this->city,
+                'country' => $this->country,
             ]);
 
             // Login user
@@ -57,4 +66,4 @@ class Register extends Component
     {
         return view('livewire.auth.register');
     }
-} 
+}
