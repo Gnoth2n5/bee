@@ -101,8 +101,8 @@ class GoogleController extends Controller
             return redirect()->intended('/')->with('success', 'Đăng nhập thành công! Chào mừng bạn quay lại BeeFood.');
 
         } catch (\Exception $e) {
-            \Log::error('Google login error: ' . $e->getMessage());
-            \Log::error('Google login error trace: ' . $e->getTraceAsString());
+            Log::error('Google login error: ' . $e->getMessage());
+            Log::error('Google login error trace: ' . $e->getTraceAsString());
             return redirect()->route('login')->withErrors([
                 'email' => 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.',
             ]);
@@ -131,7 +131,7 @@ class GoogleController extends Controller
                 ]);
             } catch (\Exception $e) {
                 // Log error nhưng không dừng logout
-                \Log::error('Google token revocation failed: ' . $e->getMessage());
+                Log::error('Google token revocation failed: ' . $e->getMessage());
             }
         }
 
