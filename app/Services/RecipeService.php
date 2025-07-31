@@ -168,6 +168,21 @@ class RecipeService
     }
 
     /**
+     * System reject a recipe (for scheduled rejections).
+     */
+    public function systemReject(Recipe $recipe, string $reason): Recipe
+    {
+        $recipe->update([
+            'status' => 'rejected',
+            'approved_by' => null, // System rejection
+            'approved_at' => now(),
+            'rejection_reason' => $reason,
+        ]);
+
+        return $recipe;
+    }
+
+    /**
      * Handle featured image upload.
      */
     protected function handleFeaturedImage(Recipe $recipe, UploadedFile $image, bool $deleteOld = false): void

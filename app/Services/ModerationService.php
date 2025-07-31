@@ -35,6 +35,19 @@ class ModerationService
                     continue;
                 }
 
+                // Kiểm tra auto reject theo thời gian
+                if ($recipe->auto_reject_at && $recipe->auto_reject_at->isPast()) {
+                    $this->rejectRecipe($recipe, [
+                        [
+                            'rule' => null,
+                            'field' => 'scheduled_rejection',
+                            'content' => 'Tự động từ chối theo lịch trình'
+                        ]
+                    ]);
+                    $results['rejected']++;
+                    continue;
+                }
+
                 $result = $this->moderateRecipe($recipe);
 
                 switch ($result['action']) {
