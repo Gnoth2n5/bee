@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\ModerationService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class AutoModerateRecipes extends Command
 {
@@ -12,78 +13,61 @@ class AutoModerateRecipes extends Command
      *
      * @var string
      */
-    protected $signature = 'recipes:auto-moderate {--dry-run : Chạy thử nghiệm không thay đổi dữ liệu}';
+    protected $signature = 'recipes:auto-moderate {--dry-run : Chỉ kiểm tra mà không thực hiện thay đổi}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Tự động kiểm duyệt các công thức đang chờ phê duyệt';
+    protected $description = 'Tự động phê duyệt/từ chối các công thức đang chờ duyệt';
 
     /**
      * Execute the console command.
      */
     public function handle(ModerationService $moderationService)
     {
-        $this->info('🚀 Bắt đầu kiểm duyệt tự động công thức...');
+        $this->info('Bắt đầu tự động phê duyệt công thức...');
 
         if ($this->option('dry-run')) {
-            $this->warn('⚠️  Chế độ thử nghiệm - không thay đổi dữ liệu');
+            $this->warn('Chế độ DRY RUN - Không thực hiện thay đổi thực tế');
         }
-
-        $startTime = now();
 
         try {
             $results = $moderationService->autoModeratePendingRecipes();
 
-            $this->displayResults($results, $startTime);
+            $this->info('Kết quả tự động phê duyệt:');
+            $this->table(
+                ['Loại', 'Số lượng'],
+                [
+                    ['Tổng cộng', $results['total']],
+                    ['Đã phê duyệt', $results['approved']],
+                    ['Đã từ chối', $results['rejected']],
+                    ['Đã flag', $results['flagged']],
+                    ['Tự động phê duyệt', $results['auto_approved']],
+                ]
+            );
 
-            if ($this->option('dry-run')) {
-                $this->warn('Đây là kết quả thử nghiệm. Chạy lại không có --dry-run để thực hiện thay đổi.');
+            if (!empty($results['errors'])) {
+                $this->error('Có ' . count($results['errors']) . ' lỗi xảy ra:');
+                foreach ($results['errors'] as $error) {
+                    $this->error("- Recipe ID {$error['recipe_id']}: {$error['error']}");
+                }
             }
 
-            return Command::SUCCESS;
+            $this->info('Hoàn thành tự động phê duyệt!');
+            
+            Log::info('Auto moderation command completed', $results);
+            
+            return 0;
         } catch (\Exception $e) {
-            $this->error('❌ Lỗi khi kiểm duyệt: ' . $e->getMessage());
-            return Command::FAILURE;
-        }
-    }
-
-    /**
-     * Display moderation results.
-     */
-    protected function displayResults(array $results, $startTime)
-    {
-        $duration = now()->diffInSeconds($startTime);
-
-        $this->newLine();
-        $this->info('📊 Kết quả kiểm duyệt:');
-        $this->table(
-            ['Thống kê', 'Số lượng'],
-            [
-                ['Tổng công thức kiểm tra', $results['total']],
-                ['✅ Đã phê duyệt', $results['approved']],
-                ['⏰ Tự động phê duyệt theo lịch', $results['auto_approved'] ?? 0],
-                ['❌ Đã từ chối', $results['rejected']],
-                ['🚩 Đã đánh dấu', $results['flagged']],
-                ['⏱️  Thời gian xử lý', $duration . ' giây'],
-            ]
-        );
-
-        if (!empty($results['errors'])) {
-            $this->newLine();
-            $this->warn('⚠️  Có ' . count($results['errors']) . ' lỗi xảy ra:');
-
-            foreach ($results['errors'] as $error) {
-                $this->line("  - Công thức ID {$error['recipe_id']}: {$error['error']}");
-            }
-        }
-
-        if ($results['total'] > 0) {
-            $successRate = round((($results['approved'] + $results['rejected'] + $results['flagged']) / $results['total']) * 100, 2);
-            $this->newLine();
-            $this->info("🎯 Tỷ lệ xử lý thành công: {$successRate}%");
+            $this->error('Lỗi khi thực hiện tự động phê duyệt: ' . $e->getMessage());
+            Log::error('Auto moderation command failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return 1;
         }
     }
 }

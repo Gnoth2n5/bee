@@ -15,10 +15,21 @@ new class extends Component
     
     public function logout()
     {
-        $authService = app(AuthService::class);
-        $authService->logout();
+        \Log::info('Logout method called');
         
-        return $this->redirect('/', navigate: true);
+        try {
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            
+            \Log::info('Logout successful');
+            session()->flash('success', 'Đăng xuất thành công!');
+            
+            return $this->redirect('/', navigate: true);
+        } catch (\Exception $e) {
+            \Log::error('Logout error: ' . $e->getMessage());
+            session()->flash('error', 'Có lỗi khi đăng xuất: ' . $e->getMessage());
+        }
     }
 }; ?>
 
@@ -26,7 +37,7 @@ new class extends Component
     <div class="flex flex-wrap justify-between items-center">
         <div class="flex justify-start items-center">
             <!-- Logo -->
-            <a href="{{ route('home') }}" class="flex items-center justify-center mr-4">
+            <a href="{{ route('home') }}" class="flex items-center justify-center mr-4 hover:opacity-80 transition-opacity" onclick="window.location.href='{{ route('home') }}'">
                 <div class="flex items-center space-x-2">
                     <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
                         <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -61,9 +72,11 @@ new class extends Component
                     </div>
                 </a>
                 
+
+                
                 @auth
-                    <a href="{{ route('profile', ['tab' => 'recipes']) }}" 
-                       class="text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-500 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('profile') && request('tab', 'recipes') === 'recipes' ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20' : '' }}">
+                    <a href="{{ route('recipes.my') }}" 
+                       class="text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-500 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('recipes.my') ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20' : '' }}">
                         <div class="flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -214,22 +227,43 @@ new class extends Component
                                     <span>Quản trị hệ thống</span>
                                 </div>
                             </a>
+                            
+
                         @endif
                         
                         <hr class="my-1 border-gray-200 dark:border-gray-600">
                         
-                        <button wire:click="logout"
-                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white" 
-                                role="menuitem" 
-                                tabindex="-1" 
-                                id="user-menu-item-3">
+                        <!-- Nút về web -->
+                        <a href="{{ route('home') }}" 
+                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white" 
+                           role="menuitem" 
+                           tabindex="-1" 
+                           id="user-menu-item-web">
                             <div class="flex items-center space-x-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                 </svg>
-                                <span>Đăng xuất</span>
+                                <span>Về web</span>
                             </div>
-                        </button>
+                        </a>
+                        
+                        <hr class="my-1 border-gray-200 dark:border-gray-600">
+                        
+                        <form method="POST" action="{{ route('logout') }}" class="w-full">
+                            @csrf
+                            <button type="submit"
+                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white" 
+                                    role="menuitem" 
+                                    tabindex="-1" 
+                                    id="user-menu-item-3">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                    </svg>
+                                    <span>Đăng xuất</span>
+                                </div>
+                            </button>
+                        </form>
                     </div>
                 </div>
             @else
@@ -298,8 +332,8 @@ new class extends Component
             </a>
             
             @auth
-                <a href="{{ route('profile', ['tab' => 'recipes']) }}" 
-                   class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 {{ request()->routeIs('profile') && request('tab', 'recipes') === 'recipes' ? 'text-orange-600' : '' }}">
+                <a href="{{ route('recipes.my') }}" 
+                   class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 {{ request()->routeIs('recipes.my') ? 'text-orange-600' : '' }}">
                     <div class="flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>

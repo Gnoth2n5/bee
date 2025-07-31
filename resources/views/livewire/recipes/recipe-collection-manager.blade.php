@@ -1,18 +1,30 @@
 <div>
+
+    
     <!-- Nút "Thêm vào bộ sưu tập" -->
-    <button 
-        wire:click="openModal"
-        class="bg-white border border-orange-500 text-orange-600 px-5 py-2 rounded-lg font-semibold hover:bg-orange-50 transition flex items-center gap-2"
-        type="button"
-    >
+                <button 
+                wire:click="openModal"
+                class="bg-white border border-orange-500 text-orange-600 px-5 py-2 rounded-lg font-semibold hover:bg-orange-50 transition flex items-center gap-2"
+                type="button"
+            >
         <x-heroicon-o-rectangle-stack class="w-5 h-5" />
         Thêm vào bộ sưu tập
     </button>
+    
+
 
     <!-- Modal chọn bộ sưu tập -->
     @if($showModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" wire:click="closeModal">
             <div class="bg-white rounded-xl shadow-lg p-6 w-96 max-w-full mx-4" wire:click.stop>
+                <!-- Debug info -->
+                @if(config('app.debug'))
+                    <div class="text-xs text-gray-500 mb-2">
+                        Debug: Collections loaded = {{ $collections->count() }}, 
+                        Recipe collections = {{ $this->recipeCollections->count() }}
+                    </div>
+                @endif
+                
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-bold text-gray-900">Thêm vào bộ sưu tập</h3>
                     <button wire:click="closeModal" class="text-gray-400 hover:text-gray-600">
@@ -45,7 +57,7 @@
                             <div class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                                 <p class="text-sm font-medium text-green-800 mb-2">Công thức này đã có trong:</p>
                                 <ul class="text-sm text-green-700 space-y-1">
-                                                                    @foreach($this->recipeCollections as $collection)
+                                    @foreach($this->recipeCollections as $collection)
                                     <li class="flex items-center justify-between">
                                         <div class="flex items-center gap-2">
                                             <x-heroicon-s-check-circle class="w-4 h-4 text-green-600" />
@@ -68,11 +80,12 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <button 
-                            wire:click="addToCollection"
-                            wire:loading.attr="disabled"
-                            class="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition disabled:opacity-50"
-                        >
+                                    <button 
+                wire:click="addToCollection"
+                wire:loading.attr="disabled"
+                class="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition disabled:opacity-50"
+                type="button"
+            >
                             <span wire:loading.remove>Thêm vào bộ sưu tập</span>
                             <span wire:loading>Đang thêm...</span>
                         </button>

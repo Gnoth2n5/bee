@@ -87,15 +87,19 @@ class CollectionService
      */
     public function addRecipe(Collection $collection, Recipe $recipe): bool
     {
-        // Check if recipe is already in collection
-        if ($collection->recipes()->where('recipe_id', $recipe->id)->exists()) {
-            return false;
+        try {
+            // Check if recipe is already in collection
+            if ($collection->recipes()->where('recipe_id', $recipe->id)->exists()) {
+                return false;
+            }
+
+            $collection->recipes()->attach($recipe->id);
+            $collection->increment('recipe_count');
+
+            return true;
+        } catch (\Exception $e) {
+            throw $e;
         }
-
-        $collection->recipes()->attach($recipe->id);
-        $collection->increment('recipe_count');
-
-        return true;
     }
 
     /**

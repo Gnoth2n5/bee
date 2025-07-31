@@ -224,6 +224,11 @@ class RecipeResource extends Resource
                             ->placeholder('Chọn thời gian tự động phê duyệt...')
                             ->helperText('Nếu set thời gian, công thức sẽ tự động được phê duyệt khi đến thời gian này')
                             ->visible(fn(string $context): bool => $context === 'edit'),
+                        Forms\Components\DateTimePicker::make('auto_reject_at')
+                            ->label('Tự động từ chối lúc')
+                            ->placeholder('Chọn thời gian tự động từ chối...')
+                            ->helperText('Nếu set thời gian, công thức sẽ tự động bị từ chối khi đến thời gian này')
+                            ->visible(fn(string $context): bool => $context === 'edit'),
                         Forms\Components\Select::make('approved_by')
                             ->label('Phê duyệt bởi')
                             ->options(User::whereHas('roles', function ($query) {
@@ -331,6 +336,13 @@ class RecipeResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->color('warning')
+                    ->icon('heroicon-o-clock'),
+                Tables\Columns\TextColumn::make('auto_reject_at')
+                    ->label('Tự động từ chối')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->color('danger')
                     ->icon('heroicon-o-clock'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tạo lúc')
@@ -490,6 +502,27 @@ class RecipeResource extends Resource
                             ]);
                         })
                         ->visible(fn(Recipe $record): bool => $record->status === 'pending' && Auth::user()->hasRole(['admin', 'manager'])),
+                    Tables\Actions\Action::make('set_auto_reject')
+                        ->label('Set lịch từ chối')
+                        ->icon('heroicon-o-clock')
+                        ->color('danger')
+                        ->form([
+                            Forms\Components\DateTimePicker::make('auto_reject_at')
+                                ->label('Thời gian tự động từ chối')
+                                ->required()
+                                ->minDate(now())
+                                ->helperText('Công thức sẽ tự động bị từ chối khi đến thời gian này'),
+                        ])
+                        ->modalHeading('Set lịch từ chối tự động')
+                        ->modalDescription('Chọn thời gian để công thức tự động bị từ chối')
+                        ->modalSubmitActionLabel('Set lịch')
+                        ->action(function (Recipe $record, array $data) {
+                            $record->update([
+                                'auto_reject_at' => $data['auto_reject_at'],
+                                'status' => 'pending'
+                            ]);
+                        })
+                        ->visible(fn(Recipe $record): bool => $record->status === 'pending' && Auth::user()->hasRole(['admin', 'manager'])),
                     Tables\Actions\DeleteAction::make()
                         ->label('Xóa')
                         ->icon('heroicon-o-trash')
@@ -599,6 +632,34 @@ class RecipeResource extends Resource
                                 }
                             }
                             return $count . ' công thức đã được set lịch phê duyệt.';
+                        })
+                        ->visible(fn(): bool => Auth::user()->hasRole(['admin', 'manager'])),
+                    Tables\Actions\BulkAction::make('set_auto_reject_selected')
+                        ->label('Set lịch từ chối đã chọn')
+                        ->icon('heroicon-o-clock')
+                        ->color('danger')
+                        ->form([
+                            Forms\Components\DateTimePicker::make('auto_reject_at')
+                                ->label('Thời gian tự động từ chối')
+                                ->required()
+                                ->minDate(now())
+                                ->helperText('Các công thức sẽ tự động bị từ chối khi đến thời gian này'),
+                        ])
+                        ->modalHeading('Set lịch từ chối tự động cho công thức đã chọn')
+                        ->modalDescription('Chọn thời gian để các công thức tự động bị từ chối')
+                        ->modalSubmitActionLabel('Set lịch')
+                        ->action(function (Collection $records, array $data) {
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if ($record->status === 'pending') {
+                                    $record->update([
+                                        'auto_reject_at' => $data['auto_reject_at'],
+                                        'status' => 'pending'
+                                    ]);
+                                    $count++;
+                                }
+                            }
+                            return $count . ' công thức đã được set lịch từ chối.';
                         })
                         ->visible(fn(): bool => Auth::user()->hasRole(['admin', 'manager'])),
                     Tables\Actions\BulkAction::make('publish_selected')

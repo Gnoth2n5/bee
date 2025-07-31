@@ -41,6 +41,9 @@ class UserResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
+                        Forms\Components\TextInput::make('province')
+                            ->label('Tỉnh/Thành phố')
+                            ->maxLength(100),
                         Forms\Components\TextInput::make('password')
                             ->label('Mật khẩu')
                             ->password()
@@ -115,6 +118,10 @@ class UserResource extends Resource
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('province')
+                    ->label('Tỉnh/Thành phố')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('roles.name')
@@ -209,7 +216,7 @@ class UserResource extends Resource
                         ->label('Xem profile')
                         ->icon('heroicon-o-user')
                         ->color('secondary')
-                        ->url(fn(User $record): string => route('profile.show', $record))
+                        ->url(fn(User $record): string => route('filament.admin.resources.users.edit', $record))
                         ->openUrlInNewTab(),
                 ]),
             ])

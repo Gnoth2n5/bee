@@ -14,6 +14,8 @@ use App\Livewire\Recipes\RecipeDetail;
 
 Route::get('/', HomePage::class)->name('home');
 
+
+
 // Post routes
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
 Route::get('/posts/{slug}', [PostController::class, 'show'])->name('posts.show');
@@ -31,6 +33,9 @@ Route::get('profile', App\Livewire\Profile\ProfilePage::class)
 // Recipe routes
 Route::get('/recipes', App\Livewire\Recipes\RecipeList::class)->name('recipes.index');
 Route::get('/recipes/{recipe}', RecipeDetail::class)->name('recipes.show');
+
+// Weather-based recipe suggestions
+Route::get('/weather-suggestions', App\Livewire\WeatherRecipeSuggestions::class)->name('weather.suggestions');
 
 // Protected routes
 Route::middleware(['auth'])->group(function () {
@@ -60,10 +65,13 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Admin routes
-Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'can:approve,App\Models\Recipe'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/recipes/pending', [RecipeController::class, 'pending'])->name('recipes.pending');
     Route::post('/recipes/{recipe}/approve', [RecipeController::class, 'approve'])->name('recipes.approve');
     Route::post('/recipes/{recipe}/reject', [RecipeController::class, 'reject'])->name('recipes.reject');
+    Route::get('/moderation-test', \App\Livewire\Admin\ModerationTest::class)->name('moderation.test');
+    Route::get('/scheduled-posts', \App\Livewire\Admin\ScheduledPosts::class)->name('scheduled-posts');
+    Route::get('/pending-posts', \App\Livewire\Admin\PendingPosts::class)->name('pending-posts');
 });
 
 // Admin logout route

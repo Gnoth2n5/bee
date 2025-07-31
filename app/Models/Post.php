@@ -83,6 +83,17 @@ class Post extends Model
             ->where('published_at', '<=', now());
     }
 
+    public function scopeScheduled($query)
+    {
+        return $query->where('status', 'published')
+            ->where('published_at', '>', now());
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
     public function scopePopular($query)
     {
         return $query->published()
@@ -93,6 +104,12 @@ class Post extends Model
     {
         return $query->published()
             ->orderBy('published_at', 'desc');
+    }
+
+    public function scopeLatestAll($query)
+    {
+        return $query->whereIn('status', ['published', 'pending'])
+            ->orderBy('created_at', 'desc');
     }
 
     public function incrementViewCount()

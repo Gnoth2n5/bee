@@ -33,6 +33,7 @@ class Recipe extends Model
         'approved_at',
         'rejection_reason',
         'auto_approve_at',
+        'auto_reject_at',
         'meta_title',
         'meta_description',
         'meta_keywords',
@@ -48,6 +49,7 @@ class Recipe extends Model
         'instructions' => 'array',
         'approved_at' => 'datetime',
         'auto_approve_at' => 'datetime',
+        'auto_reject_at' => 'datetime',
         'published_at' => 'datetime',
         'cooking_time' => 'integer',
         'preparation_time' => 'integer',
@@ -287,7 +289,9 @@ class Recipe extends Model
      */
     public function getUserCollections(User $user)
     {
-        return $this->collections()->where('user_id', $user->id)->get();
+        return $this->collections()->whereHas('user', function($query) use ($user) {
+            $query->where('id', $user->id);
+        })->get();
     }
 
     /**

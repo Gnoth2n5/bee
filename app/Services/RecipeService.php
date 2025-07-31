@@ -38,6 +38,11 @@ class RecipeService
             $this->handleFeaturedImage($recipe, $data['featured_image']);
         }
 
+        // Auto moderate the recipe if auto moderation is enabled
+        if (config('app.auto_moderation_enabled', true)) {
+            $this->autoModerateRecipe($recipe);
+        }
+
         return $recipe;
     }
 
@@ -68,6 +73,11 @@ class RecipeService
             $this->handleFeaturedImage($recipe, $data['featured_image'], true);
         }
 
+        // Auto moderate the recipe if it's pending and auto moderation is enabled
+        if ($recipe->status === 'pending' && config('app.auto_moderation_enabled', true)) {
+            $this->autoModerateRecipe($recipe);
+        }
+
         return $recipe;
     }
 
@@ -82,6 +92,39 @@ class RecipeService
         }
 
         return $recipe->delete();
+    }
+
+    /**
+     * Auto moderate a recipe using ModerationService.
+     */
+    public function autoModerateRecipe(Recipe $recipe)
+    {
+        try {
+            $moderationService = app(\App\Services\ModerationService::class);
+            $result = $moderationService->moderateRecipe($recipe);
+
+            // Log the moderation result
+            \Illuminate\Support\Facades\Log::info('Recipe auto-moderated', [
+                'recipe_id' => $recipe->id,
+                'title' => $recipe->title,
+                'action' => $result['action'],
+                'reason' => $result['reason'] ?? null
+            ]);
+
+            return $result;
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Auto moderation failed for recipe ' . $recipe->id, [
+                'error' => $e->getMessage(),
+                'recipe' => $recipe->toArray()
+            ]);
+
+            // Keep recipe as pending if moderation fails
+            return [
+                'action' => 'error',
+                'recipe_id' => $recipe->id,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 
     /**
@@ -117,6 +160,21 @@ class RecipeService
         $recipe->update([
             'status' => 'rejected',
             'approved_by' => $rejecter->id,
+            'approved_at' => now(),
+            'rejection_reason' => $reason,
+        ]);
+
+        return $recipe;
+    }
+
+    /**
+     * System reject a recipe (for scheduled rejections).
+     */
+    public function systemReject(Recipe $recipe, string $reason): Recipe
+    {
+        $recipe->update([
+            'status' => 'rejected',
+            'approved_by' => null, // System rejection
             'approved_at' => now(),
             'rejection_reason' => $reason,
         ]);

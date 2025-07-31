@@ -31,6 +31,25 @@ class ScheduledApprovalsWidget extends BaseWidget
             ->where('auto_approve_at', '>', $now)
             ->count();
 
+        // Công thức đang chờ từ chối theo lịch trình
+        $pendingRejectScheduled = Recipe::where('status', 'pending')
+            ->whereNotNull('auto_reject_at')
+            ->count();
+
+        // Công thức sẽ bị từ chối trong 1 giờ tới
+        $nextHourReject = Recipe::where('status', 'pending')
+            ->whereNotNull('auto_reject_at')
+            ->where('auto_reject_at', '<=', $now->addHour())
+            ->where('auto_reject_at', '>', $now)
+            ->count();
+
+        // Công thức sẽ bị từ chối trong 24 giờ tới
+        $next24HoursReject = Recipe::where('status', 'pending')
+            ->whereNotNull('auto_reject_at')
+            ->where('auto_reject_at', '<=', $now->addDay())
+            ->where('auto_reject_at', '>', $now)
+            ->count();
+
         return [
             Stat::make('Chờ phê duyệt theo lịch', $pendingScheduled)
                 ->description('Công thức có lịch phê duyệt')
@@ -46,6 +65,21 @@ class ScheduledApprovalsWidget extends BaseWidget
                 ->description('Sẽ được phê duyệt trong 24 giờ tới')
                 ->descriptionIcon('heroicon-m-calendar')
                 ->color('success'),
+
+            Stat::make('Chờ từ chối theo lịch', $pendingRejectScheduled)
+                ->description('Công thức có lịch từ chối')
+                ->descriptionIcon('heroicon-m-clock')
+                ->color('danger'),
+
+            Stat::make('Từ chối trong 1h', $nextHourReject)
+                ->description('Sẽ bị từ chối trong 1 giờ tới')
+                ->descriptionIcon('heroicon-m-arrow-trending-down')
+                ->color('danger'),
+
+            Stat::make('Từ chối trong 24h', $next24HoursReject)
+                ->description('Sẽ bị từ chối trong 24 giờ tới')
+                ->descriptionIcon('heroicon-m-calendar')
+                ->color('danger'),
         ];
     }
 }

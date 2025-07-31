@@ -21,14 +21,14 @@ class ProcessScheduledApprovals extends Command
      *
      * @var string
      */
-    protected $description = 'Xử lý tự động phê duyệt công thức theo lịch trình đã set';
+    protected $description = 'Xử lý tự động phê duyệt/từ chối công thức theo lịch trình đã set';
 
     /**
      * Execute the console command.
      */
     public function handle(RecipeService $recipeService)
     {
-        $this->info('⏰ Bắt đầu xử lý phê duyệt theo lịch trình...');
+        $this->info('⏰ Bắt đầu xử lý phê duyệt/từ chối theo lịch trình...');
 
         if ($this->option('dry-run')) {
             $this->warn('⚠️  Chế độ thử nghiệm - không thay đổi dữ liệu');
@@ -43,11 +43,20 @@ class ProcessScheduledApprovals extends Command
                 ->where('auto_approve_at', '<=', now())
                 ->get();
 
+            // Lấy các công thức có auto_reject_at đã qua thời gian hiện tại
+            $recipesToReject = Recipe::where('status', 'pending')
+                ->whereNotNull('auto_reject_at')
+                ->where('auto_reject_at', '<=', now())
+                ->get();
+
             $this->info("📋 Tìm thấy {$recipesToApprove->count()} công thức cần phê duyệt theo lịch trình");
+            $this->info("📋 Tìm thấy {$recipesToReject->count()} công thức cần từ chối theo lịch trình");
 
             $approvedCount = 0;
+            $rejectedCount = 0;
             $errors = [];
 
+            // Xử lý phê duyệt theo lịch trình
             foreach ($recipesToApprove as $recipe) {
                 try {
                     if (!$this->option('dry-run')) {
@@ -68,16 +77,39 @@ class ProcessScheduledApprovals extends Command
                 }
             }
 
+            // Xử lý từ chối theo lịch trình
+            foreach ($recipesToReject as $recipe) {
+                try {
+                    if (!$this->option('dry-run')) {
+                        $recipeService->systemReject($recipe, 'Tự động từ chối theo lịch trình');
+
+                        // Clear auto_reject_at sau khi đã từ chối
+                        $recipe->update(['auto_reject_at' => null]);
+                    }
+
+                    $rejectedCount++;
+                    $this->line("❌ Đã từ chối: {$recipe->title} (ID: {$recipe->id})");
+
+                } catch (\Exception $e) {
+                    $error = "Lỗi từ chối công thức {$recipe->id}: {$e->getMessage()}";
+                    $errors[] = $error;
+                    $this->error($error);
+                    Log::error($error, ['recipe_id' => $recipe->id, 'error' => $e->getMessage()]);
+                }
+            }
+
             $duration = now()->diffInSeconds($startTime);
 
             $this->newLine();
-            $this->info('📊 Kết quả xử lý phê duyệt theo lịch trình:');
+            $this->info('📊 Kết quả xử lý phê duyệt/từ chối theo lịch trình:');
             $this->table(
                 ['Thống kê', 'Số lượng'],
                 [
-                    ['Tổng công thức tìm thấy', $recipesToApprove->count()],
+                    ['Tổng công thức cần phê duyệt', $recipesToApprove->count()],
                     ['✅ Đã phê duyệt thành công', $approvedCount],
-                    ['❌ Lỗi', count($errors)],
+                    ['Tổng công thức cần từ chối', $recipesToReject->count()],
+                    ['❌ Đã từ chối thành công', $rejectedCount],
+                    ['⚠️ Lỗi', count($errors)],
                     ['⏱️  Thời gian xử lý', $duration . ' giây'],
                 ]
             );

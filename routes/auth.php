@@ -22,6 +22,14 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Logout route
+    Route::post('logout', function () {
+        Auth::logout();
+        session()->invalidate();
+        session()->regenerateToken();
+        return redirect('/');
+    })->name('logout');
+
     // Google logout route
     Route::post('auth/google/logout', [GoogleController::class, 'logout'])->name('google.logout');
 

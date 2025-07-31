@@ -90,7 +90,7 @@ class HomePage extends Component
         $isFavorited = $recipe->isFavoritedBy(Auth::user());
 
         if ($isFavorited) {
-            $this->dispatch('confirm-remove-favorite', recipeSlug: $recipe->slug, componentId: $this->getId(), action: 'toggle');
+            $this->removeFavorite($recipe->slug);
         } else {
             $this->toggleFavorite($recipeId);
         }
@@ -98,9 +98,29 @@ class HomePage extends Component
 
     public function removeFavorite($recipeSlug)
     {
+        \Log::info('removeFavorite called with slug: ' . $recipeSlug);
+        
+        if (!Auth::check()) {
+            \Log::warning('User not authenticated');
+            session()->flash('message', 'Vui lòng đăng nhập để thực hiện thao tác này.');
+            return;
+        }
+
         $recipe = Recipe::where('slug', $recipeSlug)->first();
         if ($recipe) {
-            $this->toggleFavorite($recipe->id);
+            \Log::info('Recipe found: ' . $recipe->title);
+            $favoriteService = app(FavoriteService::class);
+            $favoriteService->removeFavorite($recipe, Auth::user());
+            
+            \Log::info('Favorite removed successfully');
+            session()->flash('success', 'Đã xóa khỏi danh sách yêu thích.');
+            $this->dispatch('favorite-toggled', recipeId: $recipe->id);
+            $this->dispatch('flash-message', message: 'Đã xóa khỏi danh sách yêu thích.', type: 'success');
+            
+            // Refresh component để cập nhật UI
+            $this->dispatch('$refresh');
+        } else {
+            \Log::warning('Recipe not found with slug: ' . $recipeSlug);
         }
     }
 

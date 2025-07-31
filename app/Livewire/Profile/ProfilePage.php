@@ -23,10 +23,11 @@ class ProfilePage extends Component
     public $profile;
     public $isEditing = false;
     public $avatar;
-    
+
     // Profile fields
     public $name;
     public $email;
+    public $province;
     public $bio;
     public $phone;
     public $address;
@@ -36,15 +37,15 @@ class ProfilePage extends Component
     public $dietary_preferences = [];
     public $allergies = '';
     public $health_conditions = '';
-    
+
     // Stats
     public $recipesCount = 0;
     public $collectionsCount = 0;
     public $favoritesCount = 0;
-    
+
     // Tabs
     public $activeTab = 'recipes';
-    
+
     // Collection creation
     public $showCreateModal = false;
     public $newName = '';
@@ -52,7 +53,7 @@ class ProfilePage extends Component
     public $newIsPublic = false;
     public $newCoverImage;
     public $newCoverImagePreview;
-    
+
     // Dietary options
     public $dietaryOptions = [
         'vegan' => 'Thuần chay',
@@ -67,7 +68,7 @@ class ProfilePage extends Component
         'halal' => 'Halal',
         'kosher' => 'Kosher'
     ];
-    
+
     // Experience options
     public $experienceOptions = [
         'beginner' => 'Mới bắt đầu',
@@ -75,10 +76,35 @@ class ProfilePage extends Component
         'advanced' => 'Nâng cao'
     ];
 
+    // Location properties
+    public $userLatitude = null;
+    public $userLongitude = null;
+    public $nearestCity = null;
+
     public function mount()
     {
-        $this->user = Auth::user();
+        $this->user = auth()->user();
         $this->profile = $this->user->profile;
+
+        // Set active tab from session if available
+        if (session('activeTab')) {
+            $this->activeTab = session('activeTab');
+            session()->forget('activeTab');
+        }
+
+        // Kiểm tra xem có thông tin vị trí từ session không
+        if (session('user_location')) {
+            $userLocation = session('user_location');
+            $this->userLatitude = $userLocation['latitude'];
+            $this->userLongitude = $userLocation['longitude'];
+            $this->nearestCity = \App\Models\VietnamCity::where('code', $userLocation['nearest_city_code'])->first();
+
+            \Log::info('Loaded user location from session: ' . $userLocation['nearest_city_name'] . ' (' . $userLocation['nearest_city_code'] . ')');
+        } else {
+            // Tự động lấy vị trí khi component được load
+            $this->dispatch('auto-get-location');
+        }
+
         $this->loadProfileData();
         $this->loadStats();
     }
@@ -87,6 +113,7 @@ class ProfilePage extends Component
     {
         $this->name = $this->user->name;
         $this->email = $this->user->email;
+        $this->province = $this->user->province ?? '';
         $this->bio = $this->user->bio ?? '';
         $this->phone = $this->profile->phone ?? '';
         $this->address = $this->profile->address ?? '';
@@ -119,6 +146,7 @@ class ProfilePage extends Component
         $this->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $this->user->id,
+            'province' => 'nullable|string|max:100',
             'bio' => 'nullable|string|max:500',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
@@ -156,14 +184,15 @@ class ProfilePage extends Component
                 if ($this->user->hasLocalAvatar() && Storage::disk('public')->exists($this->user->avatar)) {
                     Storage::disk('public')->delete($this->user->avatar);
                 }
-                
+
                 // Store new avatar
                 $avatarPath = $this->avatar->store('avatars', 'public');
-                
+
                 // Update user with avatar
                 $this->user->update([
                     'name' => $this->name,
                     'email' => $this->email,
+                    'province' => $this->province,
                     'bio' => $this->bio,
                     'avatar' => $avatarPath,
                 ]);
@@ -172,6 +201,7 @@ class ProfilePage extends Component
                 $this->user->update([
                     'name' => $this->name,
                     'email' => $this->email,
+                    'province' => $this->province,
                     'bio' => $this->bio,
                 ]);
             }
@@ -209,6 +239,11 @@ class ProfilePage extends Component
     public function setActiveTab($tab)
     {
         $this->activeTab = $tab;
+
+        // Tự động vào chế độ edit khi click vào tab settings
+        if ($tab === 'settings') {
+            $this->isEditing = true;
+        }
     }
 
     public function updatedAvatar()
@@ -228,11 +263,11 @@ class ProfilePage extends Component
         if ($this->user->hasLocalAvatar() && Storage::disk('public')->exists($this->user->avatar)) {
             Storage::disk('public')->delete($this->user->avatar);
         }
-        
+
         $this->user->update(['avatar' => null]);
         $this->user->refresh();
         $this->avatar = null;
-        
+
         session()->flash('success', 'Ảnh đại diện đã được xóa!');
     }
 
@@ -263,7 +298,7 @@ class ProfilePage extends Component
     // Xác nhận xóa công thức yêu thích
     public function confirmRemoveFavorite($recipeSlug)
     {
-        $this->dispatch('confirm-remove-favorite', recipeSlug: $recipeSlug, componentId: $this->getId());
+        $this->removeFavorite($recipeSlug);
     }
 
     // Xóa công thức yêu thích qua Livewire
@@ -314,7 +349,7 @@ class ProfilePage extends Component
 
         try {
             $collectionService = app(CollectionService::class);
-            
+
             $collectionData = [
                 'name' => $this->newName,
                 'description' => $this->newDescription,
@@ -326,16 +361,16 @@ class ProfilePage extends Component
             }
 
             $collection = $collectionService->create($collectionData, $this->user);
-            
+
             // Reset form
             $this->resetCollectionForm();
-            
+
             // Cập nhật số lượng collections
             $this->collectionsCount = Collection::where('user_id', $this->user->id)->count();
-            
+
             session()->flash('success', 'Đã tạo bộ sưu tập "' . $collection->name . '" thành công!');
             $this->dispatch('flash-message', message: 'Đã tạo bộ sưu tập "' . $collection->name . '" thành công!', type: 'success');
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Có lỗi xảy ra khi tạo bộ sưu tập: ' . $e->getMessage());
             $this->dispatch('flash-message', message: 'Có lỗi xảy ra khi tạo bộ sưu tập: ' . $e->getMessage(), type: 'error');
@@ -353,8 +388,122 @@ class ProfilePage extends Component
         $this->resetValidation();
     }
 
+    // Location methods
+    public function getUserLocationFromBrowser()
+    {
+        \Log::info('getUserLocationFromBrowser called');
+        $this->dispatch('get-user-location');
+    }
+
+    /**
+     * Random chọn thành phố khi người dùng không cho phép vị trí
+     */
+    public function randomCity()
+    {
+        \Log::info('randomCity called - user denied location permission');
+
+        // Lấy danh sách tất cả thành phố có dữ liệu thời tiết
+        $citiesWithWeather = \App\Models\WeatherData::select('city_code')
+            ->distinct()
+            ->whereNotNull('temperature')
+            ->pluck('city_code')
+            ->toArray();
+
+        if (empty($citiesWithWeather)) {
+            // Nếu không có thành phố nào có dữ liệu thời tiết, lấy tất cả thành phố
+            $randomCity = \App\Models\VietnamCity::active()->inRandomOrder()->first();
+        } else {
+            // Random chọn từ các thành phố có dữ liệu thời tiết
+            $randomCityCode = $citiesWithWeather[array_rand($citiesWithWeather)];
+            $randomCity = \App\Models\VietnamCity::where('code', $randomCityCode)->first();
+        }
+
+        if ($randomCity) {
+            \Log::info('Random city selected: ' . $randomCity->name . ' (' . $randomCity->code . ')');
+            $this->nearestCity = $randomCity;
+
+            // Lưu vào session để dùng ở trang khác
+            session([
+                'user_location' => [
+                    'latitude' => $randomCity->latitude,
+                    'longitude' => $randomCity->longitude,
+                    'nearest_city_code' => $randomCity->code,
+                    'nearest_city_name' => $randomCity->name,
+                    'is_random' => true
+                ]
+            ]);
+
+            $this->dispatch('alert', message: 'Đã chọn ngẫu nhiên thành phố: ' . $randomCity->name);
+        } else {
+            \Log::info('No random city found');
+            $this->dispatch('alert', message: 'Không thể chọn thành phố ngẫu nhiên');
+        }
+    }
+
+    public function setUserLocation($latitude, $longitude)
+    {
+        \Log::info('ProfilePage setUserLocation called with: ' . $latitude . ', ' . $longitude);
+        $this->userLatitude = $latitude;
+        $this->userLongitude = $longitude;
+
+        // Tìm thành phố gần nhất
+        $this->nearestCity = $this->findNearestCity($latitude, $longitude);
+
+        if ($this->nearestCity) {
+            \Log::info('Nearest city found: ' . $this->nearestCity->name . ' (' . $this->nearestCity->code . ')');
+            // Tự động điền thông tin địa chỉ
+            $this->city = $this->nearestCity->name;
+            $this->country = 'Vietnam';
+
+            // Lưu vào session để dùng ở trang khác
+            session([
+                'user_location' => [
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
+                    'nearest_city_code' => $this->nearestCity->code,
+                    'nearest_city_name' => $this->nearestCity->name
+                ]
+            ]);
+        } else {
+            \Log::info('No nearest city found');
+        }
+    }
+
+    public function findNearestCity($latitude, $longitude)
+    {
+        $cities = \App\Models\VietnamCity::all();
+        $nearestCity = null;
+        $shortestDistance = PHP_FLOAT_MAX;
+
+        foreach ($cities as $city) {
+            $distance = $this->calculateDistance($latitude, $longitude, $city->latitude, $city->longitude);
+            if ($distance < $shortestDistance) {
+                $shortestDistance = $distance;
+                $nearestCity = $city;
+            }
+        }
+
+        return $nearestCity;
+    }
+
+    public function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        $earthRadius = 6371; // Bán kính trái đất tính bằng km
+
+        $latDelta = deg2rad($lat2 - $lat1);
+        $lonDelta = deg2rad($lon2 - $lon1);
+
+        $a = sin($latDelta / 2) * sin($latDelta / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($lonDelta / 2) * sin($lonDelta / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
+    }
+
     public function render()
     {
         return view('livewire.profile.profile-page');
     }
-} 
+}

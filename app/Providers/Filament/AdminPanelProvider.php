@@ -34,6 +34,13 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('images/bee-logo.png'))
             ->brandLogoHeight('2.5rem')
             ->favicon(asset('images/bee-favicon.ico'))
+            ->sidebarCollapsibleOnDesktop()
+            ->navigationItems([
+                \Filament\Navigation\NavigationItem::make('Về web')
+                    ->url('/')
+                    ->icon('heroicon-o-home')
+                    ->sort(100)
+            ])
             ->colors([
                 'primary' => [
                     50 => '#fff7ed',

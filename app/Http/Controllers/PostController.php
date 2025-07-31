@@ -47,7 +47,7 @@ class PostController extends Controller
             abort(404, 'Bài viết chưa có thời gian xuất bản');
         }
 
-        if ($debugPost->published_at->isFuture()) {
+        if ($debugPost->published_at && $debugPost->published_at->isFuture()) {
             abort(404, 'Bài viết chưa đến thời gian xuất bản');
         }
 

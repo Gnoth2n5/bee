@@ -64,6 +64,11 @@ class GoogleController extends Controller
                         'google_refresh_token' => $googleUser->refreshToken,
                         'avatar' => $googleUser->getAvatar(), // Cập nhật avatar từ Google
                     ]);
+
+                    // Đảm bảo user có role
+                    if (!$user->hasRole('user') && !$user->hasRole('manager') && !$user->hasRole('admin')) {
+                        $user->assignRole('user');
+                    }
                 } else {
                     // Tạo user mới
                     $user = User::create([
@@ -77,14 +82,22 @@ class GoogleController extends Controller
                         'avatar' => $googleUser->getAvatar(),
                         'last_login_at' => now(),
                         'login_count' => 1,
+                        'status' => 'active',
                     ]);
 
-                    // Tạo user profile nếu cần
-                    if (!$user->profile) {
-                        $user->profile()->create([
-                            'user_id' => $user->id,
-                        ]);
-                    }
+                    // Tạo user profile
+                    $user->profile()->create([
+                        'user_id' => $user->id,
+                        'cooking_experience' => 'beginner',
+                        'dietary_preferences' => [],
+                        'allergies' => [],
+                        'health_conditions' => [],
+                        'timezone' => 'Asia/Ho_Chi_Minh',
+                        'language' => 'vi'
+                    ]);
+
+                    // Gán role user
+                    $user->assignRole('user');
                 }
             } else {
                 // Cập nhật thông tin đăng nhập
@@ -94,6 +107,11 @@ class GoogleController extends Controller
                     'last_login_at' => now(),
                     'login_count' => $user->login_count + 1,
                 ]);
+
+                // Đảm bảo user có role
+                if (!$user->hasRole('user') && !$user->hasRole('manager') && !$user->hasRole('admin')) {
+                    $user->assignRole('user');
+                }
             }
 
             Auth::login($user);
