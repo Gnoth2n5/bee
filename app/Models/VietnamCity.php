@@ -12,19 +12,19 @@ class VietnamCity extends Model
     protected $fillable = [
         'name',
         'code',
+        'codename',
         'region',
         'latitude',
         'longitude',
-        'timezone',
         'is_active',
-        'sort_order'
+        'api_data',
     ];
 
     protected $casts = [
-        'latitude' => 'decimal:8',
-        'longitude' => 'decimal:8',
         'is_active' => 'boolean',
-        'sort_order' => 'integer'
+        'latitude' => 'decimal:6',
+        'longitude' => 'decimal:6',
+        'api_data' => 'array',
     ];
 
     /**

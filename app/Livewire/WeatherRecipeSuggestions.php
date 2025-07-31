@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\VietnamCity;
 use App\Services\WeatherService;
 use App\Services\WeatherRecipeService;
+use App\Services\WeatherConditionRuleService;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -21,13 +22,21 @@ class WeatherRecipeSuggestions extends Component
     public $userLongitude = null;
     public $nearestCity = null;
 
+    // Thêm các thuộc tính cho nhập thủ công
+    public $manualTemperature = null;
+    public $manualHumidity = null;
+    public $useManualInput = false;
+    public $showManualInput = false;
+
     protected $weatherService;
     protected $weatherRecipeService;
+    protected $weatherConditionRuleService;
 
-    public function boot(WeatherService $weatherService, WeatherRecipeService $weatherRecipeService)
+    public function boot(WeatherService $weatherService, WeatherRecipeService $weatherRecipeService, WeatherConditionRuleService $weatherConditionRuleService)
     {
         $this->weatherService = $weatherService;
         $this->weatherRecipeService = $weatherRecipeService;
+        $this->weatherConditionRuleService = $weatherConditionRuleService;
     }
 
     public function mount()
@@ -99,7 +108,61 @@ class WeatherRecipeSuggestions extends Component
 
     public function updatedSelectedCity()
     {
+        $this->useManualInput = false;
         $this->loadWeatherAndSuggestions();
+    }
+
+    /**
+     * Toggle manual input mode
+     */
+    public function toggleManualInput()
+    {
+        $this->showManualInput = !$this->showManualInput;
+        if ($this->showManualInput) {
+            $this->useManualInput = true;
+        }
+    }
+
+    /**
+     * Apply manual temperature and humidity
+     */
+    public function applyManualConditions()
+    {
+        $this->validate([
+            'manualTemperature' => 'nullable|numeric|min:-50|max:60',
+            'manualHumidity' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        if ($this->manualTemperature !== null || $this->manualHumidity !== null) {
+            $this->useManualInput = true;
+            $this->loadSuggestionsByConditions();
+        }
+    }
+
+    /**
+     * Load suggestions based on manual conditions
+     */
+    public function loadSuggestionsByConditions()
+    {
+        $this->loading = true;
+        $this->error = null;
+
+        try {
+            $temperature = $this->manualTemperature;
+            $humidity = $this->manualHumidity;
+
+            // Sử dụng service mới để lấy đề xuất (không có thành phố)
+            $this->suggestions = $this->weatherConditionRuleService->getSuggestionsByConditions(
+                $temperature,
+                $humidity,
+                12
+            );
+
+        } catch (\Exception $e) {
+            $this->error = 'Có lỗi xảy ra khi tải dữ liệu: ' . $e->getMessage();
+        } finally {
+            $this->loading = false;
+        }
     }
 
     public function loadWeatherAndSuggestions()
@@ -115,8 +178,8 @@ class WeatherRecipeSuggestions extends Component
                 return;
             }
 
-            // Load weather data
-            $this->weatherData = $this->weatherService->getCachedWeather($city);
+            // Load weather data - sử dụng API trực tiếp thay vì cache
+            $this->weatherData = $this->weatherService->getCurrentWeather($city);
 
             if (!$this->weatherData) {
                 $this->error = 'Không có dữ liệu thời tiết cho thành phố này';
@@ -124,8 +187,21 @@ class WeatherRecipeSuggestions extends Component
                 return;
             }
 
-            // Load recipe suggestions
-            $this->suggestions = $this->weatherRecipeService->getWeatherBasedSuggestions($this->selectedCity, 12);
+            // Load recipe suggestions using new system (không có thành phố)
+            if ($this->useManualInput && ($this->manualTemperature !== null || $this->manualHumidity !== null)) {
+                $this->suggestions = $this->weatherConditionRuleService->getSuggestionsByConditions(
+                    $this->manualTemperature,
+                    $this->manualHumidity,
+                    12
+                );
+            } else {
+                // Sử dụng nhiệt độ và độ ẩm từ weather data để tìm quy tắc phù hợp
+                $this->suggestions = $this->weatherConditionRuleService->getSuggestionsByConditions(
+                    $this->weatherData['temperature'],
+                    $this->weatherData['humidity'],
+                    12
+                );
+            }
 
         } catch (\Exception $e) {
             $this->error = 'Có lỗi xảy ra khi tải dữ liệu: ' . $e->getMessage();
@@ -181,35 +257,21 @@ class WeatherRecipeSuggestions extends Component
 
     public function getSuggestionReason()
     {
+        if ($this->useManualInput && ($this->manualTemperature !== null || $this->manualHumidity !== null)) {
+            return $this->weatherConditionRuleService->getSuggestionReason(
+                $this->manualTemperature,
+                $this->manualHumidity
+            );
+        }
+
         if (!$this->weatherData) {
             return 'Không có dữ liệu thời tiết';
         }
 
-        $temperature = $this->weatherData->temperature;
-        $humidity = $this->weatherData->humidity;
-        $reasons = [];
-
-        // Logic mới theo yêu cầu
-        if ($temperature >= 24) {
-            if ($humidity > 70) {
-                $reasons[] = "Nhiệt độ cao ({$temperature}°C) và độ ẩm cao ({$humidity}%) - gợi ý các món nhẹ như súp và salad để giải nhiệt";
-            } else {
-                $reasons[] = "Nhiệt độ cao ({$temperature}°C) và độ ẩm thấp ({$humidity}%) - gợi ý các món nước và món chế biến nhanh";
-            }
-        } else {
-            if ($temperature < 15) {
-                $reasons[] = "Thời tiết lạnh ({$temperature}°C) - phù hợp với các món ăn nóng, giàu dinh dưỡng để giữ ấm";
-            } else {
-                $reasons[] = "Thời tiết mát mẻ ({$temperature}°C) - gợi ý các món ăn đa dạng, cân bằng dinh dưỡng";
-            }
-        }
-
-        // Thêm thông tin thời tiết
-        if ($this->weatherData->weather_description) {
-            $reasons[] = "Thời tiết: " . $this->weatherData->weather_description;
-        }
-
-        return implode('. ', $reasons);
+        return $this->weatherConditionRuleService->getSuggestionReason(
+            $this->weatherData['temperature'],
+            $this->weatherData['humidity']
+        );
     }
 
     /**
@@ -263,11 +325,11 @@ class WeatherRecipeSuggestions extends Component
         if ($recipe) {
             $favoriteService = app(FavoriteService::class);
             $favoriteService->removeFavorite($recipe, Auth::user());
-            
+
             session()->flash('success', 'Đã xóa khỏi danh sách yêu thích.');
             $this->dispatch('favorite-toggled', recipeId: $recipe->id);
             $this->dispatch('flash-message', message: 'Đã xóa khỏi danh sách yêu thích.', type: 'success');
-            
+
             // Refresh component để cập nhật UI
             $this->dispatch('$refresh');
         }

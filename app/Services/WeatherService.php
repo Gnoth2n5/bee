@@ -108,7 +108,9 @@ class WeatherService
             'visibility' => $data['visibility'] ?? 10000,
             'uv_index' => null, // UV index requires separate API call
             'forecast_data' => null,
-            'last_updated' => now()
+            'last_updated' => now(),
+            'weather_category' => $this->getWeatherCategory($data['weather'][0]['main']),
+            'description' => $data['weather'][0]['description']
         ];
 
         // Save weather data
@@ -218,5 +220,35 @@ class WeatherService
         Log::info("Cleaned {$deletedCount} old weather records");
 
         return $deletedCount;
+    }
+
+    /**
+     * Get weather category from weather condition.
+     */
+    protected function getWeatherCategory($condition)
+    {
+        $condition = strtolower($condition);
+
+        if (str_contains($condition, 'rain') || str_contains($condition, 'drizzle')) {
+            return 'rainy';
+        }
+
+        if (str_contains($condition, 'snow')) {
+            return 'snowy';
+        }
+
+        if (str_contains($condition, 'cloud')) {
+            return 'cloudy';
+        }
+
+        if (str_contains($condition, 'clear') || str_contains($condition, 'sun')) {
+            return 'sunny';
+        }
+
+        if (str_contains($condition, 'storm') || str_contains($condition, 'thunder')) {
+            return 'stormy';
+        }
+
+        return 'normal';
     }
 }

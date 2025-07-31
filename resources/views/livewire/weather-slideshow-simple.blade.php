@@ -79,7 +79,7 @@
                                 </select>
                             </div>
                             @if($weatherData)
-                                <p class="text-sm text-gray-600">{{ $weatherData->weather_description ?? 'Thời tiết đẹp' }}</p>
+                                <p class="text-sm text-gray-600">{{ $weatherData['weather_description'] ?? 'Thời tiết đẹp' }}</p>
                             @endif
 
                         </div>
@@ -88,12 +88,12 @@
                         @if($weatherData)
                             <div class="text-center">
                                 <p class="text-2xl font-bold text-blue-500">
-                                    {{ number_format($weatherData->temperature, 1) }}°C
+                                    {{ number_format($weatherData['temperature'], 1) }}°C
                                 </p>
                                 <p class="text-sm text-gray-600">Nhiệt độ</p>
                             </div>
                             <div class="text-center">
-                                <p class="text-2xl font-bold text-blue-500">{{ $weatherData->humidity }}%</p>
+                                <p class="text-2xl font-bold text-blue-500">{{ $weatherData['humidity'] }}%</p>
                                 <p class="text-sm text-gray-600">Độ ẩm</p>
                             </div>
                         @endif

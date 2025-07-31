@@ -4,8 +4,6 @@
 
     <!-- Weather Recipe Slideshow -->
     <livewire:weather-slideshow-simple />
-    
-
 
     <!-- Featured Categories -->
     <x-featured-categories :categories="$categories" />

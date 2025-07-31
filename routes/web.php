@@ -37,6 +37,18 @@ Route::get('/recipes/{recipe}', RecipeDetail::class)->name('recipes.show');
 // Weather-based recipe suggestions
 Route::get('/weather-suggestions', App\Livewire\WeatherRecipeSuggestions::class)->name('weather.suggestions');
 
+// Vietnam Provinces API
+Route::prefix('api/vietnam-provinces')->name('api.vietnam-provinces.')->group(function () {
+    Route::get('/', [App\Http\Controllers\VietnamProvinceController::class, 'index'])->name('index');
+    Route::get('/stats', [App\Http\Controllers\VietnamProvinceController::class, 'stats'])->name('stats');
+    Route::get('/health', [App\Http\Controllers\VietnamProvinceController::class, 'health'])->name('health');
+    Route::get('/search', [App\Http\Controllers\VietnamProvinceController::class, 'search'])->name('search');
+    Route::get('/{code}', [App\Http\Controllers\VietnamProvinceController::class, 'show'])->name('show');
+    Route::get('/{provinceCode}/districts', [App\Http\Controllers\VietnamProvinceController::class, 'districts'])->name('districts');
+    Route::get('/districts/{districtCode}/wards', [App\Http\Controllers\VietnamProvinceController::class, 'wards'])->name('wards');
+    Route::delete('/cache', [App\Http\Controllers\VietnamProvinceController::class, 'clearCache'])->name('clear-cache');
+});
+
 // Protected routes
 Route::middleware(['auth'])->group(function () {
     // Recipe management
