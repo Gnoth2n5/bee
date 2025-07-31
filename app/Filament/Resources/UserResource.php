@@ -212,7 +212,7 @@ class UserResource extends Resource
                         ->label('Xem profile')
                         ->icon('heroicon-o-user')
                         ->color('secondary')
-                        ->url(fn(User $record): string => route('profile.show', $record))
+                        ->url(fn(User $record): string => route('filament.admin.resources.users.edit', $record))
                         ->openUrlInNewTab(),
                 ]),
             ])
