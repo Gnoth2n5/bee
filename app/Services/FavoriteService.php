@@ -51,8 +51,18 @@ class FavoriteService
 
     public function removeFavorite(Recipe $recipe, User $user): void
     {
-        Favorite::where('user_id', $user->id)
+        \Log::info('FavoriteService::removeFavorite called', [
+            'user_id' => $user->id,
+            'recipe_id' => $recipe->id,
+            'recipe_title' => $recipe->title
+        ]);
+
+        $deleted = Favorite::where('user_id', $user->id)
             ->where('recipe_id', $recipe->id)
             ->delete();
+
+        \Log::info('FavoriteService::removeFavorite result', [
+            'deleted_count' => $deleted
+        ]);
     }
 }

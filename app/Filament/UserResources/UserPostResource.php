@@ -80,16 +80,16 @@ class UserPostResource extends Resource
                             ->label('Trạng thái')
                             ->options([
                                 'draft' => 'Bản nháp',
-                                'published' => 'Đã xuất bản',
+                                'pending' => 'Chờ duyệt',
                                 'archived' => 'Đã lưu trữ',
                             ])
                             ->default('draft')
-                            ->required(),
+                            ->required()
+                            ->helperText('Chọn "Chờ duyệt" để gửi bài viết cho admin xem xét'),
                         Forms\Components\DateTimePicker::make('published_at')
                             ->label('Thời gian xuất bản')
                             ->nullable()
-                            ->maxDate(now())
-                            ->helperText('Không thể set thời gian xuất bản trong tương lai'),
+                            ->helperText('Để trống để xuất bản ngay, hoặc chọn thời gian trong tương lai để đặt lịch'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('SEO')
@@ -130,11 +130,13 @@ class UserPostResource extends Resource
                     ->label('Trạng thái')
                     ->colors([
                         'warning' => 'draft',
+                        'info' => 'pending',
                         'success' => 'published',
                         'danger' => 'archived',
                     ])
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'draft' => 'Bản nháp',
+                        'pending' => 'Chờ duyệt',
                         'published' => 'Đã xuất bản',
                         'archived' => 'Đã lưu trữ',
                     }),
@@ -158,6 +160,7 @@ class UserPostResource extends Resource
                     ->label('Trạng thái')
                     ->options([
                         'draft' => 'Bản nháp',
+                        'pending' => 'Chờ duyệt',
                         'published' => 'Đã xuất bản',
                         'archived' => 'Đã lưu trữ',
                     ]),

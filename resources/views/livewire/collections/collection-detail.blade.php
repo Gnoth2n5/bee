@@ -152,8 +152,7 @@
                     @if($isOwner)
                         <div class="p-2 border-t flex justify-end">
                             <button 
-                                wire:click="removeRecipe({{ $recipe->id }})"
-                                wire:confirm="Xóa công thức '{{ $recipe->title }}' khỏi bộ sưu tập?"
+                                onclick="confirmRemoveRecipe({{ $recipe->id }}, '{{ $recipe->title }}')"
                                 wire:loading.attr="disabled"
                                 class="text-red-600 hover:text-red-800 text-xs font-medium disabled:opacity-50 flex items-center gap-1"
                                 title="Xóa khỏi bộ sưu tập"
@@ -190,4 +189,69 @@
 
     <!-- Flash Messages -->
     <x-flash-message />
-</div> 
+</div>
+
+<script>
+function confirmRemoveRecipe(recipeId, recipeTitle) {
+    // Tạo modal với Tailwind CSS
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-96 mx-4 transform transition-all">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Xác nhận xóa</h3>
+            <p class="text-gray-600 text-center mb-6">Xóa công thức <strong>"${recipeTitle}"</strong> khỏi bộ sưu tập?</p>
+            <div class="flex gap-3">
+                <button id="cancelBtn" class="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors">
+                    Hủy
+                </button>
+                <button id="confirmBtn" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors">
+                    Xóa
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Xử lý sự kiện
+    const cancelBtn = modal.querySelector('#cancelBtn');
+    const confirmBtn = modal.querySelector('#confirmBtn');
+    
+    const removeModal = () => {
+        modal.remove();
+    };
+    
+    // Đóng modal khi click bên ngoài
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            removeModal();
+        }
+    });
+    
+    // Đóng modal khi nhấn ESC
+    const handleEsc = (e) => {
+        if (e.key === 'Escape') {
+            removeModal();
+            document.removeEventListener('keydown', handleEsc);
+        }
+    };
+    document.addEventListener('keydown', handleEsc);
+    
+    cancelBtn.addEventListener('click', () => {
+        removeModal();
+        document.removeEventListener('keydown', handleEsc);
+    });
+    
+    confirmBtn.addEventListener('click', () => {
+        removeModal();
+        document.removeEventListener('keydown', handleEsc);
+        // Gọi Livewire method
+        @this.removeRecipe(recipeId);
+    });
+}
+</script> 

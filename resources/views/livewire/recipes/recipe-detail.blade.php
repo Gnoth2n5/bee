@@ -182,14 +182,16 @@
                 </svg>
                 <span>{{ $recipe->favorite_count ?? 0 }}</span>
             </div>
-            <div class="flex gap-2" x-data="{ open: false }">
+            <div class="flex gap-2">
                 <!-- Nút chia sẻ -->
-                <button @click="open = true"
-                    class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 transition"
-                    type="button">
-                    <x-heroicon-o-share class="w-5 h-5" />
-                    Chia sẻ
-                </button>
+                <div x-data="{ open: false }">
+                    <button @click="open = true"
+                        class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 transition"
+                        type="button">
+                        <x-heroicon-o-share class="w-5 h-5" />
+                        Chia sẻ
+                    </button>
+                </div>
                 <!-- Component bộ sưu tập -->
                 @livewire('recipes.recipe-collection-manager', ['recipe' => $recipe])
 

@@ -287,7 +287,9 @@ class Recipe extends Model
      */
     public function getUserCollections(User $user)
     {
-        return $this->collections()->where('user_id', $user->id)->get();
+        return $this->collections()->whereHas('user', function($query) use ($user) {
+            $query->where('id', $user->id);
+        })->get();
     }
 
     /**

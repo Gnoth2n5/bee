@@ -8,9 +8,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
-// Schedule auto moderation every 2 minutes (for testing)
+// Schedule auto moderation every 15 minutes
 Schedule::command('recipes:auto-moderate')
-    ->everyTwoMinutes()
+    ->everyFifteenMinutes()
     ->withoutOverlapping()
     ->runInBackground()
     ->onSuccess(function () {
@@ -20,9 +20,9 @@ Schedule::command('recipes:auto-moderate')
         \Log::error('Auto moderation scheduled task failed');
     });
 
-// Schedule scheduled approvals every 2 minutes (for testing)
+// Schedule scheduled approvals every 15 minutes
 Schedule::command('recipes:process-scheduled-approvals')
-    ->everyTwoMinutes()
+    ->everyFifteenMinutes()
     ->withoutOverlapping()
     ->runInBackground()
     ->onSuccess(function () {
@@ -42,4 +42,16 @@ Schedule::command('weather:daily-update')
     })
     ->onFailure(function () {
         \Log::error('Daily weather update failed');
+    });
+
+// Schedule posts publishing every minute
+Schedule::command('posts:publish-scheduled')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->onSuccess(function () {
+        \Log::info('Scheduled posts publishing completed successfully');
+    })
+    ->onFailure(function () {
+        \Log::error('Scheduled posts publishing failed');
     });

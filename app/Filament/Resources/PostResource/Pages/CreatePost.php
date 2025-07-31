@@ -18,15 +18,16 @@ class CreatePost extends CreateRecord
 
     protected function afterCreate(): void
     {
-        // Tự động set published_at nếu status là published
         $record = $this->record;
+        
+        // Nếu status là published và chưa có published_at, set về hiện tại
         if ($record->status === 'published' && !$record->published_at) {
             $record->update(['published_at' => now()]);
         }
-
-        // Nếu published_at trong tương lai, set về hiện tại
-        if ($record->published_at && $record->published_at->isFuture()) {
-            $record->update(['published_at' => now()]);
+        
+        // Nếu status là pending, xóa published_at (sẽ được set khi admin approve)
+        if ($record->status === 'pending') {
+            $record->update(['published_at' => null]);
         }
 
         // Emit event để refresh trang client

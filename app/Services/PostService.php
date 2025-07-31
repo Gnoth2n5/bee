@@ -17,7 +17,7 @@ class PostService
     public function getLatestPosts($limit = 10)
     {
         return cache()->remember("posts.latest.{$limit}", 300, function () use ($limit) {
-            return Post::latest()->limit($limit)->get();
+            return Post::latestAll()->limit($limit)->get();
         });
     }
 
@@ -25,8 +25,18 @@ class PostService
     {
         $data['user_id'] = Auth::id();
 
+        // Nếu status là published và không có published_at, set về hiện tại
         if ($data['status'] === 'published' && !isset($data['published_at'])) {
             $data['published_at'] = now();
+        }
+
+        // Nếu có published_at trong tương lai, giữ nguyên để đặt lịch
+        // Nếu published_at trong quá khứ và status là published, set về hiện tại
+        if (isset($data['published_at']) && $data['status'] === 'published') {
+            $publishedAt = \Carbon\Carbon::parse($data['published_at']);
+            if ($publishedAt->isPast()) {
+                $data['published_at'] = now();
+            }
         }
 
         return Post::create($data);
@@ -34,8 +44,17 @@ class PostService
 
     public function updatePost($post, $data)
     {
-        if ($data['status'] === 'published' && $post->status !== 'published') {
+        // Nếu status thay đổi từ draft sang published và không có published_at
+        if ($data['status'] === 'published' && $post->status !== 'published' && !isset($data['published_at'])) {
             $data['published_at'] = now();
+        }
+
+        // Nếu có published_at trong quá khứ và status là published, set về hiện tại
+        if (isset($data['published_at']) && $data['status'] === 'published') {
+            $publishedAt = \Carbon\Carbon::parse($data['published_at']);
+            if ($publishedAt->isPast()) {
+                $data['published_at'] = now();
+            }
         }
 
         $post->update($data);

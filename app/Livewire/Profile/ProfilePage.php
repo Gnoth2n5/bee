@@ -83,8 +83,28 @@ class ProfilePage extends Component
 
     public function mount()
     {
-        $this->user = Auth::user();
+        $this->user = auth()->user();
         $this->profile = $this->user->profile;
+
+        // Set active tab from session if available
+        if (session('activeTab')) {
+            $this->activeTab = session('activeTab');
+            session()->forget('activeTab');
+        }
+
+        // Kiểm tra xem có thông tin vị trí từ session không
+        if (session('user_location')) {
+            $userLocation = session('user_location');
+            $this->userLatitude = $userLocation['latitude'];
+            $this->userLongitude = $userLocation['longitude'];
+            $this->nearestCity = \App\Models\VietnamCity::where('code', $userLocation['nearest_city_code'])->first();
+
+            \Log::info('Loaded user location from session: ' . $userLocation['nearest_city_name'] . ' (' . $userLocation['nearest_city_code'] . ')');
+        } else {
+            // Tự động lấy vị trí khi component được load
+            $this->dispatch('auto-get-location');
+        }
+
         $this->loadProfileData();
         $this->loadStats();
     }
@@ -277,7 +297,7 @@ class ProfilePage extends Component
     // Xác nhận xóa công thức yêu thích
     public function confirmRemoveFavorite($recipeSlug)
     {
-        $this->dispatch('confirm-remove-favorite', recipeSlug: $recipeSlug, componentId: $this->getId());
+        $this->removeFavorite($recipeSlug);
     }
 
     // Xóa công thức yêu thích qua Livewire
@@ -370,7 +390,53 @@ class ProfilePage extends Component
     // Location methods
     public function getUserLocationFromBrowser()
     {
+        \Log::info('getUserLocationFromBrowser called');
         $this->dispatch('get-user-location');
+    }
+
+    /**
+     * Random chọn thành phố khi người dùng không cho phép vị trí
+     */
+    public function randomCity()
+    {
+        \Log::info('randomCity called - user denied location permission');
+
+        // Lấy danh sách tất cả thành phố có dữ liệu thời tiết
+        $citiesWithWeather = \App\Models\WeatherData::select('city_code')
+            ->distinct()
+            ->whereNotNull('temperature')
+            ->pluck('city_code')
+            ->toArray();
+
+        if (empty($citiesWithWeather)) {
+            // Nếu không có thành phố nào có dữ liệu thời tiết, lấy tất cả thành phố
+            $randomCity = \App\Models\VietnamCity::active()->inRandomOrder()->first();
+        } else {
+            // Random chọn từ các thành phố có dữ liệu thời tiết
+            $randomCityCode = $citiesWithWeather[array_rand($citiesWithWeather)];
+            $randomCity = \App\Models\VietnamCity::where('code', $randomCityCode)->first();
+        }
+
+        if ($randomCity) {
+            \Log::info('Random city selected: ' . $randomCity->name . ' (' . $randomCity->code . ')');
+            $this->nearestCity = $randomCity;
+
+            // Lưu vào session để dùng ở trang khác
+            session([
+                'user_location' => [
+                    'latitude' => $randomCity->latitude,
+                    'longitude' => $randomCity->longitude,
+                    'nearest_city_code' => $randomCity->code,
+                    'nearest_city_name' => $randomCity->name,
+                    'is_random' => true
+                ]
+            ]);
+
+            $this->dispatch('alert', message: 'Đã chọn ngẫu nhiên thành phố: ' . $randomCity->name);
+        } else {
+            \Log::info('No random city found');
+            $this->dispatch('alert', message: 'Không thể chọn thành phố ngẫu nhiên');
+        }
     }
 
     public function setUserLocation($latitude, $longitude)

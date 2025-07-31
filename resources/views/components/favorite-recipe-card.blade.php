@@ -21,7 +21,7 @@
                 {{ $removeButton }}
             @else
                 <button 
-                    wire:click.prevent="confirmRemoveFavorite('{{ $recipe->slug }}')"
+                    wire:click="removeFavorite('{{ $recipe->slug }}')"
                     class="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors p-0"
                     aria-label="Xóa khỏi yêu thích"
                 >

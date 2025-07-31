@@ -45,40 +45,7 @@
         </div>
 
         <script>
-        // Handle confirm remove favorite
         document.addEventListener('livewire:init', () => {
-            Livewire.on('confirm-remove-favorite', (event) => {
-                const recipeSlug = event.recipeSlug;
-                const componentId = event.componentId;
-                const action = event.action || 'remove';
-                
-                if (confirm('Bạn có chắc muốn xóa công thức này khỏi danh sách yêu thích?')) {
-                    // Tìm component theo componentId
-                    const targetComponent = Livewire.find(componentId);
-                    
-                    if (targetComponent) {
-                        if (action === 'toggle' && targetComponent.toggleFavorite && typeof targetComponent.toggleFavorite === 'function') {
-                            // Tìm recipe ID từ slug
-                            const recipeElement = document.querySelector(`[data-recipe-slug="${recipeSlug}"]`);
-                            if (recipeElement) {
-                                const recipeId = recipeElement.getAttribute('data-recipe-id');
-                                targetComponent.call('toggleFavorite', recipeId);
-                            } else {
-                                // Fallback: gọi removeFavorite nếu có
-                                if (targetComponent.removeFavorite && typeof targetComponent.removeFavorite === 'function') {
-                                    targetComponent.call('removeFavorite', recipeSlug);
-                                }
-                            }
-                        } else if (targetComponent.removeFavorite && typeof targetComponent.removeFavorite === 'function') {
-                            targetComponent.call('removeFavorite', recipeSlug);
-                        } else {
-                            console.error('Không tìm thấy method phù hợp trên component');
-                        }
-                    } else {
-                        console.error('Không tìm thấy component');
-                    }
-                }
-            });
 
             // Handle flash message
             Livewire.on('flash-message', (event) => {
@@ -143,17 +110,10 @@
                     }
                 }, 3000);
             });
-                
-                // Thêm vào body
-                document.body.appendChild(flashElement);
-                
-                // Tự động xóa sau 4 giây
-                setTimeout(() => {
-                    if (flashElement.parentElement) {
-                        flashElement.remove();
-                    }
-                }, 4000);
-            });
+
+
+
+                });
         });
         </script>
     </body>

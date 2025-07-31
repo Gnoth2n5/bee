@@ -48,11 +48,13 @@ class ViewUserPost extends ViewRecord
                             ->badge()
                             ->color(fn(string $state): string => match ($state) {
                                 'draft' => 'warning',
+                                'pending' => 'info',
                                 'published' => 'success',
                                 'archived' => 'danger',
                             })
                             ->formatStateUsing(fn(string $state): string => match ($state) {
                                 'draft' => 'Bản nháp',
+                                'pending' => 'Chờ duyệt',
                                 'published' => 'Đã xuất bản',
                                 'archived' => 'Đã lưu trữ',
                             }),

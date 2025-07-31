@@ -12,12 +12,15 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use App\Models\Collection;
+use App\Models\Favorite;
 
 class RecipeController extends Controller
 {
     public function __construct(
         private RecipeService $recipeService
-    ) {}
+    ) {
+    }
 
     /**
      * Display a listing of the resource.
@@ -26,7 +29,7 @@ class RecipeController extends Controller
     {
         $filters = $request->only(['category', 'difficulty', 'cooking_time', 'search', 'sort']);
         $recipes = $this->recipeService->getFilteredRecipes($filters);
-        
+
         $categories = Category::where('parent_id', null)->with('children')->get();
         $tags = Tag::orderBy('usage_count', 'desc')->limit(20)->get();
 
@@ -63,7 +66,7 @@ class RecipeController extends Controller
         }
 
         return redirect()->route('recipes.show', $recipe)
-                        ->with('success', 'Công thức đã được tạo thành công và đang chờ duyệt.');
+            ->with('success', 'Công thức đã được tạo thành công và đang chờ duyệt.');
     }
 
     /**
@@ -111,7 +114,7 @@ class RecipeController extends Controller
         }
 
         return redirect()->route('recipes.show', $recipe)
-                        ->with('success', 'Công thức đã được cập nhật thành công.');
+            ->with('success', 'Công thức đã được cập nhật thành công.');
     }
 
     /**
@@ -132,7 +135,7 @@ class RecipeController extends Controller
         }
 
         return redirect()->route('recipes.index')
-                        ->with('success', 'Công thức đã được xóa thành công.');
+            ->with('success', 'Công thức đã được xóa thành công.');
     }
 
     /**
@@ -140,12 +143,25 @@ class RecipeController extends Controller
      */
     public function myRecipes(Request $request): View
     {
-        $recipes = Recipe::where('user_id', $request->user()->id)
-                        ->with(['categories', 'tags'])
+        $user = $request->user();
+        
+        $recipes = Recipe::where('user_id', $user->id)
+                        ->with(['categories', 'tags', 'images'])
                         ->orderBy('created_at', 'desc')
                         ->paginate(12);
 
-        return view('recipes.my-recipes', compact('recipes'));
+        $collections = Collection::where('user_id', $user->id)
+                                ->withCount('recipes')
+                                ->orderBy('created_at', 'desc')
+                                ->get();
+
+        $stats = [
+            'recipes_count' => Recipe::where('user_id', $user->id)->count(),
+            'collections_count' => Collection::where('user_id', $user->id)->count(),
+            'favorites_count' => Favorite::where('user_id', $user->id)->count(),
+        ];
+
+        return view('recipes.my-recipes', compact('recipes', 'collections', 'stats', 'user'));
     }
 
     /**
@@ -156,9 +172,9 @@ class RecipeController extends Controller
         $this->authorize('approve', Recipe::class);
 
         $recipes = Recipe::where('status', 'pending')
-                        ->with(['user', 'categories', 'tags'])
-                        ->orderBy('created_at', 'asc')
-                        ->paginate(20);
+            ->with(['user', 'categories', 'tags'])
+            ->orderBy('created_at', 'asc')
+            ->paginate(20);
 
         return view('admin.recipes.pending', compact('recipes'));
     }
@@ -232,4 +248,4 @@ class RecipeController extends Controller
             'related_recipes' => $this->recipeService->getRelatedRecipes($recipe)
         ]);
     }
-} 
+}

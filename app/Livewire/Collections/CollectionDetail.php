@@ -166,10 +166,71 @@ class CollectionDetail extends Component
             ->paginate($this->perPage);
     }
 
+    /**
+     * Toggle favorite status for a recipe
+     */
+    public function toggleFavorite($recipeId)
+    {
+        if (!\Illuminate\Support\Facades\Auth::check()) {
+            session()->flash('message', 'Vui lòng đăng nhập để thêm vào yêu thích.');
+            return redirect()->route('login');
+        }
+
+        $recipe = \App\Models\Recipe::findOrFail($recipeId);
+        $favoriteService = app(\App\Services\FavoriteService::class);
+        $result = $favoriteService->toggle($recipe, \Illuminate\Support\Facades\Auth::user());
+
+        session()->flash('success', $result['message']);
+        $this->dispatch('favorite-toggled', recipeId: $recipeId);
+        $this->dispatch('flash-message', message: $result['message'], type: 'success');
+
+        // Refresh component để cập nhật UI
+        $this->dispatch('$refresh');
+    }
+
+    /**
+     * Confirm toggle favorite with confirmation dialog
+     */
+    public function confirmToggleFavorite($recipeId)
+    {
+        $recipe = \App\Models\Recipe::findOrFail($recipeId);
+        $isFavorited = $recipe->isFavoritedBy(\Illuminate\Support\Facades\Auth::user());
+
+        if ($isFavorited) {
+            $this->removeFavorite($recipe->slug);
+        } else {
+            $this->toggleFavorite($recipeId);
+        }
+    }
+
+    /**
+     * Remove favorite (fallback method)
+     */
+    public function removeFavorite($recipeSlug)
+    {
+        if (!Auth::check()) {
+            session()->flash('message', 'Vui lòng đăng nhập để thực hiện thao tác này.');
+            return;
+        }
+
+        $recipe = \App\Models\Recipe::where('slug', $recipeSlug)->first();
+        if ($recipe) {
+            $favoriteService = app(FavoriteService::class);
+            $favoriteService->removeFavorite($recipe, Auth::user());
+
+            session()->flash('success', 'Đã xóa khỏi danh sách yêu thích.');
+            $this->dispatch('favorite-toggled', recipeId: $recipe->id);
+            $this->dispatch('flash-message', message: 'Đã xóa khỏi danh sách yêu thích.', type: 'success');
+
+            // Refresh component để cập nhật UI
+            $this->dispatch('$refresh');
+        }
+    }
+
     public function render()
     {
         return view('livewire.collections.collection-detail', [
             'recipes' => $this->recipes,
         ]);
     }
-} 
+}
