@@ -78,7 +78,7 @@
                 <div class="flex flex-col md:flex-row items-center justify-between">
                     <div class="flex items-center mb-4 md:mb-0">
                         <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mr-4">
-                            <svg class="w-6 h-6 text-white {{ $this->getWeatherIcon($weatherData->weather_category) }}" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="w-6 h-6 text-white {{ $this->getWeatherIcon($weatherData['weather_category'] ?? 'normal') }}" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
                             </svg>
                         </div>
@@ -98,7 +98,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <p class="text-sm text-gray-600">{{ $weatherData->weather_description }}</p>
+                            <p class="text-sm text-gray-600">{{ $weatherData['weather_description'] ?? 'Không có mô tả' }}</p>
                             @if($nearestCity && $selectedCity === $nearestCity->code)
                                 <p class="text-xs text-green-600 mt-1">✓ Đã tự động chọn {{ $nearestCity->name }}</p>
                             @endif
@@ -106,13 +106,13 @@
                     </div>
                     <div class="flex items-center space-x-6">
                         <div class="text-center">
-                            <p class="text-2xl font-bold {{ $this->getTemperatureColor($weatherData->temperature) }}">
-                                {{ number_format($weatherData->temperature, 1) }}°C
+                                                    <p class="text-2xl font-bold {{ $this->getTemperatureColor($weatherData['temperature']) }}">
+                            {{ number_format($weatherData['temperature'], 1) }}°C
                             </p>
                             <p class="text-sm text-gray-600">Nhiệt độ</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-2xl font-bold text-blue-500">{{ $weatherData->humidity }}%</p>
+                            <p class="text-2xl font-bold text-blue-500">{{ $weatherData['humidity'] }}%</p>
                             <p class="text-sm text-gray-600">Độ ẩm</p>
                         </div>
                         <div class="text-center">

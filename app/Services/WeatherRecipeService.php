@@ -13,10 +13,12 @@ use Illuminate\Support\Facades\Cache;
 class WeatherRecipeService
 {
     protected $weatherService;
+    protected $weatherConditionRuleService;
 
-    public function __construct(WeatherService $weatherService)
+    public function __construct(WeatherService $weatherService, WeatherConditionRuleService $weatherConditionRuleService)
     {
         $this->weatherService = $weatherService;
+        $this->weatherConditionRuleService = $weatherConditionRuleService;
     }
 
     public function getWeatherService()
@@ -26,6 +28,7 @@ class WeatherRecipeService
 
     /**
      * Get recipe suggestions based on weather conditions.
+     * Sử dụng hệ thống quy tắc mới thay vì logic cũ
      */
     public function getWeatherBasedSuggestions($cityCode, $limit = 12)
     {
@@ -36,164 +39,78 @@ class WeatherRecipeService
             return $this->getDefaultSuggestions($limit);
         }
 
-        return $this->generateSuggestions($weatherData, $limit);
+        // Sử dụng service mới để lấy đề xuất dựa trên điều kiện thời tiết (không có thành phố)
+        return $this->weatherConditionRuleService->getSuggestionsByConditions(
+            $weatherData->temperature,
+            $weatherData->humidity,
+            $limit
+        );
     }
 
     /**
      * Generate recipe suggestions based on weather data.
+     * Phương thức này giữ lại để tương thích ngược
      */
     protected function generateSuggestions(WeatherData $weatherData, $limit = 12)
     {
-        // Sử dụng logic thông minh mới dựa trên nhiệt độ và độ ẩm
-        return $this->getSmartWeatherSuggestions($weatherData, $limit);
+        // Sử dụng hệ thống quy tắc mới
+        return $this->weatherConditionRuleService->getSuggestionsByConditions(
+            $weatherData->temperature,
+            $weatherData->humidity,
+            $limit
+        );
     }
 
     /**
      * Logic đề xuất thông minh dựa trên nhiệt độ và độ ẩm
+     * Phương thức này giữ lại để tương thích ngược
      */
     protected function getSmartWeatherSuggestions(WeatherData $weatherData, $limit = 12)
     {
-        $temperature = $weatherData->temperature;
-        $humidity = $weatherData->humidity;
-
-        $query = Recipe::with(['user', 'categories', 'tags', 'images'])
-            ->where('status', 'approved')
-            ->whereNotNull('published_at');
-
-        // Logic chính theo yêu cầu
-        if ($temperature >= 24) {
-            if ($humidity > 70) {
-                // Trên 24°C và độ ẩm cao -> Món nhẹ như súp và salad
-                $query->whereHas('categories', function ($q) {
-                    $q->whereIn('name', ['Súp', 'Salad', 'Món mát', 'Tráng miệng', 'Đồ uống']);
-                });
-            } else {
-                // Trên 24°C và độ ẩm thấp -> Thời gian ngắn và các món nước
-                $query->whereHas('categories', function ($q) {
-                    $q->whereIn('name', ['Canh', 'Súp', 'Đồ uống', 'Món nước', 'Cháo']);
-                });
-            }
-        } else {
-            // Dưới 24°C - Logic cho thời tiết mát/lạnh
-            if ($temperature < 15) {
-                // Dưới 15°C - Món ăn nóng, giàu dinh dưỡng
-                $query->whereHas('categories', function ($q) {
-                    $q->whereIn('name', ['Lẩu', 'Cháo', 'Súp nóng', 'Món nóng', 'Thịt']);
-                });
-            } else {
-                // 15-24°C - Món ăn đa dạng, cân bằng
-                $query->orderBy('average_rating', 'desc');
-            }
-        }
-
-        return $query->limit($limit)->get();
+        return $this->weatherConditionRuleService->getSuggestionsByConditions(
+            $weatherData->temperature,
+            $weatherData->humidity,
+            $limit
+        );
     }
 
     /**
      * Get suggestions based on weather condition.
+     * Phương thức này giữ lại để tương thích ngược
      */
     protected function getWeatherConditionSuggestions(WeatherData $weatherData, $limit = 6)
     {
-        $weatherCategory = $weatherData->weather_category;
-
-        $query = Recipe::with(['user', 'categories', 'tags', 'images'])
-            ->where('status', 'approved')
-            ->whereNotNull('published_at');
-
-        switch ($weatherCategory) {
-            case 'rainy':
-                // Món ăn nóng, súp, canh
-                $query->whereHas('categories', function ($q) {
-                    $q->whereIn('name', ['Súp', 'Canh', 'Cháo', 'Lẩu']);
-                });
-                break;
-
-            case 'sunny':
-                // Món ăn mát, salad, đồ uống
-                $query->whereHas('categories', function ($q) {
-                    $q->whereIn('name', ['Salad', 'Đồ uống', 'Tráng miệng', 'Món mát']);
-                });
-                break;
-
-            case 'cold':
-                // Món ăn nóng, giàu dinh dưỡng
-                $query->whereHas('categories', function ($q) {
-                    $q->whereIn('name', ['Món nóng', 'Thịt', 'Hải sản', 'Lẩu']);
-                });
-                break;
-
-            case 'hot':
-                // Món ăn mát, nhẹ
-                $query->whereHas('categories', function ($q) {
-                    $q->whereIn('name', ['Món mát', 'Salad', 'Đồ uống', 'Tráng miệng']);
-                });
-                break;
-
-            default:
-                // Món ăn phổ biến
-                $query->orderBy('view_count', 'desc');
-                break;
-        }
-
-        return $query->limit($limit)->get();
+        return $this->weatherConditionRuleService->getSuggestionsByConditions(
+            $weatherData->temperature,
+            $weatherData->humidity,
+            $limit
+        );
     }
 
     /**
      * Get suggestions based on temperature.
+     * Phương thức này giữ lại để tương thích ngược
      */
     protected function getTemperatureBasedSuggestions(WeatherData $weatherData, $limit = 3)
     {
-        $temperature = $weatherData->temperature;
-
-        $query = Recipe::with(['user', 'categories', 'tags', 'images'])
-            ->where('status', 'approved')
-            ->whereNotNull('published_at');
-
-        if ($temperature < 15) {
-            // Thời tiết lạnh - món ăn nóng, giàu dinh dưỡng
-            $query->whereHas('categories', function ($q) {
-                $q->whereIn('name', ['Lẩu', 'Cháo', 'Súp', 'Món nóng']);
-            });
-        } elseif ($temperature > 30) {
-            // Thời tiết nóng - món ăn mát, nhẹ
-            $query->whereHas('categories', function ($q) {
-                $q->whereIn('name', ['Salad', 'Món mát', 'Đồ uống', 'Tráng miệng']);
-            });
-        } else {
-            // Thời tiết mát mẻ - món ăn đa dạng
-            $query->orderBy('average_rating', 'desc');
-        }
-
-        return $query->limit($limit)->get();
+        return $this->weatherConditionRuleService->getSuggestionsByConditions(
+            $weatherData->temperature,
+            null,
+            $limit
+        );
     }
 
     /**
      * Get suggestions based on humidity.
+     * Phương thức này giữ lại để tương thích ngược
      */
     protected function getHumidityBasedSuggestions(WeatherData $weatherData, $limit = 3)
     {
-        $humidity = $weatherData->humidity;
-
-        $query = Recipe::with(['user', 'categories', 'tags', 'images'])
-            ->where('status', 'approved')
-            ->whereNotNull('published_at');
-
-        if ($humidity > 70) {
-            // Độ ẩm cao - món ăn khô, cay
-            $query->whereHas('categories', function ($q) {
-                $q->whereIn('name', ['Món khô', 'Món cay', 'Nướng', 'Chiên']);
-            });
-        } elseif ($humidity < 40) {
-            // Độ ẩm thấp - món ăn có nước, mát
-            $query->whereHas('categories', function ($q) {
-                $q->whereIn('name', ['Canh', 'Súp', 'Đồ uống', 'Món mát']);
-            });
-        } else {
-            // Độ ẩm bình thường
-            $query->orderBy('favorite_count', 'desc');
-        }
-
-        return $query->limit($limit)->get();
+        return $this->weatherConditionRuleService->getSuggestionsByConditions(
+            null,
+            $weatherData->humidity,
+            $limit
+        );
     }
 
     /**
@@ -262,34 +179,14 @@ class WeatherRecipeService
 
     /**
      * Generate suggestion reason based on weather conditions.
+     * Sử dụng service mới để lấy lý do đề xuất
      */
     protected function generateSuggestionReason(WeatherData $weatherData)
     {
-        $temperature = $weatherData->temperature;
-        $humidity = $weatherData->humidity;
-        $reasons = [];
-
-        // Logic mới theo yêu cầu
-        if ($temperature >= 24) {
-            if ($humidity > 70) {
-                $reasons[] = "Nhiệt độ cao ({$temperature}°C) và độ ẩm cao ({$humidity}%) - gợi ý các món nhẹ như súp và salad để giải nhiệt";
-            } else {
-                $reasons[] = "Nhiệt độ cao ({$temperature}°C) và độ ẩm thấp ({$humidity}%) - gợi ý các món nước và món chế biến nhanh";
-            }
-        } else {
-            if ($temperature < 15) {
-                $reasons[] = "Thời tiết lạnh ({$temperature}°C) - phù hợp với các món ăn nóng, giàu dinh dưỡng để giữ ấm";
-            } else {
-                $reasons[] = "Thời tiết mát mẻ ({$temperature}°C) - gợi ý các món ăn đa dạng, cân bằng dinh dưỡng";
-            }
-        }
-
-        // Thêm thông tin thời tiết
-        if ($weatherData->weather_description) {
-            $reasons[] = "Thời tiết: " . $weatherData->weather_description;
-        }
-
-        return implode('. ', $reasons);
+        return $this->weatherConditionRuleService->getSuggestionReason(
+            $weatherData->temperature,
+            $weatherData->humidity
+        );
     }
 
     /**
@@ -303,11 +200,15 @@ class WeatherRecipeService
             $citiesWithSuggestions = WeatherRecipeSuggestion::distinct('city_code')->count();
             $lastGenerated = WeatherRecipeSuggestion::latest('last_generated')->first();
 
+            // Thêm thống kê từ hệ thống quy tắc mới
+            $ruleStats = $this->weatherConditionRuleService->getStats();
+
             return [
                 'total_suggestions' => $totalSuggestions,
                 'active_suggestions' => $activeSuggestions,
                 'cities_with_suggestions' => $citiesWithSuggestions,
-                'last_generated' => $lastGenerated ? $lastGenerated->last_generated : null
+                'last_generated' => $lastGenerated ? $lastGenerated->last_generated : null,
+                'weather_rules' => $ruleStats
             ];
         });
 
@@ -325,5 +226,28 @@ class WeatherRecipeService
         Log::info("Cleaned {$deletedCount} old weather suggestions");
 
         return $deletedCount;
+    }
+
+    /**
+     * Get suggestions by temperature and humidity directly (không cần city)
+     */
+    public function getSuggestionsByTemperatureAndHumidity($temperature, $humidity = null, $limit = 12)
+    {
+        return $this->weatherConditionRuleService->getSuggestionsByConditions(
+            $temperature,
+            $humidity,
+            $limit
+        );
+    }
+
+    /**
+     * Get suggestion reason by temperature and humidity directly
+     */
+    public function getSuggestionReasonByConditions($temperature, $humidity = null)
+    {
+        return $this->weatherConditionRuleService->getSuggestionReason(
+            $temperature,
+            $humidity
+        );
     }
 }

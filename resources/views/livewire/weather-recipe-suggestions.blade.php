@@ -130,16 +130,16 @@
                     <div class="text-center">
                         <div class="flex justify-center mb-4">
                             <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                                <svg class="w-8 h-8 text-white {{ $this->getWeatherIcon($weatherData->weather_category) }}" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="w-8 h-8 text-white {{ $this->getWeatherIcon($weatherData['weather_category'] ?? 'normal') }}" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
                                 </svg>
                             </div>
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900 mb-2">Thời tiết hiện tại</h3>
-                        <p class="text-3xl font-bold {{ $this->getTemperatureColor($weatherData->temperature) }} mb-1">
-                            {{ number_format($weatherData->temperature, 1) }}°C
+                        <p class="text-3xl font-bold {{ $this->getTemperatureColor($weatherData['temperature']) }} mb-1">
+                            {{ number_format($weatherData['temperature'], 1) }}°C
                         </p>
-                        <p class="text-gray-600">{{ $weatherData->weather_description }}</p>
+                        <p class="text-gray-600">{{ $weatherData['description'] ?? 'Không có mô tả' }}</p>
                     </div>
 
                     <!-- Weather Details -->
@@ -150,25 +150,25 @@
                                 <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
                                 </svg>
-                                <span class="text-sm text-gray-600">Độ ẩm: {{ $weatherData->humidity }}%</span>
+                                <span class="text-sm text-gray-600">Độ ẩm: {{ $weatherData['humidity'] }}%</span>
                             </div>
                             <div class="flex items-center">
                                 <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <span class="text-sm text-gray-600">Cảm giác: {{ number_format($weatherData->feels_like, 1) }}°C</span>
+                                <span class="text-sm text-gray-600">Cảm giác: {{ number_format($weatherData['feels_like'] ?? 0, 1) }}°C</span>
                             </div>
                             <div class="flex items-center">
                                 <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                 </svg>
-                                <span class="text-sm text-gray-600">Gió: {{ number_format($weatherData->wind_speed, 1) }} m/s</span>
+                                <span class="text-sm text-gray-600">Gió: {{ number_format($weatherData['wind_speed'] ?? 0, 1) }} m/s</span>
                             </div>
                             <div class="flex items-center">
                                 <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <span class="text-sm text-gray-600">Tầm nhìn: {{ number_format($weatherData->visibility / 1000, 1) }} km</span>
+                                <span class="text-sm text-gray-600">Tầm nhìn: {{ number_format(($weatherData['visibility'] ?? 0) / 1000, 1) }} km</span>
                             </div>
                         </div>
                     </div>

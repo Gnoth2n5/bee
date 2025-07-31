@@ -26,6 +26,11 @@ class WeatherRecipeSuggestionResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Đề xuất món ăn theo thời tiết';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false; // Ẩn khỏi navigation admin
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -184,10 +189,10 @@ class WeatherRecipeSuggestionResource extends Resource
                         ->label('Tạo lại tất cả đề xuất')
                         ->icon('heroicon-o-arrow-path')
                         ->color('success')
-                                                ->action(function (Collection $records) {
+                        ->action(function (Collection $records) {
                             $weatherRecipeService = new \App\Services\WeatherRecipeService(new \App\Services\WeatherService());
                             $count = 0;
-                            
+
                             foreach ($records as $record) {
                                 $city = \App\Models\VietnamCity::where('code', $record->city_code)->first();
                                 if ($city) {
@@ -198,7 +203,7 @@ class WeatherRecipeSuggestionResource extends Resource
                                     }
                                 }
                             }
-                            
+
                             \Filament\Notifications\Notification::make()
                                 ->title("Đã tạo lại đề xuất cho $count thành phố")
                                 ->success()

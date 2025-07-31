@@ -7,7 +7,7 @@
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
-        </testsuite>
+        </testsuite>image.png
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
