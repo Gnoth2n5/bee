@@ -23,21 +23,21 @@ class StoreRecipeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string', 'min:10'],
+            'title' => ['required', 'string', 'min:5', 'max:255'],
+            'description' => ['required', 'string', 'min:20'],
             'summary' => ['required', 'string', 'max:500'],
-            'cooking_time' => ['required', 'integer', 'min:1', 'max:1440'], // max 24 hours
+            'cooking_time' => ['required', 'integer', 'min:5', 'max:1440'], // max 24 hours
             'preparation_time' => ['required', 'integer', 'min:0', 'max:1440'],
             'difficulty' => ['required', Rule::in(['easy', 'medium', 'hard'])],
             'servings' => ['required', 'integer', 'min:1', 'max:50'],
             'calories_per_serving' => ['nullable', 'integer', 'min:0', 'max:5000'],
-            'ingredients' => ['required', 'array', 'min:1'],
+            'ingredients' => ['required', 'array', 'min:2'],
             'ingredients.*.name' => ['required', 'string', 'max:255'],
-            'ingredients.*.amount' => ['required', 'string', 'max:100'],
+            'ingredients.*.amount' => ['required', 'string', 'max:50'],
             'ingredients.*.unit' => ['required', 'string', 'max:50'],
-            'instructions' => ['required', 'array', 'min:1'],
+            'instructions' => ['required', 'array', 'min:2'],
             'instructions.*.step' => ['required', 'integer', 'min:1'],
-            'instructions.*.instruction' => ['required', 'string', 'min:5'],
+            'instructions.*.instruction' => ['required', 'string', 'min:5', 'max:1000'],
             'tips' => ['nullable', 'string', 'max:1000'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'featured_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
@@ -69,12 +69,12 @@ class StoreRecipeRequest extends FormRequest
             'servings.required' => 'Số khẩu phần là bắt buộc.',
             'servings.min' => 'Số khẩu phần phải ít nhất 1.',
             'ingredients.required' => 'Danh sách nguyên liệu là bắt buộc.',
-            'ingredients.min' => 'Phải có ít nhất 1 nguyên liệu.',
+            'ingredients.min' => 'Phải có ít nhất 2 nguyên liệu.',
             'ingredients.*.name.required' => 'Tên nguyên liệu là bắt buộc.',
             'ingredients.*.amount.required' => 'Số lượng nguyên liệu là bắt buộc.',
             'ingredients.*.unit.required' => 'Đơn vị nguyên liệu là bắt buộc.',
             'instructions.required' => 'Hướng dẫn nấu là bắt buộc.',
-            'instructions.min' => 'Phải có ít nhất 1 bước hướng dẫn.',
+            'instructions.min' => 'Phải có ít nhất 2 bước hướng dẫn.',
             'instructions.*.instruction.required' => 'Nội dung hướng dẫn là bắt buộc.',
             'instructions.*.instruction.min' => 'Hướng dẫn phải có ít nhất 5 ký tự.',
             'category_ids.required' => 'Danh mục là bắt buộc.',
@@ -110,4 +110,4 @@ class StoreRecipeRequest extends FormRequest
             'tag_ids' => 'tags',
         ];
     }
-} 
+}

@@ -18,6 +18,8 @@ class VietnamCity extends Model
         'longitude',
         'is_active',
         'api_data',
+        'sort_order',
+        'timezone',
     ];
 
     protected $casts = [

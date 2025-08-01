@@ -14,7 +14,7 @@
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6 max-w-md mx-auto">
                     <div class="text-center space-y-3">
                         <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                            <button wire:click="getUserLocationFromBrowser" 
+                            <button onclick="showLocationModal()" 
                                     class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
@@ -272,33 +272,7 @@
         @endif
     </div>
     
-    <!-- Modal thông báo vị trí -->
-    <div id="location-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
-                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">Chia sẻ vị trí</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500 mb-4">
-                        Bạn có muốn chia sẻ vị trí hiện tại để nhận đề xuất món ăn phù hợp với thời tiết không?
-                    </p>
-                    <div class="flex items-center justify-center space-x-4">
-                        <button id="location-yes" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
-                            Có, chia sẻ
-                        </button>
-                        <button id="location-no" class="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">
-                            Không, chọn ngẫu nhiên
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
     
     <style>
     .line-clamp-2 {
@@ -310,64 +284,101 @@
     </style>
 
     <script>
-    document.addEventListener('livewire:init', () => {
-        // Hàm hiển thị modal
-        function showLocationModal() {
-            const modal = document.getElementById('location-modal');
-            modal.classList.remove('hidden');
-        }
-        
-        // Hàm ẩn modal
-        function hideLocationModal() {
-            const modal = document.getElementById('location-modal');
-            modal.classList.add('hidden');
-        }
-        
-        // Xử lý sự kiện click nút trong modal
-        document.getElementById('location-yes').addEventListener('click', function() {
-            hideLocationModal();
-            // Lấy vị trí
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const latitude = position.coords.latitude;
-                        const longitude = position.coords.longitude;
-                        
-                        console.log('Đã lấy được vị trí:', latitude, longitude);
-                        
-                        // Gửi tọa độ về Livewire
-                        @this.setUserLocation(latitude, longitude);
-                    },
-                    (error) => {
-                        console.log('Lỗi lấy vị trí:', error.message);
-                        
-                        // Khi người dùng từ chối vị trí, tự động chọn ngẫu nhiên
-                        if (error.code === 1) { // PERMISSION_DENIED
-                            console.log('Người dùng từ chối vị trí, chọn ngẫu nhiên...');
-                            @this.randomCity();
-                        } else {
-                            alert('Không thể lấy vị trí: ' + error.message);
-                            @this.randomCity();
+    // Hàm hiển thị modal chia sẻ vị trí với SweetAlert
+    function showLocationModal() {
+        Swal.fire({
+            title: 'Chia sẻ vị trí',
+            text: 'Bạn có muốn chia sẻ vị trí hiện tại để nhận đề xuất món ăn phù hợp với thời tiết không?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3B82F6',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Có, chia sẻ',
+            cancelButtonText: 'Không, chọn ngẫu nhiên',
+            customClass: {
+                popup: 'rounded-lg',
+                confirmButton: 'rounded-md',
+                cancelButton: 'rounded-md'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Lấy vị trí
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const latitude = position.coords.latitude;
+                            const longitude = position.coords.longitude;
+                            
+                            console.log('Đã lấy được vị trí:', latitude, longitude);
+                            
+                            // Hiển thị thông báo thành công
+                            Swal.fire({
+                                title: 'Thành công!',
+                                text: 'Đã lấy được vị trí của bạn',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            
+                            // Gửi tọa độ về Livewire
+                            @this.setUserLocation(latitude, longitude);
+                        },
+                        (error) => {
+                            console.log('Lỗi lấy vị trí:', error.message);
+                            
+                            // Khi người dùng từ chối vị trí, tự động chọn ngẫu nhiên
+                            if (error.code === 1) { // PERMISSION_DENIED
+                                console.log('Người dùng từ chối vị trí, chọn ngẫu nhiên...');
+                                Swal.fire({
+                                    title: 'Đã chọn ngẫu nhiên',
+                                    text: 'Sẽ hiển thị món ăn phù hợp với thời tiết ngẫu nhiên',
+                                    icon: 'info',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                                @this.randomCity();
+                            } else {
+                                Swal.fire({
+                                    title: 'Lỗi',
+                                    text: 'Không thể lấy vị trí: ' + error.message,
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                                @this.randomCity();
+                            }
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 60000
                         }
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 60000
-                    }
-                );
+                    );
+                } else {
+                    Swal.fire({
+                        title: 'Không hỗ trợ',
+                        text: 'Trình duyệt không hỗ trợ lấy vị trí',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    @this.randomCity();
+                }
             } else {
-                alert('Trình duyệt không hỗ trợ lấy vị trí');
+                // Chọn ngẫu nhiên
+                console.log('Người dùng không muốn chia sẻ vị trí, chọn ngẫu nhiên...');
+                Swal.fire({
+                    title: 'Đã chọn ngẫu nhiên',
+                    text: 'Sẽ hiển thị món ăn phù hợp với thời tiết ngẫu nhiên',
+                    icon: 'info',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
                 @this.randomCity();
             }
         });
-        
-        document.getElementById('location-no').addEventListener('click', function() {
-            hideLocationModal();
-            // Chọn ngẫu nhiên
-            console.log('Người dùng không muốn chia sẻ vị trí, chọn ngẫu nhiên...');
-            @this.randomCity();
-        });
+    }
+
+    document.addEventListener('livewire:init', () => {
+        }
 
         // Tự động lấy vị trí khi component được load
         Livewire.on('auto-get-location', () => {

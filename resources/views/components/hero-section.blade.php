@@ -10,7 +10,7 @@
 
             <!-- Featured Search -->
             <div class="max-w-2xl mx-auto">
-                <livewire:search-with-image />
+                <livewire:quick-search />
             </div>
 
             <!-- Quick Stats -->
