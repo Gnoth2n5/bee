@@ -45,11 +45,9 @@ class VietnamCityResource extends Resource
                             ->maxLength(20)
                             ->unique(ignoreRecord: true),
                         Forms\Components\Select::make('region')
-                            ->label('Vùng miền')
+                            ->label('Quốc gia')
                             ->options([
-                                'Bắc' => 'Miền Bắc',
-                                'Trung' => 'Miền Trung',
-                                'Nam' => 'Miền Nam',
+                                'VN' => 'Việt Nam',
                             ])
                             ->required(),
                         Forms\Components\TextInput::make('latitude')
@@ -90,7 +88,7 @@ class VietnamCityResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('region')
-                    ->label('Vùng miền')
+                    ->label('Quốc gia')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'Bắc' => 'primary',
@@ -111,10 +109,6 @@ class VietnamCityResource extends Resource
                     ->label('Trạng thái')
                     ->boolean()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('sort_order')
-                    ->label('Thứ tự')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('api_data')
                     ->label('Dữ liệu API')
                     ->formatStateUsing(function ($state) {
@@ -125,21 +119,12 @@ class VietnamCityResource extends Resource
                     })
                     ->badge()
                     ->color(fn($state) => $state === 'Có dữ liệu' ? 'success' : 'gray'),
-                Tables\Columns\TextColumn::make('latestWeatherData.temperature')
-                    ->label('Nhiệt độ hiện tại')
-                    ->suffix('°C')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('latestWeatherData.weather_description')
-                    ->label('Thời tiết')
-                    ->limit(20),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('region')
-                    ->label('Vùng miền')
+                    ->label('Quốc gia')
                     ->options([
-                        'Bắc' => 'Miền Bắc',
-                        'Trung' => 'Miền Trung',
-                        'Nam' => 'Miền Nam',
+                        'VN' => 'Việt Nam',
                     ]),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Trạng thái')
@@ -151,7 +136,7 @@ class VietnamCityResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Action::make('getApiDetail')
-                    ->label('Lấy từ API')
+                    ->label('Cập nhật')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('info')
                     ->size('sm')
@@ -228,52 +213,6 @@ class VietnamCityResource extends Resource
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Đóng')
                     ->visible(fn(VietnamCity $record) => !empty($record->api_data)),
-                Action::make('getDistricts')
-                    ->label('Lấy quận/huyện')
-                    ->icon('heroicon-o-map')
-                    ->color('purple')
-                    ->size('sm')
-                    ->requiresConfirmation()
-                    ->modalHeading('Lấy thông tin quận/huyện')
-                    ->modalDescription('Lấy danh sách quận/huyện của thành phố này từ API')
-                    ->modalSubmitActionLabel('Lấy dữ liệu')
-                    ->modalCancelActionLabel('Hủy')
-                    ->action(function (VietnamCity $record) {
-                        try {
-                            $provinceService = new VietnamProvinceService();
-
-                            // Lấy thông tin quận/huyện từ API
-                            $districts = $provinceService->getDistrictsByProvinceCode($record->code);
-
-                            if (empty($districts)) {
-                                throw new \Exception('Không tìm thấy thông tin quận/huyện trong API');
-                            }
-
-                            // Cập nhật dữ liệu API với thông tin quận/huyện
-                            $currentApiData = json_decode($record->api_data, true) ?: [];
-                            $currentApiData['districts'] = $districts;
-
-                            $record->update([
-                                'api_data' => json_encode($currentApiData),
-                            ]);
-
-                            \Filament\Notifications\Notification::make()
-                                ->title('Lấy quận/huyện thành công!')
-                                ->body("Đã lấy " . count($districts) . " quận/huyện cho thành phố: {$record->name}")
-                                ->success()
-                                ->send();
-
-                        } catch (\Exception $e) {
-                            Log::error("Lỗi khi lấy quận/huyện cho thành phố {$record->name}: " . $e->getMessage());
-
-                            \Filament\Notifications\Notification::make()
-                                ->title('Lỗi lấy quận/huyện!')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-                    })
-                    ->visible(fn(VietnamCity $record) => !empty($record->code))
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
