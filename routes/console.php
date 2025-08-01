@@ -40,20 +40,20 @@ Schedule::command('weather:daily-update')
     ->withoutOverlapping()
     ->runInBackground()
     ->onSuccess(function () {
-        \Log::info('Daily weather update completed successfully');
+        Log::info('Daily weather update completed successfully');
     })
     ->onFailure(function () {
-        \Log::error('Daily weather update failed');
+        Log::error('Daily weather update failed');
     });
 
-// Schedule posts publishing every minute
+// Schedule posts publishing every 5 minutes
 Schedule::command('posts:publish-scheduled')
-    ->everyMinute()
+    ->everyFiveMinutes()
     ->withoutOverlapping()
     ->runInBackground()
     ->onSuccess(function () {
-        \Log::info('Scheduled posts publishing completed successfully');
+        Log::info('Scheduled posts publishing completed successfully');
     })
     ->onFailure(function () {
-        \Log::error('Scheduled posts publishing failed');
+        Log::error('Scheduled posts publishing failed');
     });

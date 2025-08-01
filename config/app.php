@@ -86,6 +86,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Auto Moderation Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This configuration controls whether automatic moderation is enabled
+    | for recipes when they are created or updated.
+    |
+    */
+
+    'auto_moderation_enabled' => env('AUTO_MODERATION_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
     |

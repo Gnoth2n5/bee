@@ -33,7 +33,7 @@ class PublishScheduledPosts extends Command
         // và đã đến thời gian xuất bản
         $scheduledPosts = Post::where('status', 'published')
             ->where('published_at', '<=', now())
-            ->where('published_at', '>', now()->subMinutes(5)) // Chỉ xử lý các bài viết trong 5 phút gần đây
+            ->where('published_at', '>', now()->subMinutes(10)) // Chỉ xử lý các bài viết trong 10 phút gần đây
             ->get();
 
         if ($scheduledPosts->isEmpty()) {
