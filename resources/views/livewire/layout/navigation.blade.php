@@ -108,10 +108,6 @@ new class extends Component
             </div>
         </div>
 
-        <!-- Search Bar -->
-        <div class="hidden lg:flex items-center lg:order-2 w-96">
-            <livewire:global-search />
-        </div>
 
         <!-- Right side items -->
         <div class="flex items-center lg:order-3">
