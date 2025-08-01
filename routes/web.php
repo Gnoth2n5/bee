@@ -34,6 +34,9 @@ Route::get('profile', App\Livewire\Profile\ProfilePage::class)
 Route::get('/recipes', App\Livewire\Recipes\RecipeList::class)->name('recipes.index');
 Route::get('/recipes/{recipe}', RecipeDetail::class)->name('recipes.show');
 
+// Advanced Search route
+Route::get('/search', App\Livewire\AdvancedSearch::class)->name('search.advanced');
+
 // Weather-based recipe suggestions
 Route::get('/weather-suggestions', App\Livewire\WeatherRecipeSuggestions::class)->name('weather.suggestions');
 

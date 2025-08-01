@@ -393,12 +393,17 @@ class VietnamCityResource extends Resource
                                         'code' => $code,
                                         'codename' => $province['codename'] ?? null,
                                         'region' => static::determineRegion($province['name']),
-                                        'latitude' => !empty($province['latitude']) ? (float) $province['latitude'] : null,
-                                        'longitude' => !empty($province['longitude']) ? (float) $province['longitude'] : null,
                                         'is_active' => true,
                                         'api_data' => json_encode($province),
                                     ];
 
+                                    // Chỉ cập nhật tọa độ nếu API có dữ liệu và không rỗng
+                                    if (!empty($province['latitude']) && !empty($province['longitude'])) {
+                                        $data['latitude'] = (float) $province['latitude'];
+                                        $data['longitude'] = (float) $province['longitude'];
+                                    }
+                                    // Nếu không có tọa độ từ API, giữ nguyên tọa độ hiện tại (nếu có)
+            
                                     if ($city) {
                                         $city->update($data);
                                         $updated++;
@@ -509,11 +514,15 @@ class VietnamCityResource extends Resource
                                         'code' => $code,
                                         'codename' => $province['codename'] ?? null,
                                         'region' => static::determineRegion($province['name']),
-                                        'latitude' => $province['latitude'] ?? null,
-                                        'longitude' => $province['longitude'] ?? null,
                                         'is_active' => true,
                                         'api_data' => json_encode($province),
                                     ];
+
+                                    // Chỉ cập nhật tọa độ nếu API có dữ liệu và không rỗng
+                                    if (!empty($province['latitude']) && !empty($province['longitude'])) {
+                                        $data['latitude'] = (float) $province['latitude'];
+                                        $data['longitude'] = (float) $province['longitude'];
+                                    }
 
                                     VietnamCity::create($data);
                                     $created++;
@@ -569,6 +578,36 @@ class VietnamCityResource extends Resource
 
                             \Filament\Notifications\Notification::make()
                                 ->title('Lỗi kiểm tra API!')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+                Action::make('updateCoordinates')
+                    ->label('Cập nhật tọa độ')
+                    ->icon('heroicon-o-map-pin')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Cập nhật tọa độ')
+                    ->modalDescription('Cập nhật tọa độ chính xác cho tất cả thành phố từ dữ liệu nội bộ')
+                    ->modalSubmitActionLabel('Cập nhật')
+                    ->modalCancelActionLabel('Hủy')
+                    ->action(function () {
+                        try {
+                            $seeder = new \Database\Seeders\VietnamCityCoordinatesSeeder();
+                            $seeder->run();
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Cập nhật tọa độ thành công!')
+                                ->body('Đã cập nhật tọa độ chính xác cho các thành phố')
+                                ->success()
+                                ->send();
+
+                        } catch (\Exception $e) {
+                            Log::error('Lỗi khi cập nhật tọa độ: ' . $e->getMessage());
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Lỗi cập nhật tọa độ!')
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
