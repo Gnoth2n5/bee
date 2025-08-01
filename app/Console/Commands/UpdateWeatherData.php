@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Services\WeatherService;
-use App\Services\WeatherRecipeService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -16,8 +15,7 @@ class UpdateWeatherData extends Command
      */
     protected $signature = 'weather:update 
                             {--city= : Update weather for specific city code}
-                            {--all : Update weather for all cities}
-                            {--suggestions : Generate recipe suggestions after weather update}';
+                            {--all : Update weather for all cities}';
 
     /**
      * The console command description.
@@ -27,16 +25,14 @@ class UpdateWeatherData extends Command
     protected $description = 'Update weather data from OpenWeatherMap API';
 
     protected $weatherService;
-    protected $weatherRecipeService;
 
     /**
      * Create a new command instance.
      */
-    public function __construct(WeatherService $weatherService, WeatherRecipeService $weatherRecipeService)
+    public function __construct(WeatherService $weatherService)
     {
         parent::__construct();
         $this->weatherService = $weatherService;
-        $this->weatherRecipeService = $weatherRecipeService;
     }
 
     /**
@@ -55,9 +51,7 @@ class UpdateWeatherData extends Command
                 $this->updateOutdatedCities();
             }
 
-            if ($this->option('suggestions')) {
-                $this->generateSuggestions();
-            }
+            
 
             $this->info('✅ Cập nhật dữ liệu thời tiết hoàn tất!');
 
@@ -167,15 +161,5 @@ class UpdateWeatherData extends Command
         $this->info("✅ Đã cập nhật thành công {$updatedCount}/{$totalOutdated} thành phố");
     }
 
-    /**
-     * Generate recipe suggestions based on weather.
-     */
-    protected function generateSuggestions()
-    {
-        $this->info("🍽️  Đang tạo đề xuất món ăn theo thời tiết...");
 
-        $generatedCount = $this->weatherRecipeService->generateAllCitiesSuggestions();
-
-        $this->info("✅ Đã tạo đề xuất cho {$generatedCount} thành phố");
-    }
 }
