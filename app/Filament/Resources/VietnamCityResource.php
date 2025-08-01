@@ -211,7 +211,7 @@ class VietnamCityResource extends Resource
                                 'description' => 'Thành phố này chưa được đồng bộ từ API'
                             ]);
                         }
-                        
+
                         $data = json_decode($record->api_data, true);
                         if (!$data) {
                             return view('components.empty-state', [
@@ -219,7 +219,7 @@ class VietnamCityResource extends Resource
                                 'description' => 'Không thể đọc dữ liệu API'
                             ]);
                         }
-                        
+
                         return view('components.api-data-view', [
                             'data' => $data,
                             'cityName' => $record->name
@@ -227,7 +227,7 @@ class VietnamCityResource extends Resource
                     })
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Đóng')
-                    ->visible(fn (VietnamCity $record) => !empty($record->api_data)),
+                    ->visible(fn(VietnamCity $record) => !empty($record->api_data)),
                 Action::make('getDistricts')
                     ->label('Lấy quận/huyện')
                     ->icon('heroicon-o-map')
@@ -241,31 +241,31 @@ class VietnamCityResource extends Resource
                     ->action(function (VietnamCity $record) {
                         try {
                             $provinceService = new VietnamProvinceService();
-                            
+
                             // Lấy thông tin quận/huyện từ API
                             $districts = $provinceService->getDistrictsByProvinceCode($record->code);
-                            
+
                             if (empty($districts)) {
                                 throw new \Exception('Không tìm thấy thông tin quận/huyện trong API');
                             }
-                            
+
                             // Cập nhật dữ liệu API với thông tin quận/huyện
                             $currentApiData = json_decode($record->api_data, true) ?: [];
                             $currentApiData['districts'] = $districts;
-                            
+
                             $record->update([
                                 'api_data' => json_encode($currentApiData),
                             ]);
-                            
+
                             \Filament\Notifications\Notification::make()
                                 ->title('Lấy quận/huyện thành công!')
                                 ->body("Đã lấy " . count($districts) . " quận/huyện cho thành phố: {$record->name}")
                                 ->success()
                                 ->send();
-                                
+
                         } catch (\Exception $e) {
                             Log::error("Lỗi khi lấy quận/huyện cho thành phố {$record->name}: " . $e->getMessage());
-                            
+
                             \Filament\Notifications\Notification::make()
                                 ->title('Lỗi lấy quận/huyện!')
                                 ->body($e->getMessage())
@@ -273,7 +273,7 @@ class VietnamCityResource extends Resource
                                 ->send();
                         }
                     })
-                    ->visible(fn (VietnamCity $record) => !empty($record->code))
+                    ->visible(fn(VietnamCity $record) => !empty($record->code))
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -291,17 +291,17 @@ class VietnamCityResource extends Resource
                             $provinceService = new VietnamProvinceService();
                             $successCount = 0;
                             $errorCount = 0;
-                            
+
                             foreach ($records as $record) {
                                 try {
                                     if (empty($record->code)) {
                                         $errorCount++;
                                         continue;
                                     }
-                                    
+
                                     // Lấy thông tin chi tiết từ API
                                     $provinceData = $provinceService->getProvinceByCode($record->code);
-                                    
+
                                     if ($provinceData) {
                                         // Cập nhật dữ liệu
                                         $record->update([
@@ -321,7 +321,7 @@ class VietnamCityResource extends Resource
                                     $errorCount++;
                                 }
                             }
-                            
+
                             \Filament\Notifications\Notification::make()
                                 ->title('Refresh hoàn tất!')
                                 ->body("Thành công: {$successCount}, Lỗi: {$errorCount}")
@@ -362,19 +362,39 @@ class VietnamCityResource extends Resource
 
                             foreach ($provinces as $province) {
                                 try {
-                                    // Tìm kiếm theo tên (loại bỏ "Thành phố", "Tỉnh" để so sánh)
-                                    $cleanName = str_replace(['Thành phố ', 'Tỉnh '], '', $province['name']);
-                                    $city = VietnamCity::whereRaw('REPLACE(REPLACE(name, "Thành phố ", ""), "Tỉnh ", "") = ?', [$cleanName])
-                                        ->orWhere('name', $province['name'])
-                                        ->first();
+                                    // Validate dữ liệu trước khi xử lý
+                                    if (empty($province['code']) || empty($province['name'])) {
+                                        Log::warning("Bỏ qua tỉnh thiếu dữ liệu: " . json_encode($province));
+                                        $skipped++;
+                                        continue;
+                                    }
+
+                                    // Đảm bảo code là string và không rỗng
+                                    $code = (string) $province['code'];
+                                    if (empty($code)) {
+                                        Log::warning("Bỏ qua tỉnh có code rỗng: {$province['name']}");
+                                        $skipped++;
+                                        continue;
+                                    }
+
+                                    // Tìm kiếm theo code trước (chính xác hơn)
+                                    $city = VietnamCity::where('code', $code)->first();
+
+                                    // Nếu không tìm thấy theo code, tìm theo tên
+                                    if (!$city) {
+                                        $cleanName = str_replace(['Thành phố ', 'Tỉnh '], '', $province['name']);
+                                        $city = VietnamCity::whereRaw('REPLACE(REPLACE(name, "Thành phố ", ""), "Tỉnh ", "") = ?', [$cleanName])
+                                            ->orWhere('name', $province['name'])
+                                            ->first();
+                                    }
 
                                     $data = [
                                         'name' => $province['name'],
-                                        'code' => (string) $province['code'],
+                                        'code' => $code,
                                         'codename' => $province['codename'] ?? null,
                                         'region' => static::determineRegion($province['name']),
-                                        'latitude' => $province['latitude'] ?? null,
-                                        'longitude' => $province['longitude'] ?? null,
+                                        'latitude' => !empty($province['latitude']) ? (float) $province['latitude'] : null,
+                                        'longitude' => !empty($province['longitude']) ? (float) $province['longitude'] : null,
                                         'is_active' => true,
                                         'api_data' => json_encode($province),
                                     ];
@@ -382,9 +402,11 @@ class VietnamCityResource extends Resource
                                     if ($city) {
                                         $city->update($data);
                                         $updated++;
+                                        Log::info("Cập nhật thành phố: {$province['name']} (code: {$code})");
                                     } else {
                                         VietnamCity::create($data);
                                         $created++;
+                                        Log::info("Tạo mới thành phố: {$province['name']} (code: {$code})");
                                     }
                                 } catch (\Exception $e) {
                                     Log::error("Lỗi khi đồng bộ tỉnh {$province['name']}: " . $e->getMessage());
@@ -434,6 +456,85 @@ class VietnamCityResource extends Resource
 
                             \Filament\Notifications\Notification::make()
                                 ->title('Lỗi xóa cache!')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+                Action::make('resetAndSync')
+                    ->label('Reset và đồng bộ')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Reset và đồng bộ dữ liệu')
+                    ->modalDescription('Xóa tất cả dữ liệu thành phố hiện tại và đồng bộ lại từ API')
+                    ->modalSubmitActionLabel('Reset và đồng bộ')
+                    ->modalCancelActionLabel('Hủy')
+                    ->action(function () {
+                        try {
+                            // Xóa tất cả dữ liệu cũ
+                            $deletedCount = VietnamCity::count();
+                            VietnamCity::truncate();
+
+                            // Xóa cache
+                            $provinceService = new VietnamProvinceService();
+                            $provinceService->clearCache();
+
+                            // Đồng bộ lại từ API
+                            $provinces = $provinceService->getAllProvinces();
+
+                            if (empty($provinces)) {
+                                throw new \Exception('Không lấy được dữ liệu tỉnh thành từ API');
+                            }
+
+                            $created = 0;
+                            $skipped = 0;
+
+                            foreach ($provinces as $province) {
+                                try {
+                                    // Validate dữ liệu
+                                    if (empty($province['code']) || empty($province['name'])) {
+                                        $skipped++;
+                                        continue;
+                                    }
+
+                                    $code = (string) $province['code'];
+                                    if (empty($code)) {
+                                        $skipped++;
+                                        continue;
+                                    }
+
+                                    $data = [
+                                        'name' => $province['name'],
+                                        'code' => $code,
+                                        'codename' => $province['codename'] ?? null,
+                                        'region' => static::determineRegion($province['name']),
+                                        'latitude' => $province['latitude'] ?? null,
+                                        'longitude' => $province['longitude'] ?? null,
+                                        'is_active' => true,
+                                        'api_data' => json_encode($province),
+                                    ];
+
+                                    VietnamCity::create($data);
+                                    $created++;
+
+                                } catch (\Exception $e) {
+                                    Log::error("Lỗi khi tạo tỉnh {$province['name']}: " . $e->getMessage());
+                                    $skipped++;
+                                }
+                            }
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Reset và đồng bộ thành công!')
+                                ->body("Đã xóa {$deletedCount} bản ghi cũ, tạo mới: {$created}, bỏ qua: {$skipped}")
+                                ->success()
+                                ->send();
+
+                        } catch (\Exception $e) {
+                            Log::error('Lỗi khi reset và đồng bộ: ' . $e->getMessage());
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Lỗi reset và đồng bộ!')
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
