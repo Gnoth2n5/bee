@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 
 class ModerationRuleResource extends Resource
 {
@@ -104,6 +105,10 @@ class ModerationRuleResource extends Resource
                 Tables\Columns\TextColumn::make('keywords')
                     ->label('Từ khóa')
                     ->limit(50)
+                    // ẩn từ khóa sang dạng *
+                    ->formatStateUsing(function (string $state): string {
+                        return str_repeat('*', strlen($state));
+                    })
                     ->tooltip(function (Model $record): string {
                         return $record->keywords;
                     }),
