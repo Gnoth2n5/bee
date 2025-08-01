@@ -168,10 +168,25 @@ class WeatherDataResource extends Resource
                             $city = \App\Models\VietnamCity::where('code', $record->city_code)->first();
                             if ($city) {
                                 $weatherService = new \App\Services\WeatherService();
-                                $weatherService->getCurrentWeather($city);
+                                $result = $weatherService->getCurrentWeather($city);
+                                
+                                if ($result !== null) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Đã cập nhật thời tiết thành công')
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Không thể cập nhật thời tiết')
+                                        ->body('Có lỗi xảy ra khi lấy dữ liệu thời tiết từ API')
+                                        ->danger()
+                                        ->send();
+                                }
+                            } else {
                                 \Filament\Notifications\Notification::make()
-                                    ->title('Đã cập nhật thời tiết')
-                                    ->success()
+                                    ->title('Không tìm thấy thành phố')
+                                    ->body('Không thể tìm thấy thông tin thành phố với mã: ' . $record->city_code)
+                                    ->warning()
                                     ->send();
                             }
                         }),
@@ -185,20 +200,52 @@ class WeatherDataResource extends Resource
                         ->color('success')
                         ->action(function (Collection $records) {
                             $weatherService = new \App\Services\WeatherService();
-                            $count = 0;
+                            $successCount = 0;
+                            $errorCount = 0;
+                            $notFoundCount = 0;
 
                             foreach ($records as $record) {
                                 $city = \App\Models\VietnamCity::where('code', $record->city_code)->first();
                                 if ($city) {
-                                    $weatherService->getCurrentWeather($city);
-                                    $count++;
+                                    $result = $weatherService->getCurrentWeather($city);
+                                    if ($result !== null) {
+                                        $successCount++;
+                                    } else {
+                                        $errorCount++;
+                                    }
+                                } else {
+                                    $notFoundCount++;
                                 }
                             }
 
-                            \Filament\Notifications\Notification::make()
-                                ->title("Đã cập nhật thời tiết cho $count thành phố")
-                                ->success()
-                                ->send();
+                            $message = "Kết quả cập nhật: ";
+                            $messageParts = [];
+                            
+                            if ($successCount > 0) {
+                                $messageParts[] = "$successCount thành công";
+                            }
+                            if ($errorCount > 0) {
+                                $messageParts[] = "$errorCount lỗi";
+                            }
+                            if ($notFoundCount > 0) {
+                                $messageParts[] = "$notFoundCount không tìm thấy thành phố";
+                            }
+
+                            $message .= implode(', ', $messageParts);
+
+                            if ($errorCount > 0 || $notFoundCount > 0) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Cập nhật thời tiết hoàn tất')
+                                    ->body($message)
+                                    ->warning()
+                                    ->send();
+                            } else {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Cập nhật thời tiết thành công')
+                                    ->body($message)
+                                    ->success()
+                                    ->send();
+                            }
                         }),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
