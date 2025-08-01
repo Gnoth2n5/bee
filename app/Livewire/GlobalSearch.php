@@ -119,7 +119,7 @@ class GlobalSearch extends Component
             if ($this->searchResults['recipes']->count() > 0) {
                 $firstRecipe = $this->searchResults['recipes']->first();
                 $this->closeSearch();
-                return redirect()->route('recipes.show', $firstRecipe->id);
+                return redirect()->route('recipes.show', $firstRecipe);
             }
             // Nếu không có kết quả, chuyển đến trang tìm kiếm đầy đủ
             $this->closeSearch();
