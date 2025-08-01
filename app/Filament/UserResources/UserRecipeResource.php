@@ -23,6 +23,35 @@ class UserRecipeResource extends Resource
     protected static ?string $navigationGroup = 'Quản lý cá nhân';
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationIcon(): ?string
+    {
+        return 'heroicon-o-cake';
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', 'pending')->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getModel()::where('status', 'pending')->count() > 0 ? 'warning' : null;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Quản lý cá nhân';
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->label('Tạo công thức mới')
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -33,15 +62,21 @@ class UserRecipeResource extends Resource
                             ->label('Tiêu đề')
                             ->required()
                             ->maxLength(255)
+                            ->minLength(5)
+                            ->helperText('Tiêu đề phải có ít nhất 5 ký tự')
                             ->live(onBlur: true),
                         Forms\Components\Textarea::make('description')
                             ->label('Mô tả')
                             ->required()
                             ->maxLength(1000)
+                            ->minLength(10)
+                            ->helperText('Mô tả phải có ít nhất 10 ký tự')
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make('summary')
                             ->label('Tóm tắt')
+                            ->required()
                             ->maxLength(500)
+                            ->helperText('Tóm tắt ngắn gọn về công thức')
                             ->columnSpanFull(),
                     ])->columns(2),
 
@@ -49,22 +84,32 @@ class UserRecipeResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('cooking_time')
                             ->label('Thời gian nấu (phút)')
+                            ->required()
                             ->numeric()
-                            ->minValue(0),
+                            ->minValue(1)
+                            ->maxValue(1440)
+                            ->helperText('Thời gian nấu phải ít nhất 1 phút'),
                         Forms\Components\TextInput::make('preparation_time')
                             ->label('Thời gian chuẩn bị (phút)')
+                            ->required()
                             ->numeric()
-                            ->minValue(0),
+                            ->minValue(0)
+                            ->maxValue(1440)
+                            ->helperText('Thời gian chuẩn bị nguyên liệu'),
                         Forms\Components\TextInput::make('servings')
                             ->label('Khẩu phần')
                             ->required()
                             ->numeric()
                             ->minValue(1)
-                            ->default(1),
+                            ->maxValue(50)
+                            ->default(1)
+                            ->helperText('Số người có thể ăn từ công thức này'),
                         Forms\Components\TextInput::make('calories_per_serving')
                             ->label('Calo mỗi khẩu phần')
                             ->numeric()
-                            ->minValue(0),
+                            ->minValue(0)
+                            ->maxValue(5000)
+                            ->helperText('Calo trung bình cho mỗi khẩu phần (tùy chọn)'),
                         Forms\Components\Select::make('difficulty')
                             ->label('Độ khó')
                             ->options([
@@ -93,15 +138,16 @@ class UserRecipeResource extends Resource
                                     ->placeholder('Ví dụ: 500, 2, 1kg...'),
                                 Forms\Components\TextInput::make('unit')
                                     ->label('Đơn vị')
+                                    ->required()
                                     ->maxLength(50)
                                     ->placeholder('g, kg, cái, quả, muỗng...'),
                             ])
-                            ->defaultItems(1)
-                            ->minItems(1)
+                            ->minItems(2)
                             ->maxItems(50)
                             ->reorderable(false)
                             ->columnSpanFull()
-                            ->itemLabel(fn(array $state): ?string => $state['name'] ?? null),
+                            ->itemLabel(fn(array $state): ?string => $state['name'] ?? null)
+                            ->helperText('Phải có ít nhất 2 nguyên liệu'),
                     ]),
 
                 Forms\Components\Section::make('Hướng dẫn nấu ăn')
@@ -113,14 +159,15 @@ class UserRecipeResource extends Resource
                                     ->label('Hướng dẫn')
                                     ->required()
                                     ->maxLength(1000)
+                                    ->minLength(5)
                                     ->rows(3)
                                     ->placeholder('Mô tả chi tiết bước thực hiện...'),
                             ])
-                            ->defaultItems(1)
-                            ->minItems(1)
+                            ->minItems(2)
                             ->maxItems(20)
                             ->reorderable(true)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->helperText('Phải có ít nhất 2 bước hướng dẫn, mỗi bước ít nhất 5 ký tự'),
                     ]),
 
                 Forms\Components\Section::make('Mẹo và ghi chú')

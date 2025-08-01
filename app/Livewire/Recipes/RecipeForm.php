@@ -144,7 +144,7 @@ class RecipeForm extends Component
         if (count($this->instructions) > 1) {
             unset($this->instructions[$index]);
             $this->instructions = array_values($this->instructions);
-            
+
             // Reorder steps
             foreach ($this->instructions as $key => $instruction) {
                 $this->instructions[$key]['step'] = $key + 1;
@@ -203,7 +203,7 @@ class RecipeForm extends Component
             ]);
 
             return redirect()->route('recipes.show', $recipe)
-                            ->with('success', $message);
+                ->with('success', $message);
 
         } catch (\Exception $e) {
             $this->addError('general', $e->getMessage());
@@ -228,4 +228,4 @@ class RecipeForm extends Component
             'tags' => $tags,
         ]);
     }
-} 
+}

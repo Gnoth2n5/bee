@@ -114,7 +114,7 @@ class ModerationService
 
         // Kiểm tra điểm số tổng thể
         $score = $this->calculateRecipeScore($recipe);
-        
+
         // Nếu có vi phạm nghiêm trọng, từ chối ngay
         if (!empty($violations) && $highestPriorityAction === 'reject') {
             return $this->rejectRecipe($recipe, $violations);
