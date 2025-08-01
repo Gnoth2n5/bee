@@ -9,6 +9,13 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Permission\Traits\HasPermissions;
+use App\Models\UserProfile;
+use App\Models\Recipe;
+use App\Models\Rating;
+use App\Models\Favorite;
+use App\Models\Collection;
+use App\Models\Post;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -151,4 +158,7 @@ class User extends Authenticatable
     {
         return $this->avatar && !filter_var($this->avatar, FILTER_VALIDATE_URL);
     }
+
+  
+
 }
