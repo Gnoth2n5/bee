@@ -39,12 +39,7 @@ new class extends Component {
             <a href="{{ route('home') }}"
                 class="flex items-center justify-center mr-4 hover:opacity-80 transition-opacity">
                 <div class="flex items-center space-x-2">
-                    <div
-                        class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
+                    <img src="{{ asset('images/bee-logo.png') }}" alt="logo" class="w-full h-8">
                     <span class="self-center text-xl font-semibold whitespace-nowrap text-gray-900 dark:text-white">
                         BeeFood
                     </span>

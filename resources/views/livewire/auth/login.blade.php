@@ -69,7 +69,13 @@
                 </div>
                 <div>
                     <label for="password" class="block mb-1 text-sm font-medium text-gray-700">Mật khẩu</label>
-                    <input id="password" type="password" wire:model.defer="password" class="form-input block w-full rounded-md border border-gray-300 focus:ring-orange-500 focus:border-orange-500 text-sm py-2 px-3 @error('password') border-red-300 bg-red-50 @enderror" placeholder="Nhập mật khẩu..." autocomplete="current-password" required>
+                    <div class="relative">
+                        <input id="password" type="password" wire:model.defer="password" class="form-input block w-full rounded-md border border-gray-300 focus:ring-orange-500 focus:border-orange-500 text-sm py-2 px-3 pr-10 @error('password') border-red-300 bg-red-50 @enderror" placeholder="Nhập mật khẩu..." autocomplete="current-password" required>
+                        <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <x-heroicon-o-eye id="eye-icon" class="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            <x-heroicon-o-eye-slash id="eye-slash-icon" class="h-5 w-5 text-gray-400 hover:text-gray-600 hidden" />
+                        </button>
+                    </div>
                     @error('password')
                         <p class="mt-1 text-xs text-red-600 flex items-center">
                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -101,4 +107,22 @@
             </form>
         </div>
     </div>
-</div> 
+</div>
+
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eye-icon');
+    const eyeSlashIcon = document.getElementById('eye-slash-icon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.classList.add('hidden');
+        eyeSlashIcon.classList.remove('hidden');
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.classList.remove('hidden');
+        eyeSlashIcon.classList.add('hidden');
+    }
+}
+</script> 

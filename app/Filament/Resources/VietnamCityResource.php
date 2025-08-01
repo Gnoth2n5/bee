@@ -555,9 +555,7 @@ class VietnamCityResource extends Resource
                         }
                         
                     })
-
             ])
-
             ->defaultSort('sort_order', 'asc');
 
     }
