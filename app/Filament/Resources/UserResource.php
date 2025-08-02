@@ -65,7 +65,6 @@ class UserResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('roles')
                             ->label('Vai trò')
-                            ->multiple()
                             ->relationship('roles', 'name')
                             ->preload()
                             ->searchable(),
@@ -85,16 +84,16 @@ class UserResource extends Resource
                             ->label('Tiểu sử')
                             ->maxLength(500)
                             ->columnSpanFull(),
-                        Forms\Components\KeyValue::make('preferences')
-                            ->label('Tùy chọn')
-                            ->columnSpanFull(),
                         Forms\Components\DateTimePicker::make('email_verified_at')
-                            ->label('Xác thực email lúc'),
+                            ->label('Xác thực email lúc')
+                            ->disabled(),                            
                         Forms\Components\DateTimePicker::make('last_login_at')
-                            ->label('Đăng nhập cuối lúc'),
+                            ->label('Đăng nhập cuối lúc')
+                            ->disabled(),
                         Forms\Components\TextInput::make('login_count')
                             ->label('Số lần đăng nhập')
                             ->numeric()
+                            ->disabled()
                             ->default(0),
                     ])->columns(2),
             ]);
