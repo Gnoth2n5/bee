@@ -187,6 +187,12 @@ class UserResource extends Resource
                 Tables\Filters\Filter::make('recent_users')
                     ->label('Người dùng mới (7 ngày)')
                     ->query(fn(Builder $query): Builder => $query->where('created_at', '>=', now()->subDays(7))),
+                Tables\Filters\Filter::make('admin_users')
+                    ->label('Chỉ hiển thị Admin')
+                    ->query(fn(Builder $query): Builder => $query->whereHas('roles', fn($q) => $q->where('name', 'admin'))),
+                Tables\Filters\Filter::make('non_admin_users')
+                    ->label('Chỉ hiển thị không phải Admin')
+                    ->query(fn(Builder $query): Builder => $query->whereDoesntHave('roles', fn($q) => $q->where('name', 'admin'))),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -198,7 +204,7 @@ class UserResource extends Resource
                         ->color('danger')
                         ->requiresConfirmation()
                         ->action(fn(User $record) => $record->update(['status' => 'banned']))
-                        ->visible(fn(User $record) => $record->status !== 'banned'),
+                        ->visible(fn(User $record) => $record->status !== 'banned' && !$record->hasRole('admin')),
                     Tables\Actions\Action::make('activate')
                         ->label('Kích hoạt')
                         ->icon('heroicon-o-check-circle')
@@ -217,6 +223,15 @@ class UserResource extends Resource
                         ->color('secondary')
                         ->url(fn(User $record): string => route('filament.admin.resources.users.edit', $record))
                         ->openUrlInNewTab(),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('Xóa người dùng')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->visible(fn(User $record) => !$record->hasRole('admin'))
+                        ->modalHeading('Xác nhận xóa người dùng')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa người dùng này? Hành động này không thể hoàn tác.')
+                        ->modalSubmitActionLabel('Xóa người dùng'),
                 ]),
             ])
             ->bulkActions([
@@ -226,13 +241,40 @@ class UserResource extends Resource
                         ->icon('heroicon-o-no-symbol')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->action(fn(Collection $records) => $records->each->update(['status' => 'banned'])),
+                        ->action(fn(Collection $records) => $records->each->update(['status' => 'banned']))
+                        ->deselectRecordsAfterCompletion(),
                     Tables\Actions\BulkAction::make('activate')
                         ->label('Kích hoạt')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(fn(Collection $records) => $records->each->update(['status' => 'active'])),
-                    Tables\Actions\DeleteBulkAction::make(),
+                        ->action(fn(Collection $records) => $records->each->update(['status' => 'active']))
+                        ->deselectRecordsAfterCompletion(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Xóa người dùng')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Xác nhận xóa người dùng')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa những người dùng đã chọn? Hành động này không thể hoàn tác.')
+                        ->modalSubmitActionLabel('Xóa người dùng')
+                        ->action(function (Collection $records) {
+                            // Lọc ra những user không phải admin
+                            $nonAdminUsers = $records->filter(fn($user) => !$user->hasRole('admin'));
+                            $adminUsers = $records->filter(fn($user) => $user->hasRole('admin'));
+                            
+                            // Xóa những user không phải admin
+                            $nonAdminUsers->each->delete();
+                            
+                            // Thông báo nếu có admin bị bỏ qua
+                            if ($adminUsers->count() > 0) {
+                                \Filament\Notifications\Notification::make()
+                                    ->warning()
+                                    ->title('Không thể xóa admin')
+                                    ->body('Một số người dùng có vai trò admin đã được bỏ qua và không bị xóa.')
+                                    ->send();
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
     }
