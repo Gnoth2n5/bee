@@ -2,7 +2,40 @@
 
 ## Tổng Quan
 
-Hệ thống sử dụng API OpenAPI Vietnam (`https://provinces.open-api.vn/api/`) để lấy dữ liệu tỉnh thành, quận/huyện, xã/phường của Việt Nam. Dữ liệu được cache trong 24 giờ để tối ưu hiệu suất.
+Hệ thống sử dụng dữ liệu **34 tỉnh thành mới** theo Nghị quyết sắp xếp hành chính 2025 của Quốc hội. Dữ liệu quận/huyện, xã/phường được lấy từ [OpenAPI Vietnam](https://provinces.open-api.vn/api/). Tọa độ địa lý chính xác được cung cấp cho tất cả tỉnh thành. Dữ liệu được cache trong 24 giờ để tối ưu hiệu suất.
+
+## Dữ Liệu Tỉnh Thành Mới 2025
+
+Theo Nghị quyết sắp xếp hành chính 2025, Việt Nam có **34 đơn vị hành chính cấp tỉnh**:
+
+-   **28 Tỉnh**
+-   **6 Thành phố trực thuộc Trung ương**
+
+### Các tỉnh thành mới sau sáp nhập:
+
+-   **Tuyên Quang** (Tuyên Quang + Hà Giang)
+-   **Lào Cai** (Lào Cai + Yên Bái)
+-   **Thái Nguyên** (Thái Nguyên + Bắc Kạn)
+-   **Phú Thọ** (Phú Thọ + Vĩnh Phúc + Hòa Bình)
+-   **Bắc Ninh** (Bắc Ninh + Bắc Giang)
+-   **Hưng Yên** (Hưng Yên + Thái Bình)
+-   **TP. Hải Phòng** (TP. Hải Phòng + Hải Dương)
+-   **Ninh Bình** (Ninh Bình + Nam Định + Hà Nam)
+-   **Quảng Trị** (Quảng Bình + Quảng Trị)
+-   **TP. Đà Nẵng** (TP. Đà Nẵng + Quảng Nam)
+-   **Quảng Ngãi** (Quảng Ngãi + Kon Tum)
+-   **Gia Lai** (Gia Lai + Bình Định)
+-   **Khánh Hòa** (Khánh Hòa + Ninh Thuận)
+-   **Lâm Đồng** (Lâm Đồng + Bình Thuận + Đắk Nông)
+-   **Đắk Lắk** (Đắk Lắk + Phú Yên)
+-   **TP. Hồ Chí Minh** (TP.HCM + Bình Dương + Bà Rịa Vũng Tàu)
+-   **Đồng Nai** (Đồng Nai + Bình Phước)
+-   **Tây Ninh** (Tây Ninh + Long An)
+-   **TP. Cần Thơ** (TP. Cần Thơ + Sóc Trăng + Hậu Giang)
+-   **Vĩnh Long** (Vĩnh Long + Bến Tre + Trà Vinh)
+-   **Đồng Tháp** (Đồng Tháp + Tiền Giang)
+-   **Cà Mau** (Cà Mau + Bạc Liêu)
+-   **An Giang** (An Giang + Kiên Giang)
 
 ## Base URL
 
@@ -17,6 +50,7 @@ https://provinces.open-api.vn/api/
 **GET** `/api/vietnam-provinces/`
 
 **Response:**
+
 ```json
 {
     "success": true,
@@ -27,11 +61,11 @@ https://provinces.open-api.vn/api/
             "codename": "thanh_pho_ha_noi",
             "latitude": 21.0278,
             "longitude": 105.8342
-        },
+        }
         // ...
     ],
     "message": "Lấy danh sách tỉnh thành thành công",
-    "total": 63
+    "total": 34
 }
 ```
 
@@ -40,9 +74,11 @@ https://provinces.open-api.vn/api/
 **GET** `/api/vietnam-provinces/{code}`
 
 **Parameters:**
-- `code` (integer): Mã tỉnh thành
+
+-   `code` (integer): Mã tỉnh thành
 
 **Response:**
+
 ```json
 {
     "success": true,
@@ -62,9 +98,11 @@ https://provinces.open-api.vn/api/
 **GET** `/api/vietnam-provinces/{provinceCode}/districts`
 
 **Parameters:**
-- `provinceCode` (integer): Mã tỉnh thành
+
+-   `provinceCode` (integer): Mã tỉnh thành
 
 **Response:**
+
 ```json
 {
     "success": true,
@@ -75,7 +113,7 @@ https://provinces.open-api.vn/api/
             "codename": "quan_ba_dinh",
             "latitude": 21.0333,
             "longitude": 105.8167
-        },
+        }
         // ...
     ],
     "message": "Lấy danh sách quận/huyện thành công",
@@ -83,40 +121,72 @@ https://provinces.open-api.vn/api/
 }
 ```
 
-### 4. Lấy Danh Sách Xã/Phường
+### 4. Lấy Danh Sách Xã/Phường Của Tỉnh
 
-**GET** `/api/vietnam-provinces/districts/{districtCode}/wards`
+**GET** `/api/vietnam-provinces/{provinceCode}/districts`
 
 **Parameters:**
-- `districtCode` (integer): Mã quận/huyện
+
+-   `provinceCode` (integer): Mã tỉnh thành
 
 **Response:**
+
 ```json
 {
     "success": true,
     "data": [
         {
             "name": "Phường Phúc Xá",
-            "code": 1,
+            "code": "01001",
             "codename": "phuong_phuc_xa",
             "latitude": 21.0333,
             "longitude": 105.8167
-        },
+        }
         // ...
     ],
     "message": "Lấy danh sách xã/phường thành công",
-    "total": 13
+    "total": 30
 }
 ```
 
-### 5. Tìm Kiếm Tỉnh Thành
+### 5. Lấy Tất Cả Xã/Phường Với Tọa Độ
+
+**GET** `/api/vietnam-provinces/communes-with-coordinates`
+
+**Response:**
+
+```json
+{
+    "success": true,
+    "data": [
+        {
+            "name": "Phường Phúc Xá",
+            "code": "01001",
+            "codename": "phuong_phuc_xa",
+            "latitude": 21.0333,
+            "longitude": 105.8167,
+            "province": {
+                "name": "Thành phố Hà Nội",
+                "code": "01"
+            }
+        }
+        // ...
+    ],
+    "message": "Lấy danh sách xã/phường với tọa độ thành công",
+    "total": 3970
+}
+```
+
+### 6. Tìm Kiếm Tỉnh Thành
 
 **GET** `/api/vietnam-provinces/search?name={searchTerm}`
 
 **Parameters:**
-- `name` (string): Từ khóa tìm kiếm (tối thiểu 2 ký tự)
+
+-   `name` (string): Từ khóa tìm kiếm (tối thiểu 2 ký tự)
 
 **Response:**
+
 ```json
 {
     "success": true,
@@ -125,7 +195,7 @@ https://provinces.open-api.vn/api/
             "name": "Thành phố Hà Nội",
             "code": 1,
             "codename": "thanh_pho_ha_noi"
-        },
+        }
         // ...
     ],
     "message": "Tìm kiếm tỉnh thành thành công",
@@ -134,16 +204,17 @@ https://provinces.open-api.vn/api/
 }
 ```
 
-### 6. Lấy Thống Kê
+### 7. Lấy Thống Kê
 
 **GET** `/api/vietnam-provinces/stats`
 
 **Response:**
+
 ```json
 {
     "success": true,
     "data": {
-        "total_provinces": 63,
+        "total_provinces": 34,
         "last_updated": "2025-07-31 15:50:09",
         "api_status": "online",
         "cache_status": "cached"
@@ -152,11 +223,12 @@ https://provinces.open-api.vn/api/
 }
 ```
 
-### 7. Kiểm Tra Trạng Thái API
+### 8. Kiểm Tra Trạng Thái API
 
 **GET** `/api/vietnam-provinces/health`
 
 **Response:**
+
 ```json
 {
     "success": true,
@@ -169,11 +241,12 @@ https://provinces.open-api.vn/api/
 }
 ```
 
-### 8. Xóa Cache
+### 9. Xóa Cache
 
 **DELETE** `/api/vietnam-provinces/cache`
 
 **Response:**
+
 ```json
 {
     "success": true,
@@ -220,6 +293,7 @@ class YourController extends Controller
 ### Artisan Commands
 
 #### Đồng Bộ Dữ Liệu
+
 ```bash
 # Đồng bộ dữ liệu tỉnh thành
 php artisan vietnam:sync-provinces
@@ -232,6 +306,7 @@ php artisan vietnam:sync-provinces --test
 ```
 
 #### Test API
+
 ```bash
 # Test tất cả endpoints
 php artisan vietnam:test-api
@@ -248,6 +323,7 @@ php artisan vietnam:test-api --endpoint=stats
 ## Cấu Trúc Dữ Liệu
 
 ### Tỉnh Thành
+
 ```json
 {
     "name": "Tên tỉnh thành",
@@ -259,6 +335,7 @@ php artisan vietnam:test-api --endpoint=stats
 ```
 
 ### Quận/Huyện
+
 ```json
 {
     "name": "Tên quận/huyện",
@@ -270,6 +347,7 @@ php artisan vietnam:test-api --endpoint=stats
 ```
 
 ### Xã/Phường
+
 ```json
 {
     "name": "Tên xã/phường",
@@ -282,21 +360,23 @@ php artisan vietnam:test-api --endpoint=stats
 
 ## Cache Strategy
 
-- **Cache Time**: 24 giờ (86400 giây)
-- **Cache Keys**:
-  - `vietnam_provinces`: Danh sách tất cả tỉnh
-  - `vietnam_province_{code}`: Thông tin tỉnh cụ thể
-  - `vietnam_districts_{provinceCode}`: Quận/huyện của tỉnh
-  - `vietnam_wards_{districtCode}`: Xã/phường của quận/huyện
+-   **Cache Time**: 24 giờ (86400 giây)
+-   **Cache Keys**:
+    -   `vietnam_provinces`: Danh sách tất cả tỉnh
+    -   `vietnam_province_{code}`: Thông tin tỉnh cụ thể
+    -   `vietnam_districts_{provinceCode}`: Xã/phường của tỉnh
+    -   `vietnam_communes_with_coordinates`: Tất cả xã/phường với tọa độ
 
 ## Error Handling
 
 ### HTTP Status Codes
-- `200`: Thành công
-- `404`: Không tìm thấy dữ liệu
-- `500`: Lỗi server
+
+-   `200`: Thành công
+-   `404`: Không tìm thấy dữ liệu
+-   `500`: Lỗi server
 
 ### Error Response Format
+
 ```json
 {
     "success": false,
@@ -306,18 +386,20 @@ php artisan vietnam:test-api --endpoint=stats
 
 ## Performance
 
-- **Response Time**: ~300ms cho lần gọi đầu tiên
-- **Cache Hit**: ~10ms cho các lần gọi tiếp theo
-- **Memory Usage**: ~2MB cho toàn bộ dữ liệu tỉnh thành
+-   **Response Time**: ~300ms cho lần gọi đầu tiên
+-   **Cache Hit**: ~10ms cho các lần gọi tiếp theo
+-   **Memory Usage**: ~2MB cho toàn bộ dữ liệu tỉnh thành
 
 ## Monitoring
 
 ### Health Check
+
 ```bash
 curl -X GET "http://your-domain.com/api/vietnam-provinces/health"
 ```
 
 ### Stats Check
+
 ```bash
 curl -X GET "http://your-domain.com/api/vietnam-provinces/stats"
 ```
@@ -325,15 +407,18 @@ curl -X GET "http://your-domain.com/api/vietnam-provinces/stats"
 ## Troubleshooting
 
 ### API Không Hoạt Động
+
 1. Kiểm tra kết nối internet
-2. Kiểm tra trạng thái API: `php artisan vietnam:test-api --endpoint=connection`
+2. Kiểm tra trạng thái Cas AddressKit API: `php artisan vietnam:test-api --endpoint=connection`
 3. Xóa cache: `php artisan vietnam:test-api --endpoint=clear-cache`
 
 ### Dữ Liệu Không Cập Nhật
+
 1. Chạy đồng bộ: `php artisan vietnam:sync-provinces --force`
 2. Xóa cache: `DELETE /api/vietnam-provinces/cache`
 
 ### Lỗi Cache
+
 1. Xóa cache: `php artisan cache:clear`
 2. Kiểm tra cấu hình cache trong `config/cache.php`
 
@@ -348,27 +433,38 @@ curl -X GET "http://your-domain.com/api/vietnam-provinces/stats"
 ## Ví Dụ Sử Dụng
 
 ### Frontend (JavaScript)
+
 ```javascript
 // Lấy danh sách tỉnh
-fetch('/api/vietnam-provinces/')
-    .then(response => response.json())
-    .then(data => {
+fetch("/api/vietnam-provinces/")
+    .then((response) => response.json())
+    .then((data) => {
         if (data.success) {
-            console.log('Tỉnh thành:', data.data);
+            console.log("Tỉnh thành:", data.data);
+        }
+    });
+
+// Lấy xã/phường với tọa độ
+fetch("/api/vietnam-provinces/communes-with-coordinates")
+    .then((response) => response.json())
+    .then((data) => {
+        if (data.success) {
+            console.log("Xã/phường với tọa độ:", data.data);
         }
     });
 
 // Tìm kiếm tỉnh
-fetch('/api/vietnam-provinces/search?name=Hà')
-    .then(response => response.json())
-    .then(data => {
+fetch("/api/vietnam-provinces/search?name=Hà")
+    .then((response) => response.json())
+    .then((data) => {
         if (data.success) {
-            console.log('Kết quả tìm kiếm:', data.data);
+            console.log("Kết quả tìm kiếm:", data.data);
         }
     });
 ```
 
 ### Backend (PHP)
+
 ```php
 // Trong controller
 public function getProvinces()
@@ -381,4 +477,4 @@ public function getProvinces()
 @foreach($provinces as $province)
     <option value="{{ $province['code'] }}">{{ $province['name'] }}</option>
 @endforeach
-``` 
+```

@@ -63,7 +63,7 @@ class SyncVietnamProvinces extends Command
         $this->syncProvinces($provinces);
 
         $this->info('✅ Hoàn thành đồng bộ dữ liệu tỉnh thành');
-        
+
         // Hiển thị thống kê
         $this->showStats();
 
@@ -76,7 +76,7 @@ class SyncVietnamProvinces extends Command
 
         if ($this->provinceService->testConnection()) {
             $this->info('✅ API hoạt động bình thường');
-            
+
             $stats = $this->provinceService->getStats();
             $this->table(
                 ['Thông số', 'Giá trị'],
@@ -147,35 +147,107 @@ class SyncVietnamProvinces extends Command
 
     protected function determineRegion($provinceName)
     {
+        // Chuẩn hóa tên để so sánh
+        $cleanName = str_replace(['Thành phố ', 'Tỉnh '], '', trim($provinceName));
+
+        // Ngoại lệ theo yêu cầu của bạn
+        $overrides = [
+            'Đà Nẵng' => 'Trung',
+            'Huế' => 'Trung',
+            'Thừa Thiên Huế' => 'Trung',
+            'Cần Thơ' => 'Trung',
+            'Nghệ An' => 'Trung',
+            'Hà Tĩnh' => 'Trung',
+            'Thanh Hóa' => 'Trung',
+            'Quảng Trị' => 'Trung',
+            'Hà Nội' => 'Bắc',
+            'Hải Phòng' => 'Bắc',
+        ];
+        if (isset($overrides[$cleanName])) {
+            return $overrides[$cleanName];
+        }
+
+        // Mapping gốc
         $northProvinces = [
-            'Hà Nội', 'Hải Phòng', 'Quảng Ninh', 'Bắc Giang', 'Bắc Ninh', 'Hải Dương', 
-            'Hưng Yên', 'Hòa Bình', 'Phú Thọ', 'Thái Nguyên', 'Tuyên Quang', 'Lào Cai',
-            'Yên Bái', 'Lạng Sơn', 'Cao Bằng', 'Bắc Kạn', 'Thái Bình', 'Nam Định',
-            'Ninh Bình', 'Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Bình', 'Quảng Trị',
-            'Thừa Thiên Huế', 'Điện Biên', 'Lai Châu', 'Sơn La', 'Hà Giang'
+            'Hà Nội',
+            'Hải Phòng',
+            'Quảng Ninh',
+            'Bắc Giang',
+            'Bắc Ninh',
+            'Hải Dương',
+            'Hưng Yên',
+            'Hòa Bình',
+            'Phú Thọ',
+            'Thái Nguyên',
+            'Tuyên Quang',
+            'Lào Cai',
+            'Yên Bái',
+            'Lạng Sơn',
+            'Cao Bằng',
+            'Bắc Kạn',
+            'Thái Bình',
+            'Nam Định',
+            'Ninh Bình',
+            'Vĩnh Phúc',
+            'Hà Nam',
+            'Điện Biên',
+            'Lai Châu',
+            'Sơn La',
+            'Hà Giang'
         ];
 
         $centralProvinces = [
-            'Đà Nẵng', 'Quảng Nam', 'Quảng Ngãi', 'Bình Định', 'Phú Yên', 'Khánh Hòa',
-            'Ninh Thuận', 'Bình Thuận', 'Kon Tum', 'Gia Lai', 'Đắk Lắk', 'Đắk Nông',
-            'Lâm Đồng', 'Bình Phước', 'Tây Ninh', 'Bình Dương', 'Đồng Nai', 'Bà Rịa - Vũng Tàu'
+            'Đà Nẵng',
+            'Quảng Nam',
+            'Quảng Ngãi',
+            'Bình Định',
+            'Phú Yên',
+            'Khánh Hòa',
+            'Ninh Thuận',
+            'Bình Thuận',
+            'Kon Tum',
+            'Gia Lai',
+            'Đắk Lắk',
+            'Đắk Nông',
+            'Lâm Đồng',
+            'Thừa Thiên Huế'
         ];
 
         $southProvinces = [
-            'TP. Hồ Chí Minh', 'Long An', 'Tiền Giang', 'Bến Tre', 'Trà Vinh', 'Vĩnh Long',
-            'Đồng Tháp', 'An Giang', 'Kiên Giang', 'Cần Thơ', 'Hậu Giang', 'Sóc Trăng',
-            'Bạc Liêu', 'Cà Mau'
+            'TP. Hồ Chí Minh',
+            'Hồ Chí Minh',
+            'Long An',
+            'Tiền Giang',
+            'Bến Tre',
+            'Trà Vinh',
+            'Vĩnh Long',
+            'Đồng Tháp',
+            'An Giang',
+            'Kiên Giang',
+            'Cần Thơ',
+            'Hậu Giang',
+            'Sóc Trăng',
+            'Bạc Liêu',
+            'Cà Mau',
+            'Bình Phước',
+            'Tây Ninh',
+            'Bình Dương',
+            'Đồng Nai',
+            'Bà Rịa - Vũng Tàu'
         ];
 
-        if (in_array($provinceName, $northProvinces)) {
+        if (in_array($cleanName, $northProvinces, true)) {
             return 'Bắc';
-        } elseif (in_array($provinceName, $centralProvinces)) {
+        }
+        if (in_array($cleanName, $centralProvinces, true)) {
             return 'Trung';
-        } elseif (in_array($provinceName, $southProvinces)) {
+        }
+        if (in_array($cleanName, $southProvinces, true)) {
             return 'Nam';
         }
 
-        return 'Khác';
+        // Không xác định được thì giữ 'Nam' theo yêu cầu
+        return 'Nam';
     }
 
     protected function cleanProvinceName($name)
@@ -201,4 +273,4 @@ class SyncVietnamProvinces extends Command
             $this->info("   📍 {$region} Miền: {$count}");
         }
     }
-} 
+}
