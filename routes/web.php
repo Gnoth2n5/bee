@@ -14,13 +14,9 @@ use App\Livewire\Recipes\RecipeDetail;
 
 Route::get('/', HomePage::class)->name('home');
 
-
-
 // Post routes
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
 Route::get('/posts/{slug}', [PostController::class, 'show'])->name('posts.show');
-
-
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -104,5 +100,6 @@ Route::post('/admin/logout', [AdminLogoutController::class, 'logout'])->name('fi
 Route::post('/user/logout', [AdminLogoutController::class, 'logout'])->name('filament.user.auth.logout');
 
 
+require __DIR__ . '/ai.php';
 
 require __DIR__ . '/auth.php';
