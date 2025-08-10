@@ -154,14 +154,7 @@ class IngredientSubstituteModal extends Component
         $this->reset(['ingredientVi', 'substitutes', 'error', 'success']);
     }
 
-    /**
-     * Search với ví dụ nguyên liệu
-     */
-    public function searchExample($ingredient)
-    {
-        $this->ingredientVi = $ingredient;
-        $this->findSubstitutes();
-    }
+
 
     /**
      * Search từ lịch sử
@@ -178,7 +171,7 @@ class IngredientSubstituteModal extends Component
     public function clearSearchHistory()
     {
         $this->searchHistory = [];
-        session()->forget('ingredient_search_history');
+        $this->dispatch('clear-search-history-localstorage');
         $this->success = 'Đã xóa lịch sử tìm kiếm.';
     }
 
@@ -198,16 +191,25 @@ class IngredientSubstituteModal extends Component
         // Giới hạn số lượng
         $this->searchHistory = array_slice($this->searchHistory, 0, $this->maxHistory);
 
-        // Lưu vào session
-        session(['ingredient_search_history' => $this->searchHistory]);
+        // Lưu vào localStorage qua JavaScript
+        $this->dispatch('save-search-history-localstorage', history: $this->searchHistory);
     }
 
     /**
-     * Load lịch sử tìm kiếm từ session
+     * Load lịch sử tìm kiếm từ localStorage
      */
     protected function loadSearchHistory()
     {
-        $this->searchHistory = session('ingredient_search_history', []);
+        // Sẽ được load qua JavaScript khi component mount
+        $this->dispatch('load-search-history-localstorage');
+    }
+
+    /**
+     * Load lịch sử tìm kiếm từ localStorage khi component init
+     */
+    public function loadSearchHistoryFromLocalStorage()
+    {
+        $this->dispatch('load-search-history-localstorage');
     }
 
     /**
@@ -228,6 +230,8 @@ class IngredientSubstituteModal extends Component
             $this->resetMessages();
             // Validate từng ký tự để show error realtime
             $this->validateOnly($propertyName);
+
+            // Không tự động search khi thay đổi giá trị
         }
     }
 

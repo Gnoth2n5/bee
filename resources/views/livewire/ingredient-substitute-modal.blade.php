@@ -1,12 +1,29 @@
 <div>
     @if($showModal)
-    <div class="fixed inset-0 z-50 overflow-y-auto" 
-         aria-labelledby="modal-title" 
-         role="dialog" 
+    <div class="fixed inset-0 z-50 overflow-y-auto"
+         aria-labelledby="modal-title"
+         role="dialog"
          aria-modal="true"
          x-data
          @keydown.escape.window="$wire.closeModal()"
-         @keydown.enter.window="if ($wire.ingredientVi.trim()) $wire.findSubstitutes()">
+         @keydown.enter.window="if ($wire.ingredientVi.trim() && !$event.target.closest('button')) $wire.findSubstitutes()"
+         wire:init="loadSearchHistoryFromLocalStorage"
+         x-init="
+             $wire.on('save-search-history-localstorage', (data) => {
+                 localStorage.setItem('ingredient_search_history', JSON.stringify(data.history));
+             });
+             
+             $wire.on('clear-search-history-localstorage', () => {
+                 localStorage.removeItem('ingredient_search_history');
+             });
+             
+             $wire.on('load-search-history-localstorage', () => {
+                 const history = localStorage.getItem('ingredient_search_history');
+                 if (history) {
+                     $wire.set('searchHistory', JSON.parse(history));
+                 }
+             });
+         ">
         
         <!-- Background overlay -->
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
@@ -29,7 +46,7 @@
                                     Tìm Nguyên Liệu Thay Thế
                                 </h3>
                                 <p class="text-sm text-green-100">
-                                    Nhập nguyên liệu bằng tiếng Việt để tìm những lựa chọn thay thế
+                                    Nhập nguyên liệu để tìm những lựa chọn thay thế
                                 </p>
                             </div>
                         </div>
@@ -51,6 +68,7 @@
                                 <div class="relative">
                                     <input 
                                         type="text" 
+                                        id="ingredient-input"
                                         wire:model="ingredientVi"
                                         placeholder="Ví dụ: bơ, trứng gà, hành tây..."
                                         class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base"
@@ -90,7 +108,8 @@
                             @endphp
                             @foreach($examples as $example)
                                 <button 
-                                    wire:click="searchExample('{{ $example }}')"
+                                    type="button"
+                                    onclick="document.getElementById('ingredient-input').value = '{{ $example }}'"
                                     class="inline-flex items-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
                                     {{ $loading ? 'disabled' : '' }}
                                 >
