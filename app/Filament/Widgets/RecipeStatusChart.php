@@ -8,44 +8,41 @@ use Filament\Widgets\ChartWidget;
 class RecipeStatusChart extends ChartWidget
 {
     protected static ?string $heading = 'Trạng thái công thức';
-    protected static ?int $sort = 4;
+
+    protected static ?int $sort = 2;
+
+    // Thêm thuộc tính này để biểu đồ chiếm 1/2 chiều rộng
+    protected int|string|array $columnSpan = '1/2';
 
     protected function getData(): array
     {
-        $statuses = [
-            'draft' => Recipe::where('status', 'draft')->count(),
-            'pending' => Recipe::where('status', 'pending')->count(),
-            'approved' => Recipe::where('status', 'approved')->count(),
-            'rejected' => Recipe::where('status', 'rejected')->count(),
-        ];
-
-        $labels = [
-            'draft' => 'Bản nháp',
-            'pending' => 'Chờ phê duyệt',
-            'approved' => 'Đã phê duyệt',
-            'rejected' => 'Từ chối',
-        ];
-
-        $colors = [
-            'draft' => '#6b7280',
-            'pending' => '#f59e0b',
-            'approved' => '#10b981',
-            'rejected' => '#ef4444',
-        ];
+        $draft = Recipe::where('status', 'draft')->count();
+        $pending = Recipe::where('status', 'pending')->count();
+        $approved = Recipe::where('status', 'approved')->count();
+        $rejected = Recipe::where('status', 'rejected')->count();
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Số lượng',
-                    'data' => array_values($statuses),
-                    'backgroundColor' => array_values($colors),
-                    'borderWidth' => 2,
-                    'borderColor' => '#ffffff',
+                    'label' => 'Công thức',
+                    'data' => [$draft, $pending, $approved, $rejected],
+                    'backgroundColor' => [
+                        'rgb(156, 163, 175)', // gray - draft
+                        'rgb(245, 158, 11)',  // yellow - pending
+                        'rgb(34, 197, 94)',   // green - approved
+                        'rgb(239, 68, 68)',   // red - rejected
+                    ],
                 ],
             ],
-            'labels' => array_values($labels),
+            'labels' => ['Bản nháp', 'Chờ duyệt', 'Đã duyệt', 'Từ chối'],
         ];
     }
+
+    protected function getMaxHeight(): ?string
+    {
+        return '16rem';
+    }
+
 
     protected function getType(): string
     {

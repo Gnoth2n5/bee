@@ -4,7 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\WeatherData;
 use App\Models\VietnamCity;
-use App\Models\WeatherRecipeSuggestion;
+use App\Models\WeatherConditionRule;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -14,8 +14,8 @@ class WeatherStatsWidget extends BaseWidget
     {
         $totalCities = VietnamCity::active()->count();
         $citiesWithWeather = WeatherData::where('last_updated', '>=', now()->subHours(6))->distinct('city_code')->count();
-        $totalSuggestions = WeatherRecipeSuggestion::active()->count();
-        $recentSuggestions = WeatherRecipeSuggestion::where('last_generated', '>=', now()->subDay())->count();
+        $totalRules = WeatherConditionRule::count();
+        $activeRules = WeatherConditionRule::active()->count();
 
         return [
             Stat::make('Tổng số thành phố', $totalCities)
@@ -28,15 +28,15 @@ class WeatherStatsWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-cloud')
                 ->color($citiesWithWeather >= $totalCities * 0.8 ? 'success' : 'warning'),
 
-            Stat::make('Đề xuất món ăn', $totalSuggestions)
-                ->description('Đang hoạt động')
+            Stat::make('Quy tắc đề xuất', $totalRules)
+                ->description('Tổng số quy tắc')
                 ->descriptionIcon('heroicon-m-light-bulb')
                 ->color('info'),
 
-            Stat::make('Đề xuất mới', $recentSuggestions)
-                ->description('Tạo trong 24 giờ qua')
-                ->descriptionIcon('heroicon-m-clock')
-                ->color($recentSuggestions > 0 ? 'success' : 'gray'),
+            Stat::make('Quy tắc đang hoạt động', $activeRules)
+                ->description('Quy tắc đang được sử dụng')
+                ->descriptionIcon('heroicon-m-check-circle')
+                ->color($activeRules > 0 ? 'success' : 'gray'),
         ];
     }
 }

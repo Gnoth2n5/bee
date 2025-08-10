@@ -13,6 +13,13 @@ class CreateModerationRule extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['created_by'] = Auth::id();
+        
+        // Đảm bảo keywords được format đúng
+        if (isset($data['keywords'])) {
+            $keywords = array_map('trim', explode(',', $data['keywords']));
+            $keywords = array_filter($keywords);
+            $data['keywords'] = implode(', ', $keywords);
+        }
 
         return $data;
     }

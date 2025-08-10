@@ -6,6 +6,9 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Google_Client;
+use Illuminate\Support\Facades\Log;
+
+
 
 class GoogleLogoutMiddleware
 {
@@ -30,7 +33,7 @@ class GoogleLogoutMiddleware
                 $client->setClientSecret(config('services.google.client_secret'));
                 $client->revokeToken($googleToken);
             } catch (\Exception $e) {
-                \Log::error('Google token revocation failed in middleware: ' . $e->getMessage());
+                Log::error('Google token revocation failed in middleware: ' . $e->getMessage());
             }
 
             session()->forget('google_token_revoke');

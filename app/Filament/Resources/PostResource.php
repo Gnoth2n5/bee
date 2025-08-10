@@ -14,6 +14,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class PostResource extends Resource
 {
@@ -24,6 +25,26 @@ class PostResource extends Resource
     protected static ?string $navigationGroup = 'Quản lý nội dung';
 
     protected static ?int $navigationSort = 7;
+
+    public static function canViewAny(): bool
+    {
+        return Auth::check() && Auth::user()->hasRole(['admin', 'manager']);
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::check() && Auth::user()->hasRole(['admin', 'manager']);
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return Auth::check() && Auth::user()->hasRole(['admin', 'manager']);
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return Auth::check() && Auth::user()->hasRole(['admin', 'manager']);
+    }
 
     public static function form(Form $form): Form
     {

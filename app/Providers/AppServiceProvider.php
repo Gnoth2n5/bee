@@ -9,6 +9,7 @@ use App\Models\Rating;
 use App\Models\Post;
 use App\Models\Recipe;
 use App\Policies\RatingPolicy;
+use App\Policies\PostPolicy;
 use App\Policies\RecipePolicy;
 use App\Observers\PostObserver;
 
@@ -32,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Register policies
         Gate::policy(Rating::class, RatingPolicy::class);
+        Gate::policy(Post::class, PostPolicy::class);
+        
         Gate::policy(Recipe::class, RecipePolicy::class);
 
         // Register observers

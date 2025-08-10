@@ -18,8 +18,8 @@
                 <div class="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gradient-to-br from-orange-100 to-red-100">
                     @if($isEditing && $avatar)
                         <img src="{{ $avatar->temporaryUrl() }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
-                    @elseif($user->avatar)
-                        <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+                    @elseif($user->hasAvatar())
+                        <img src="{{ $user->getAvatarUrl() }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
                             <x-heroicon-o-user class="w-16 h-16 text-orange-400" />
@@ -33,7 +33,7 @@
                         <input wire:model.live="avatar" type="file" id="avatar" class="hidden" accept="image/*">
                     </label>
                     
-                    @if($user->avatar)
+                    @if($user->hasLocalAvatar())
                         <button wire:click="removeAvatar" type="button" class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 cursor-pointer shadow-lg transition-colors" title="Xóa ảnh đại diện">
                             <x-heroicon-o-x-mark class="w-4 h-4" />
                         </button>

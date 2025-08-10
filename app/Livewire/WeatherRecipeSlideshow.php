@@ -28,7 +28,6 @@ class WeatherRecipeSlideshow extends Component
 
     public function mount()
     {
-        \Log::info('WeatherRecipeSlideshow mounted');
 
         // Kiểm tra xem có thông tin vị trí từ session không
         if (session('user_location')) {

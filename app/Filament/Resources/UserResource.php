@@ -65,7 +65,6 @@ class UserResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('roles')
                             ->label('Vai trò')
-                            ->multiple()
                             ->relationship('roles', 'name')
                             ->preload()
                             ->searchable(),
@@ -79,21 +78,22 @@ class UserResource extends Resource
                             ->imageEditor()
                             ->circleCropper()
                             ->disk('public')
-                            ->visibility('public'),
+                            ->visibility('public')
+                            ->helperText('Nếu user đăng nhập bằng Google, avatar sẽ được lấy từ Google. Upload file mới sẽ ghi đè avatar Google.'),
                         Forms\Components\Textarea::make('bio')
                             ->label('Tiểu sử')
                             ->maxLength(500)
                             ->columnSpanFull(),
-                        Forms\Components\KeyValue::make('preferences')
-                            ->label('Tùy chọn')
-                            ->columnSpanFull(),
                         Forms\Components\DateTimePicker::make('email_verified_at')
-                            ->label('Xác thực email lúc'),
+                            ->label('Xác thực email lúc')
+                            ->disabled(),                            
                         Forms\Components\DateTimePicker::make('last_login_at')
-                            ->label('Đăng nhập cuối lúc'),
+                            ->label('Đăng nhập cuối lúc')
+                            ->disabled(),
                         Forms\Components\TextInput::make('login_count')
                             ->label('Số lần đăng nhập')
                             ->numeric()
+                            ->disabled()
                             ->default(0),
                     ])->columns(2),
             ]);
@@ -106,7 +106,10 @@ class UserResource extends Resource
                 Tables\Columns\ImageColumn::make('avatar')
                     ->label('Avatar')
                     ->circular()
-                    ->size(40),
+                    ->size(40)
+                    ->getStateUsing(function ($record) {
+                        return $record->getAvatarUrl();
+                    }),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên')
                     ->searchable()
@@ -184,6 +187,12 @@ class UserResource extends Resource
                 Tables\Filters\Filter::make('recent_users')
                     ->label('Người dùng mới (7 ngày)')
                     ->query(fn(Builder $query): Builder => $query->where('created_at', '>=', now()->subDays(7))),
+                Tables\Filters\Filter::make('admin_users')
+                    ->label('Chỉ hiển thị Admin')
+                    ->query(fn(Builder $query): Builder => $query->whereHas('roles', fn($q) => $q->where('name', 'admin'))),
+                Tables\Filters\Filter::make('non_admin_users')
+                    ->label('Chỉ hiển thị không phải Admin')
+                    ->query(fn(Builder $query): Builder => $query->whereDoesntHave('roles', fn($q) => $q->where('name', 'admin'))),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -195,7 +204,7 @@ class UserResource extends Resource
                         ->color('danger')
                         ->requiresConfirmation()
                         ->action(fn(User $record) => $record->update(['status' => 'banned']))
-                        ->visible(fn(User $record) => $record->status !== 'banned'),
+                        ->visible(fn(User $record) => $record->status !== 'banned' && !$record->hasRole('admin')),
                     Tables\Actions\Action::make('activate')
                         ->label('Kích hoạt')
                         ->icon('heroicon-o-check-circle')
@@ -214,6 +223,15 @@ class UserResource extends Resource
                         ->color('secondary')
                         ->url(fn(User $record): string => route('filament.admin.resources.users.edit', $record))
                         ->openUrlInNewTab(),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('Xóa người dùng')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->visible(fn(User $record) => !$record->hasRole('admin'))
+                        ->modalHeading('Xác nhận xóa người dùng')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa người dùng này? Hành động này không thể hoàn tác.')
+                        ->modalSubmitActionLabel('Xóa người dùng'),
                 ]),
             ])
             ->bulkActions([
@@ -223,13 +241,40 @@ class UserResource extends Resource
                         ->icon('heroicon-o-no-symbol')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->action(fn(Collection $records) => $records->each->update(['status' => 'banned'])),
+                        ->action(fn(Collection $records) => $records->each->update(['status' => 'banned']))
+                        ->deselectRecordsAfterCompletion(),
                     Tables\Actions\BulkAction::make('activate')
                         ->label('Kích hoạt')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(fn(Collection $records) => $records->each->update(['status' => 'active'])),
-                    Tables\Actions\DeleteBulkAction::make(),
+                        ->action(fn(Collection $records) => $records->each->update(['status' => 'active']))
+                        ->deselectRecordsAfterCompletion(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Xóa người dùng')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Xác nhận xóa người dùng')
+                        ->modalDescription('Bạn có chắc chắn muốn xóa những người dùng đã chọn? Hành động này không thể hoàn tác.')
+                        ->modalSubmitActionLabel('Xóa người dùng')
+                        ->action(function (Collection $records) {
+                            // Lọc ra những user không phải admin
+                            $nonAdminUsers = $records->filter(fn($user) => !$user->hasRole('admin'));
+                            $adminUsers = $records->filter(fn($user) => $user->hasRole('admin'));
+                            
+                            // Xóa những user không phải admin
+                            $nonAdminUsers->each->delete();
+                            
+                            // Thông báo nếu có admin bị bỏ qua
+                            if ($adminUsers->count() > 0) {
+                                \Filament\Notifications\Notification::make()
+                                    ->warning()
+                                    ->title('Không thể xóa admin')
+                                    ->body('Một số người dùng có vai trò admin đã được bỏ qua và không bị xóa.')
+                                    ->send();
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
     }

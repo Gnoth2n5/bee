@@ -2,7 +2,7 @@
     <div class="w-full max-w-4xl mx-auto flex flex-col lg:flex-row shadow-xl rounded-xl overflow-hidden bg-white">
         <!-- Banner trái -->
         <div class="hidden lg:flex flex-col justify-center items-center w-1/2 bg-gradient-to-br from-orange-400 to-red-400 p-10 relative">
-            <img src="https://images.unsplash.com/photo-1464306076886-debca5e8a6b0?auto=format&fit=crop&w=600&q=80" alt="BeeFood Banner" class="rounded-lg shadow-xl w-full h-64 object-cover mb-6">
+            <img src="https://i.pinimg.com/736x/7b/18/6d/7b186df6922208e8ae765bb97a20f162.jpg" alt="BeeFood Banner" class="rounded-lg shadow-xl w-full h-64 object-cover mb-6">
             <div class="text-white text-2xl font-bold mb-2 drop-shadow-lg">Gia nhập cộng đồng BeeFood!</div>
             <div class="text-white text-base opacity-90 mb-4 text-center">Tạo tài khoản để lưu trữ, chia sẻ và khám phá hàng ngàn công thức nấu ăn hấp dẫn.</div>
             <div class="absolute bottom-4 left-0 right-0 flex justify-center">

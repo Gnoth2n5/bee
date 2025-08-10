@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Google_Client;
+
 
 class GoogleController extends Controller
 {
@@ -21,13 +23,13 @@ class GoogleController extends Controller
         try {
             // Đảm bảo redirect URI được set đúng
             $redirectUrl = config('services.google.redirect');
-            \Log::info('Google redirect URL: ' . $redirectUrl);
+            Log::info('Google redirect URL: ' . $redirectUrl);
 
             return Socialite::driver('google')
                 ->redirectUrl($redirectUrl)
                 ->redirect();
         } catch (\Exception $e) {
-            \Log::error('Google redirect error: ' . $e->getMessage());
+            Log::error('Google redirect error: ' . $e->getMessage());
             return redirect()->route('login')->withErrors([
                 'email' => 'Không thể kết nối với Google. Vui lòng thử lại.',
             ]);
@@ -41,7 +43,7 @@ class GoogleController extends Controller
     {
         try {
             $redirectUrl = config('services.google.redirect');
-            \Log::info('Google callback URL: ' . $redirectUrl);
+            Log::info('Google callback URL: ' . $redirectUrl);
 
             $googleUser = Socialite::driver('google')
                 ->redirectUrl($redirectUrl)
@@ -60,6 +62,7 @@ class GoogleController extends Controller
                         'google_id' => $googleUser->getId(),
                         'google_token' => $googleUser->token,
                         'google_refresh_token' => $googleUser->refreshToken,
+                        'avatar' => $googleUser->getAvatar(), // Cập nhật avatar từ Google
                     ]);
 
                     // Đảm bảo user có role
@@ -116,8 +119,8 @@ class GoogleController extends Controller
             return redirect()->intended('/')->with('success', 'Đăng nhập thành công! Chào mừng bạn quay lại BeeFood.');
 
         } catch (\Exception $e) {
-            \Log::error('Google login error: ' . $e->getMessage());
-            \Log::error('Google login error trace: ' . $e->getTraceAsString());
+            Log::error('Google login error: ' . $e->getMessage());
+            Log::error('Google login error trace: ' . $e->getTraceAsString());
             return redirect()->route('login')->withErrors([
                 'email' => 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.',
             ]);
@@ -146,7 +149,7 @@ class GoogleController extends Controller
                 ]);
             } catch (\Exception $e) {
                 // Log error nhưng không dừng logout
-                \Log::error('Google token revocation failed: ' . $e->getMessage());
+                Log::error('Google token revocation failed: ' . $e->getMessage());
             }
         }
 

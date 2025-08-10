@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Auth;
 
 class UserRatingChart extends ChartWidget
 {
-    protected static ?string $heading = 'Phân bố đánh giá của tôi';
-    protected static ?int $sort = 4;
+    protected static ?string $heading = 'Phân bố đánh giá';
+    protected static ?int $sort = 3;
     protected int|string|array $columnSpan = 1;
     protected static ?int $contentHeight = 1;
 

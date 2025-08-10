@@ -180,8 +180,8 @@ class ProfilePage extends Component
         try {
             // Handle avatar upload first
             if ($this->avatar) {
-                // Delete old avatar if exists
-                if ($this->user->avatar && Storage::disk('public')->exists($this->user->avatar)) {
+                // Delete old avatar if exists (only if it's a local file)
+                if ($this->user->hasLocalAvatar() && Storage::disk('public')->exists($this->user->avatar)) {
                     Storage::disk('public')->delete($this->user->avatar);
                 }
 
@@ -259,7 +259,8 @@ class ProfilePage extends Component
 
     public function removeAvatar()
     {
-        if ($this->user->avatar && Storage::disk('public')->exists($this->user->avatar)) {
+        // Chỉ xóa file local nếu avatar là file local (không phải URL)
+        if ($this->user->hasLocalAvatar() && Storage::disk('public')->exists($this->user->avatar)) {
             Storage::disk('public')->delete($this->user->avatar);
         }
 

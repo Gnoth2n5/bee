@@ -84,8 +84,8 @@
                     </div>
                     <div class="flex items-center gap-3 mt-2">
                         <div class="flex items-center gap-2">
-                            @if($collection->user->profile && $collection->user->profile->avatar)
-                                <img src="{{ Storage::url($collection->user->profile->avatar) }}" alt="{{ $collection->user->name }}" class="w-8 h-8 rounded-full object-cover" />
+                            @if($collection->user->hasAvatar())
+                                <img src="{{ $collection->user->getAvatarUrl() }}" alt="{{ $collection->user->name }}" class="w-8 h-8 rounded-full object-cover" />
                             @else
                                 <span class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">{{ strtoupper(substr($collection->user->name,0,1)) }}</span>
                             @endif
