@@ -113,7 +113,7 @@ class IngredientSubstituteModal extends Component
             // Gọi service để tìm nguyên liệu thay thế
             $result = $this->ingredientSubstituteService->getSubstitutes($this->ingredientVi);
 
-            if ($result['success']) {
+            if ($result['success'] && !empty($result['substitutes'])) {
                 $this->substitutes = $result['substitutes'];
                 $this->success = 'Tìm thấy ' . count($this->substitutes) . ' nguyên liệu có thể thay thế cho "' . $this->ingredientVi . '".';
 
@@ -126,7 +126,7 @@ class IngredientSubstituteModal extends Component
                     'from_cache' => $result['from_cache'] ?? false
                 ]);
             } else {
-                $this->error = $result['error'] ?? 'Không thể tìm thấy nguyên liệu thay thế.';
+                $this->error = $result['error'] ?? 'Không tìm thấy nguyên liệu thay thế cho "' . $this->ingredientVi . '".';
 
                 Log::warning('Modal failed to find ingredient substitutes', [
                     'ingredient' => $this->ingredientVi,

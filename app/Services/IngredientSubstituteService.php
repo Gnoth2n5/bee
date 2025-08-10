@@ -12,11 +12,11 @@ class IngredientSubstituteService
     protected $spoonacularApiKey;
     protected $geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
     protected $spoonacularBaseUrl = 'https://api.spoonacular.com/food/ingredients';
-    
+
     /**
-     * Thời gian cache (7 ngày)
+     * Thời gian cache (1 ngày)
      */
-    protected $cacheTime = 7 * 24 * 60 * 60; // 7 days in seconds
+    protected $cacheTime = 24 * 60 * 60; // 1 day in seconds
 
     public function __construct()
     {
@@ -36,7 +36,7 @@ class IngredientSubstituteService
             // Kiểm tra cache trước
             $cacheKey = "ingredient_translate_vi_en_" . md5(strtolower(trim($ingredientVi)));
             $cached = Cache::get($cacheKey);
-            
+
             if ($cached) {
                 Log::info('Cache hit for Vietnamese to English translation', ['ingredient' => $ingredientVi]);
                 return [
@@ -77,14 +77,14 @@ class IngredientSubstituteService
             if ($response->successful()) {
                 $data = $response->json();
                 $translation = trim($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
-                
+
                 if (!empty($translation)) {
                     // Loại bỏ dấu ngoặc kép nếu có
                     $translation = trim($translation, '"\'');
-                    
+
                     // Cache kết quả
                     Cache::put($cacheKey, $translation, $this->cacheTime);
-                    
+
                     return [
                         'success' => true,
                         'translation' => $translation,
@@ -104,7 +104,6 @@ class IngredientSubstituteService
                 'success' => false,
                 'error' => $this->getGeminiErrorMessage($errorData)
             ];
-
         } catch (\Exception $e) {
             Log::error('Exception in translateToEnglish', [
                 'message' => $e->getMessage(),
@@ -132,7 +131,7 @@ class IngredientSubstituteService
             foreach ($substitutes as $substitute) {
                 $name = $substitute['name'] ?? '';
                 $description = $substitute['description'] ?? '';
-                
+
                 if (empty($name)) {
                     continue;
                 }
@@ -140,7 +139,7 @@ class IngredientSubstituteService
                 // Cache key cho mỗi substitute
                 $cacheKey = "ingredient_translate_en_vi_" . md5(strtolower($name));
                 $cached = Cache::get($cacheKey);
-                
+
                 if ($cached) {
                     $translatedSubstitutes[] = [
                         'name' => $cached['name'],
@@ -185,15 +184,15 @@ class IngredientSubstituteService
                 if ($response->successful()) {
                     $data = $response->json();
                     $translation = trim($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
-                    
+
                     // Parse translation
                     $translatedName = $name; // fallback
                     $translatedDescription = $description; // fallback
-                    
+
                     if (preg_match('/Tên:\s*(.+?)(?:\n|$)/u', $translation, $nameMatches)) {
                         $translatedName = trim($nameMatches[1]);
                     }
-                    
+
                     if (preg_match('/Mô tả:\s*(.+?)(?:\n|$)/u', $translation, $descMatches)) {
                         $translatedDescription = trim($descMatches[1]);
                     }
@@ -228,7 +227,6 @@ class IngredientSubstituteService
                 'success' => true,
                 'substitutes' => $translatedSubstitutes
             ];
-
         } catch (\Exception $e) {
             Log::error('Exception in translateToVietnamese', [
                 'message' => $e->getMessage()
@@ -253,7 +251,7 @@ class IngredientSubstituteService
             // Kiểm tra cache chính cho kết quả cuối cùng
             $mainCacheKey = "ingredient_substitute_" . md5(strtolower(trim($ingredientVi))) . "_vi";
             $cached = Cache::get($mainCacheKey);
-            
+
             if ($cached) {
                 Log::info('Cache hit for ingredient substitutes', ['ingredient' => $ingredientVi]);
                 return [
@@ -267,7 +265,7 @@ class IngredientSubstituteService
 
             // Bước 1: Dịch nguyên liệu sang tiếng Anh
             $translationResult = $this->translateToEnglish($ingredientVi);
-            
+
             if (!$translationResult['success']) {
                 return $translationResult;
             }
@@ -277,14 +275,14 @@ class IngredientSubstituteService
 
             // Bước 2: Gọi Spoonacular API
             $spoonacularResult = $this->getSpoonacularSubstitutes($ingredientEn);
-            
+
             if (!$spoonacularResult['success']) {
                 return $spoonacularResult;
             }
 
             // Bước 3: Dịch kết quả sang tiếng Việt
             $translatedResult = $this->translateToVietnamese($spoonacularResult['substitutes']);
-            
+
             if (!$translatedResult['success']) {
                 return $translatedResult;
             }
@@ -298,7 +296,6 @@ class IngredientSubstituteService
                 'from_cache' => false,
                 'english_translation' => $ingredientEn
             ];
-
         } catch (\Exception $e) {
             Log::error('Exception in getSubstitutes', [
                 'message' => $e->getMessage(),
@@ -324,7 +321,7 @@ class IngredientSubstituteService
             // Kiểm tra cache cho kết quả Spoonacular
             $cacheKey = "spoonacular_substitute_" . md5(strtolower(trim($ingredientEn)));
             $cached = Cache::get($cacheKey);
-            
+
             if ($cached) {
                 Log::info('Cache hit for Spoonacular substitutes', ['ingredient' => $ingredientEn]);
                 return [
@@ -350,19 +347,13 @@ class IngredientSubstituteService
                 $data = $response->json();
                 $substitutes = [];
 
-                if (isset($data['substitutes']) && is_array($data['substitutes'])) {
+                if (isset($data['substitutes']) && is_array($data['substitutes']) && !empty($data['substitutes'])) {
                     foreach ($data['substitutes'] as $substitute) {
                         $substitutes[] = [
                             'name' => $substitute,
                             'description' => ''
                         ];
                     }
-                } elseif (isset($data['message'])) {
-                    // Xử lý trường hợp có message thay vì substitutes array
-                    $substitutes[] = [
-                        'name' => $data['message'],
-                        'description' => ''
-                    ];
                 }
 
                 if (empty($substitutes)) {
@@ -400,7 +391,6 @@ class IngredientSubstituteService
                 'success' => false,
                 'error' => $errorMessage
             ];
-
         } catch (\Exception $e) {
             Log::error('Exception in getSpoonacularSubstitutes', [
                 'message' => $e->getMessage(),
