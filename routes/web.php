@@ -40,6 +40,9 @@ Route::get('/search', App\Livewire\AdvancedSearch::class)->name('search.advanced
 // Weather-based recipe suggestions
 Route::get('/weather-suggestions', App\Livewire\WeatherRecipeSuggestions::class)->name('weather.suggestions');
 
+// Ingredient Substitute API
+Route::post('/api/ingredient-substitute', [App\Http\Controllers\IngredientSubstituteController::class, 'getSubstitutes'])->name('api.ingredient.substitute');
+
 // Vietnam Provinces API
 Route::prefix('api/vietnam-provinces')->name('api.vietnam-provinces.')->group(function () {
     Route::get('/', [App\Http\Controllers\VietnamProvinceController::class, 'index'])->name('index');

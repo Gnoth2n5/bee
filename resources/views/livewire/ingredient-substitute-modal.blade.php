@@ -4,26 +4,7 @@
          aria-labelledby="modal-title"
          role="dialog"
          aria-modal="true"
-         x-data
-         @keydown.escape.window="$wire.closeModal()"
-         @keydown.enter.window="if ($wire.ingredientVi.trim() && !$event.target.closest('button')) $wire.findSubstitutes()"
-         wire:init="loadSearchHistoryFromLocalStorage"
-         x-init="
-             $wire.on('save-search-history-localstorage', (data) => {
-                 localStorage.setItem('ingredient_search_history', JSON.stringify(data.history));
-             });
-             
-             $wire.on('clear-search-history-localstorage', () => {
-                 localStorage.removeItem('ingredient_search_history');
-             });
-             
-             $wire.on('load-search-history-localstorage', () => {
-                 const history = localStorage.getItem('ingredient_search_history');
-                 if (history) {
-                     $wire.set('searchHistory', JSON.parse(history));
-                 }
-             });
-         ">
+         id="ingredient-substitute-modal">
         
         <!-- Background overlay -->
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
@@ -69,13 +50,11 @@
                                     <input 
                                         type="text" 
                                         id="ingredient-input"
-                                        wire:model="ingredientVi"
+                                        wire:model.live="ingredientVi"
                                         placeholder="Ví dụ: bơ, trứng gà, hành tây..."
                                         class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base"
                                         {{ $loading ? 'disabled' : '' }}
-                                        x-data
-                                        x-init="$nextTick(() => $el.focus())"
-                                    >
+                                    />
                                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                         <x-heroicon-s-magnifying-glass class="h-5 w-5 text-gray-400" />
                                     </div>
@@ -87,7 +66,7 @@
                             
                             <button 
                                 type="submit"
-                                class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-匆
                                 {{ $loading ? 'disabled' : '' }}
                             >
                                 <svg wire:loading wire:target="findSubstitutes" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -109,7 +88,7 @@
                             @foreach($examples as $example)
                                 <button 
                                     type="button"
-                                    onclick="document.getElementById('ingredient-input').value = '{{ $example }}'"
+                                    onclick="setIngredientValue('{{ $example }}')"
                                     class="inline-flex items-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
                                     {{ $loading ? 'disabled' : '' }}
                                 >
@@ -120,31 +99,20 @@
                     </div>
 
                     <!-- Search History -->
-                    @if(!empty($searchHistory))
-                        <div class="mb-6">
-                            <div class="flex items-center justify-between mb-2">
-                                <p class="text-sm text-gray-600">Tìm kiếm gần đây:</p>
-                                <button 
-                                    wire:click="clearSearchHistory"
-                                    class="text-xs text-gray-500 hover:text-red-500 transition-colors"
-                                >
-                                    Xóa lịch sử
-                                </button>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach($searchHistory as $historyItem)
-                                    <button 
-                                        wire:click="searchFromHistory('{{ $historyItem }}')"
-                                        class="inline-flex items-center px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm rounded-full transition-colors"
-                                        {{ $loading ? 'disabled' : '' }}
-                                    >
-                                        <x-heroicon-s-clock class="w-3 h-3 mr-1" />
-                                        {{ $historyItem }}
-                                    </button>
-                                @endforeach
-                            </div>
+                    <div id="search-history-section" class="mb-6" style="display: none;">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-600">Tìm kiếm gần đây:</p>
+                            <button 
+                                onclick="clearSearchHistory()"
+                                class="text-xs text-gray-500 hover:text-red-500 transition-colors"
+                            >
+                                Xóa lịch sử
+                            </button>
                         </div>
-                    @endif
+                        <div id="search-history-list" class="flex flex-wrap gap-2">
+                            <!-- History items will be inserted here by JavaScript -->
+                        </div>
+                    </div>
 
                     <!-- Messages -->
                     @if($error)
@@ -270,5 +238,7 @@
             </div>
         </div>
     </div>
+
+
     @endif
 </div>

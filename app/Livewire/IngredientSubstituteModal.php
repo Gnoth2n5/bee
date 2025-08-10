@@ -20,7 +20,7 @@ class IngredientSubstituteModal extends Component
     /**
      * Nguyên liệu nhập bằng tiếng Việt
      */
-    #[Rule('required|string|min:1|max:100')]
+    #[Rule('string|min:1|max:100')]
     public $ingredientVi = '';
 
     /**
@@ -43,15 +43,7 @@ class IngredientSubstituteModal extends Component
      */
     public $success = null;
 
-    /**
-     * Search history
-     */
-    public $searchHistory = [];
-
-    /**
-     * Max history items
-     */
-    public $maxHistory = 5;
+    // Search history sẽ được quản lý bởi JavaScript thuần
 
     public function boot(IngredientSubstituteService $ingredientSubstituteService)
     {
@@ -60,7 +52,7 @@ class IngredientSubstituteModal extends Component
 
     public function mount()
     {
-        $this->loadSearchHistory();
+        // Search history sẽ được quản lý bởi JavaScript
     }
 
     /**
@@ -71,6 +63,7 @@ class IngredientSubstituteModal extends Component
     {
         $this->showModal = true;
         $this->resetMessages();
+        $this->resetForm();
 
         // Focus vào input khi modal mở
         $this->dispatch('focus-ingredient-input');
@@ -94,13 +87,14 @@ class IngredientSubstituteModal extends Component
         $this->resetMessages();
         $this->substitutes = [];
 
-        // Validate input
-        $this->validate();
-
+        // Kiểm tra input trước
         if (empty(trim($this->ingredientVi))) {
-            $this->error = 'Vui lòng nhập tên nguyên liệu.';
+            $this->addError('ingredientVi', 'Vui lòng nhập tên nguyên liệu.');
             return;
         }
+
+        // Validate input
+        $this->validate();
 
         $this->loading = true;
 
@@ -117,8 +111,8 @@ class IngredientSubstituteModal extends Component
                 $this->substitutes = $result['substitutes'];
                 $this->success = 'Tìm thấy ' . count($this->substitutes) . ' nguyên liệu có thể thay thế cho "' . $this->ingredientVi . '".';
 
-                // Lưu vào lịch sử tìm kiếm
-                $this->addToSearchHistory($this->ingredientVi);
+                // Dispatch event để JavaScript lưu vào lịch sử
+                $this->dispatch('search-success');
 
                 Log::info('Modal ingredient substitutes found successfully', [
                     'ingredient' => $this->ingredientVi,
@@ -156,61 +150,7 @@ class IngredientSubstituteModal extends Component
 
 
 
-    /**
-     * Search từ lịch sử
-     */
-    public function searchFromHistory($ingredient)
-    {
-        $this->ingredientVi = $ingredient;
-        $this->findSubstitutes();
-    }
-
-    /**
-     * Xóa lịch sử tìm kiếm
-     */
-    public function clearSearchHistory()
-    {
-        $this->searchHistory = [];
-        $this->dispatch('clear-search-history-localstorage');
-        $this->success = 'Đã xóa lịch sử tìm kiếm.';
-    }
-
-    /**
-     * Thêm vào lịch sử tìm kiếm
-     */
-    protected function addToSearchHistory($ingredient)
-    {
-        $ingredient = trim($ingredient);
-
-        // Loại bỏ nếu đã tồn tại
-        $this->searchHistory = array_filter($this->searchHistory, fn($item) => $item !== $ingredient);
-
-        // Thêm vào đầu danh sách
-        array_unshift($this->searchHistory, $ingredient);
-
-        // Giới hạn số lượng
-        $this->searchHistory = array_slice($this->searchHistory, 0, $this->maxHistory);
-
-        // Lưu vào localStorage qua JavaScript
-        $this->dispatch('save-search-history-localstorage', history: $this->searchHistory);
-    }
-
-    /**
-     * Load lịch sử tìm kiếm từ localStorage
-     */
-    protected function loadSearchHistory()
-    {
-        // Sẽ được load qua JavaScript khi component mount
-        $this->dispatch('load-search-history-localstorage');
-    }
-
-    /**
-     * Load lịch sử tìm kiếm từ localStorage khi component init
-     */
-    public function loadSearchHistoryFromLocalStorage()
-    {
-        $this->dispatch('load-search-history-localstorage');
-    }
+    // Các method liên quan đến search history đã được chuyển sang JavaScript thuần
 
     /**
      * Reset error và success messages
@@ -228,10 +168,10 @@ class IngredientSubstituteModal extends Component
     {
         if ($propertyName === 'ingredientVi') {
             $this->resetMessages();
-            // Validate từng ký tự để show error realtime
-            $this->validateOnly($propertyName);
-
-            // Không tự động search khi thay đổi giá trị
+            // Clear error nếu có input
+            if (!empty(trim($this->ingredientVi))) {
+                $this->resetErrorBag('ingredientVi');
+            }
         }
     }
 

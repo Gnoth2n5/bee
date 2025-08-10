@@ -53,7 +53,7 @@ class IngredientSubstituteService
                     [
                         'parts' => [
                             [
-                                'text' => "Dịch tên nguyên liệu từ tiếng Việt sang tiếng Anh (chỉ trả về từ tiếng Anh, không giải thích thêm): \"{$ingredientVi}\""
+                                'text' => "Translate this Vietnamese ingredient name to English. Return only the English name, no explanation or extra text. Be precise and use the most common culinary English term:\n\nVietnamese: \"{$ingredientVi}\"\nEnglish:"
                             ]
                         ]
                     ]
@@ -160,7 +160,7 @@ class IngredientSubstituteService
                         [
                             'parts' => [
                                 [
-                                    'text' => "Dịch thông tin nguyên liệu sau từ tiếng Anh sang tiếng Việt (giữ nguyên format):\n{$textToTranslate}"
+                                    'text' => "You are a professional culinary translator. Translate the following ingredient substitute information from English to Vietnamese. Use accurate Vietnamese culinary terms that Vietnamese cooks would understand. Keep the same format (Tên: for name, Mô tả: for description). Be precise and natural:\n\n{$textToTranslate}\n\n--- VIETNAMESE TRANSLATION ---"
                                 ]
                             ]
                         ]
@@ -185,16 +185,47 @@ class IngredientSubstituteService
                     $data = $response->json();
                     $translation = trim($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
 
-                    // Parse translation
+                    // Parse translation - handle both Vietnamese and English formats
                     $translatedName = $name; // fallback
                     $translatedDescription = $description; // fallback
 
+                    // Try Vietnamese format first
                     if (preg_match('/Tên:\s*(.+?)(?:\n|$)/u', $translation, $nameMatches)) {
                         $translatedName = trim($nameMatches[1]);
+                    } elseif (preg_match('/Name:\s*(.+?)(?:\n|$)/u', $translation, $nameMatches)) {
+                        $translatedName = trim($nameMatches[1]);
+                    } else {
+                        // If no structured format, try to extract the first meaningful line
+                        $lines = explode("\n", $translation);
+                        foreach ($lines as $line) {
+                            $line = trim($line);
+                            if (!empty($line) && !preg_match('/^(VIETNAMESE TRANSLATION|---)/i', $line)) {
+                                // Check if it contains "Tên:" or similar
+                                if (preg_match('/^(?:Tên|Name):\s*(.+)$/u', $line, $matches)) {
+                                    $translatedName = trim($matches[1]);
+                                    break;
+                                }
+                            }
+                        }
                     }
 
                     if (preg_match('/Mô tả:\s*(.+?)(?:\n|$)/u', $translation, $descMatches)) {
                         $translatedDescription = trim($descMatches[1]);
+                    } elseif (preg_match('/Description:\s*(.+?)(?:\n|$)/u', $translation, $descMatches)) {
+                        $translatedDescription = trim($descMatches[1]);
+                    } else {
+                        // Try to find description in a more flexible way
+                        $lines = explode("\n", $translation);
+                        $foundName = false;
+                        foreach ($lines as $line) {
+                            $line = trim($line);
+                            if (!empty($line)) {
+                                if (preg_match('/^(?:Mô tả|Description):\s*(.+)$/u', $line, $matches)) {
+                                    $translatedDescription = trim($matches[1]);
+                                    break;
+                                }
+                            }
+                        }
                     }
 
                     $translatedData = [

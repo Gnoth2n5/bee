@@ -125,6 +125,9 @@
         </script>
 
         <!-- Ingredient Substitute Modal -->
-        <livewire:ingredient-substitute-modal />
+        <x-ingredient-substitute-modal />
+        
+        <!-- Ingredient Substitute JavaScript -->
+        <script src="{{ asset('js/ingredient-substitute.js') }}"></script>
     </body>
 </html>

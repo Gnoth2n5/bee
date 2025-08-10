@@ -12,10 +12,7 @@ new class extends Component {
         $this->showSearch = !$this->showSearch;
     }
 
-    public function openIngredientModal()
-    {
-        $this->dispatch('open-ingredient-substitute-modal');
-    }
+    // Ingredient modal đã chuyển sang JavaScript thuần
 
     public function logout()
     {
@@ -75,7 +72,7 @@ new class extends Component {
                     </div>
                 </a>
 
-                <button wire:click="openIngredientModal"
+                <button onclick="openIngredientSubstituteModal()"
                     class="text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-500 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200">
                     <div class="flex items-center space-x-2">
                         <x-heroicon-o-magnifying-glass class="w-4 h-4" />
@@ -314,7 +311,7 @@ new class extends Component {
                 </div>
             </a>
 
-            <button wire:click="openIngredientModal"
+            <button onclick="openIngredientSubstituteModal()"
                 class="block w-full text-left py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">
                 <div class="flex items-center space-x-2">
                     <x-heroicon-o-magnifying-glass class="w-4 h-4" />
