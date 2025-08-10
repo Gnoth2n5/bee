@@ -32,7 +32,7 @@ class WeatherConditionRuleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cloud';
 
-    protected static ?string $navigationGroup = 'Quản Lý Thời Tiết';
+    protected static ?string $navigationGroup = 'Quản lý thời tiết';
 
     protected static ?string $navigationLabel = 'Quy Tắc Thời Tiết';
 

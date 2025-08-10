@@ -17,7 +17,7 @@ class WeatherConditionRuleService
     public function getSuggestionsByConditions($temperature, $humidity = null, $limit = 12)
     {
         $cacheKey = "weather_suggestions_{$temperature}_{$humidity}_{$limit}";
-        
+
         return Cache::remember($cacheKey, 1800, function () use ($temperature, $humidity, $limit) {
             return $this->generateSuggestionsByConditions($temperature, $humidity, $limit);
         });
@@ -30,7 +30,7 @@ class WeatherConditionRuleService
     {
         // Tìm các quy tắc phù hợp với điều kiện thời tiết
         $matchingRules = $this->findMatchingRules($temperature, $humidity);
-        
+
         if ($matchingRules->isEmpty()) {
             return $this->getDefaultSuggestions($limit);
         }
@@ -98,7 +98,7 @@ class WeatherConditionRuleService
                 'suggestion_reason' => 'Nhiệt độ cao trên 30°C - phù hợp với các món ăn mát, nhẹ để giải nhiệt',
                 'priority' => 5
             ],
-            
+
             // Nhiệt độ cao độ ẩm cao (24-30°C, >70%)
             [
                 'name' => 'Nhiệt độ cao độ ẩm cao',
@@ -112,7 +112,7 @@ class WeatherConditionRuleService
                 'suggestion_reason' => 'Nhiệt độ cao (24-30°C) và độ ẩm cao (>70%) - gợi ý các món nhẹ như súp và salad để giải nhiệt',
                 'priority' => 4
             ],
-            
+
             // Nhiệt độ cao độ ẩm thấp (24-30°C, <70%)
             [
                 'name' => 'Nhiệt độ cao độ ẩm thấp',
@@ -126,7 +126,7 @@ class WeatherConditionRuleService
                 'suggestion_reason' => 'Nhiệt độ cao (24-30°C) và độ ẩm thấp (<70%) - gợi ý các món nước và món chế biến nhanh',
                 'priority' => 4
             ],
-            
+
             // Nhiệt độ mát (15-24°C)
             [
                 'name' => 'Nhiệt độ mát mẻ',
@@ -140,7 +140,7 @@ class WeatherConditionRuleService
                 'suggestion_reason' => 'Thời tiết mát mẻ (15-24°C) - gợi ý các món ăn đa dạng, cân bằng dinh dưỡng',
                 'priority' => 3
             ],
-            
+
             // Nhiệt độ lạnh (< 15°C)
             [
                 'name' => 'Nhiệt độ lạnh',
@@ -154,7 +154,7 @@ class WeatherConditionRuleService
                 'suggestion_reason' => 'Thời tiết lạnh (dưới 15°C) - phù hợp với các món ăn nóng, giàu dinh dưỡng để giữ ấm',
                 'priority' => 5
             ],
-            
+
             // Độ ẩm cao (>80%)
             [
                 'name' => 'Độ ẩm cao',
@@ -168,7 +168,7 @@ class WeatherConditionRuleService
                 'suggestion_reason' => 'Độ ẩm cao (>80%) - gợi ý các món ăn khô, cay để cân bằng',
                 'priority' => 3
             ],
-            
+
             // Độ ẩm thấp (<40%)
             [
                 'name' => 'Độ ẩm thấp',
@@ -181,6 +181,19 @@ class WeatherConditionRuleService
                 'suggested_tags' => $this->getTagIds(['nước', 'canh', 'súp', 'mát']),
                 'suggestion_reason' => 'Độ ẩm thấp (<40%) - gợi ý các món ăn có nước, mát để bổ sung độ ẩm',
                 'priority' => 3
+            ],
+            // Nóng khô rất cao (>=32°C, độ ẩm <=60%)
+            [
+                'name' => 'Nóng khô rất cao',
+                'description' => 'Nhiệt độ >= 32°C và độ ẩm <= 60%',
+                'temperature_min' => 32,
+                'temperature_max' => null,
+                'humidity_min' => null,
+                'humidity_max' => 60,
+                'suggested_categories' => $this->getCategoryIds(['Canh', 'Súp', 'Món nước', 'Cháo']),
+                'suggested_tags' => $this->getTagIds(['nước', 'canh', 'súp', 'cháo', 'dễ tiêu']),
+                'suggestion_reason' => 'Trời nóng khô (>=32°C, ẩm <=60%) - ưu tiên món có nước để bù ẩm',
+                'priority' => 6
             ]
         ];
 
@@ -220,7 +233,7 @@ class WeatherConditionRuleService
     public function getSuggestionReason($temperature, $humidity = null)
     {
         $matchingRules = $this->findMatchingRules($temperature, $humidity);
-        
+
         if ($matchingRules->isEmpty()) {
             return 'Không có quy tắc phù hợp cho điều kiện thời tiết hiện tại';
         }
@@ -266,4 +279,4 @@ class WeatherConditionRuleService
             }
         }
     }
-} 
+}
