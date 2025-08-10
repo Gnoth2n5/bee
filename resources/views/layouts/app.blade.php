@@ -123,5 +123,8 @@
 
         });
         </script>
+
+        <!-- Ingredient Substitute Modal -->
+        <livewire:ingredient-substitute-modal />
     </body>
 </html>
