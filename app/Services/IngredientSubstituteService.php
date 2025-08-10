@@ -362,12 +362,7 @@ class IngredientSubstituteService
                 ];
             }
 
-            Log::info('Making Spoonacular API call', [
-                'ingredient' => $ingredientEn,
-                'api_key_exists' => !empty($this->spoonacularApiKey),
-                'api_key_length' => strlen($this->spoonacularApiKey ?? ''),
-                'url' => $this->spoonacularBaseUrl . '/substitutes'
-            ]);
+            Log::info('Making Spoonacular API call', ['ingredient' => $ingredientEn]);
 
             $url = $this->spoonacularBaseUrl . '/substitutes';
             $response = Http::timeout(30)
@@ -378,12 +373,6 @@ class IngredientSubstituteService
                     'ingredientName' => $ingredientEn,
                     'apiKey' => $this->spoonacularApiKey
                 ]);
-
-            Log::info('Spoonacular API response', [
-                'status' => $response->status(),
-                'successful' => $response->successful(),
-                'body_preview' => substr($response->body(), 0, 200)
-            ]);
 
             if ($response->successful()) {
                 $data = $response->json();
