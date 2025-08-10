@@ -173,11 +173,7 @@ class VietnamCityResource extends Resource
                                 ->body("Đã cập nhật thông tin thành phố: {$provinceData['name']}")
                                 ->success()
                                 ->send();
-
-                                // Lấy thông tin chi tiết từ API
-                                $provinceData = $provinceService->getProvinceByCode($record->code);
-
-
+                        } catch (\Exception $e) {
                             \Filament\Notifications\Notification::make()
                                 ->title('Lỗi cập nhật!')
                                 ->body($e->getMessage())
@@ -200,17 +196,13 @@ class VietnamCityResource extends Resource
                             ]);
                         }
 
-
-                                // Cập nhật dữ liệu
-                                $record->update([
-                                    'name' => $provinceData['name'],
-                                    'codename' => $provinceData['codename'] ?? $record->codename,
-                                    'region' => static::determineRegion($provinceData['name']),
-                                    'latitude' => $provinceData['latitude'] ?? $record->latitude,
-                                    'longitude' => $provinceData['longitude'] ?? $record->longitude,
-                                    'api_data' => json_encode($provinceData),
-                                ]);
-
+                        $data = json_decode($record->api_data, true);
+                        if (!$data) {
+                            return view('components.empty-state', [
+                                'title' => 'Dữ liệu API lỗi',
+                                'description' => 'Không thể đọc dữ liệu API'
+                            ]);
+                        }
 
                         return view('components.api-data-view', [
                             'data' => $data,
@@ -233,62 +225,43 @@ class VietnamCityResource extends Resource
                     ->action(function (VietnamCity $record) {
                         try {
                             $provinceService = new VietnamProvinceService();
-
-
-                            } catch (\Exception $e) {
-                                Log::error("Lỗi khi cập nhật thành phố {$record->name}: " . $e->getMessage());
-
-                                \Filament\Notifications\Notification::make()
-                                    ->title('Lỗi cập nhật!')
-                                    ->body($e->getMessage())
-                                    ->danger()
-                                    ->send();
-                            }
-                        })
-                        ->visible(fn(VietnamCity $record) => !empty($record->code)),
-                    Action::make('viewApiData')
-                        ->label('Xem dữ liệu API')
-                        ->icon('heroicon-o-eye')
-                        ->color('gray')
-                        ->size('sm')
-                        ->modalHeading('Dữ liệu API')
-                        ->modalContent(function (VietnamCity $record) {
-                            if (!$record->api_data) {
-                                return view('components.empty-state', [
-                                    'title' => 'Chưa có dữ liệu API',
-                                    'description' => 'Thành phố này chưa được đồng bộ từ API'
-                                ]);
-                            }
-
-                            $data = json_decode($record->api_data, true);
-                            if (!$data) {
-                                return view('components.empty-state', [
-                                    'title' => 'Dữ liệu API lỗi',
-                                    'description' => 'Không thể đọc dữ liệu API'
-                                ]);
-                            }
-
-                            return view('components.api-data-view', [
-                                'data' => $data,
-                                'cityName' => $record->name
-                            ]);
-
-
-                            \Filament\Notifications\Notification::make()
-                                ->title('Lấy quận/huyện thành công!')
-                                ->body("Đã lấy " . count($districts) . " quận/huyện cho thành phố: {$record->name}")
-                                ->success()
-                                ->send();
-
+                            // TODO: Thêm logic lấy quận/huyện từ API nếu cần
                         } catch (\Exception $e) {
-                            Log::error("Lỗi khi lấy quận/huyện cho thành phố {$record->name}: " . $e->getMessage());
-
+                            Log::error("Lỗi khi cập nhật thành phố {$record->name}: " . $e->getMessage());
                             \Filament\Notifications\Notification::make()
-                                ->title('Lỗi lấy quận/huyện!')
+                                ->title('Lỗi cập nhật!')
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
                         }
+                    })
+                    ->visible(fn(VietnamCity $record) => !empty($record->code)),
+                Action::make('viewApiData')
+                    ->label('Xem dữ liệu API')
+                    ->icon('heroicon-o-eye')
+                    ->color('gray')
+                    ->size('sm')
+                    ->modalHeading('Dữ liệu API')
+                    ->modalContent(function (VietnamCity $record) {
+                        if (!$record->api_data) {
+                            return view('components.empty-state', [
+                                'title' => 'Chưa có dữ liệu API',
+                                'description' => 'Thành phố này chưa được đồng bộ từ API'
+                            ]);
+                        }
+
+                        $data = json_decode($record->api_data, true);
+                        if (!$data) {
+                            return view('components.empty-state', [
+                                'title' => 'Dữ liệu API lỗi',
+                                'description' => 'Không thể đọc dữ liệu API'
+                            ]);
+                        }
+
+                        return view('components.api-data-view', [
+                            'data' => $data,
+                            'cityName' => $record->name
+                        ]);
                     })
 
             ])
@@ -420,7 +393,7 @@ class VietnamCityResource extends Resource
                                         $data['longitude'] = (float) $province['longitude'];
                                     }
                                     // Nếu không có tọa độ từ API, giữ nguyên tọa độ hiện tại (nếu có)
-            
+
                                     if ($city) {
                                         $city->update($data);
                                         $updated++;
@@ -442,7 +415,6 @@ class VietnamCityResource extends Resource
                                 ->body("Đã tạo mới: {$created}, Cập nhật: {$updated}, Bỏ qua: {$skipped}")
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Log::error('Lỗi khi đồng bộ dữ liệu tỉnh thành: ' . $e->getMessage());
 
@@ -472,7 +444,6 @@ class VietnamCityResource extends Resource
                                 ->body('Đã xóa cache dữ liệu API tỉnh thành')
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Log::error('Lỗi khi xóa cache API: ' . $e->getMessage());
 
@@ -544,7 +515,6 @@ class VietnamCityResource extends Resource
 
                                     VietnamCity::create($data);
                                     $created++;
-
                                 } catch (\Exception $e) {
                                     Log::error("Lỗi khi tạo tỉnh {$province['name']}: " . $e->getMessage());
                                     $skipped++;
@@ -556,7 +526,6 @@ class VietnamCityResource extends Resource
                                 ->body("Đã xóa {$deletedCount} bản ghi cũ, tạo mới: {$created}, bỏ qua: {$skipped}")
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Log::error('Lỗi khi reset và đồng bộ: ' . $e->getMessage());
 
@@ -587,21 +556,17 @@ class VietnamCityResource extends Resource
                                 ->body('Đã cập nhật tọa độ chính xác cho các thành phố')
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Log::error('Lỗi khi cập nhật tọa độ: ' . $e->getMessage());
-
                             \Filament\Notifications\Notification::make()
                                 ->title('Lỗi cập nhật tọa độ!')
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
                         }
-                        
                     })
             ])
             ->defaultSort('sort_order', 'asc');
-
     }
 
     public static function getRelations(): array

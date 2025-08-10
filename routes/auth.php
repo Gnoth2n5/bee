@@ -7,6 +7,7 @@ use Livewire\Volt\Volt;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
 use App\Livewire\Auth\ForgotPassword;
+use Illuminate\Support\Facades\Auth;
 
 Route::middleware('guest')->group(function () {
     Route::get('register', Register::class)->name('register');
