@@ -35,6 +35,12 @@ class PostResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    public static function canViewAny(): bool
+    {
+        // Chỉ cho phép user có role Manager
+        return Auth::check() && Auth::user()->hasRole('manager');
+    }
+
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::where('status', 'pending')->count() ?: null;

@@ -10,8 +10,6 @@ use App\Models\Tag;
 use App\Services\RecipeService;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -21,13 +19,9 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Resource quản lý công thức dành cho Manager
+ * Resource quản lý công thức dành cho Manager - VERSION ĐƠN GIẢN
  * 
- * Resource này cung cấp đầy đủ chức năng quản lý công thức cho Manager:
- * - Xem danh sách công thức với các bộ lọc
- * - Duyệt/từ chối công thức (action chính của Manager)
- * - Chỉnh sửa thông tin công thức
- * - Hành động hàng loạt cho việc duyệt
+ * Sử dụng default view của Filament thay vì custom infolist để tránh lỗi
  */
 class RecipeResource extends Resource
 {
@@ -41,6 +35,14 @@ class RecipeResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    public static function canViewAny(): bool
+    {
+        // Chỉ cho phép user có role Manager
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        return Auth::check() && $user->hasRole('manager');
+    }
+
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::where('status', 'pending')->count() ?: null;
@@ -51,292 +53,7 @@ class RecipeResource extends Resource
         return 'warning';
     }
 
-    /**
-     * Hiển thị chi tiết công thức với đầy đủ thông tin
-     */
-    public static function infolist(Infolist $infolist): Infolist
-    {
-        return $infolist
-            ->schema([
-                // Thông báo trạng thái duyệt
-                Infolists\Components\Section::make('')
-                    ->schema([
-                        Infolists\Components\TextEntry::make('status')
-                            ->label('Trạng thái phê duyệt')
-                            ->formatStateUsing(function ($record) {
-                                if ($record->user_id !== Auth::id() && $record->status === 'pending') {
-                                    return '⏰ Công thức này đang chờ phê duyệt từ bạn. Sử dụng các nút ở header để duyệt/từ chối.';
-                                } elseif ($record->user_id === Auth::id()) {
-                                    return '👤 Đây là công thức của bạn. Bạn có thể chỉnh sửa hoặc xóa.';
-                                } elseif ($record->status === 'approved') {
-                                    $approverName = 'N/A';
-                                    if ($record->approved_by) {
-                                        $approver = User::find($record->approved_by);
-                                        $approverName = $approver?->name ?? 'N/A';
-                                    }
-                                    return '✅ Công thức đã được phê duyệt bởi ' . $approverName;
-                                } elseif ($record->status === 'rejected') {
-                                    return '❌ Công thức đã bị từ chối';
-                                }
-                                return '';
-                            })
-                            ->color(function ($record) {
-                                if ($record->status === 'pending') return 'warning';
-                                if ($record->status === 'approved') return 'success';
-                                if ($record->status === 'rejected') return 'danger';
-                                return 'info';
-                            })
-                            ->weight('bold')
-                            ->size('lg')
-                            ->columnSpanFull(),
-                    ])
-                    ->visible(
-                        fn($record) => ($record->user_id !== Auth::id() && $record->status === 'pending') ||
-                            ($record->user_id === Auth::id()) ||
-                            in_array($record->status, ['approved', 'rejected'])
-                    )
-                    ->compact(),
-
-                Infolists\Components\Section::make('Thông tin cơ bản')
-                    ->schema([
-                        Infolists\Components\Grid::make(2)
-                            ->schema([
-                                Infolists\Components\TextEntry::make('title')
-                                    ->label('Tiêu đề')
-                                    ->size('lg')
-                                    ->weight('bold'),
-                                Infolists\Components\TextEntry::make('user.name')
-                                    ->label('Tác giả')
-                                    ->badge()
-                                    ->color('info'),
-                                Infolists\Components\TextEntry::make('status')
-                                    ->label('Trạng thái')
-                                    ->badge()
-                                    ->color(fn(string $state): string => match ($state) {
-                                        'draft' => 'gray',
-                                        'pending' => 'warning',
-                                        'approved' => 'success',
-                                        'rejected' => 'danger',
-                                        'published' => 'info',
-                                        default => 'gray',
-                                    }),
-                                Infolists\Components\TextEntry::make('difficulty')
-                                    ->label('Độ khó')
-                                    ->badge()
-                                    ->color(fn(string $state): string => match ($state) {
-                                        'easy' => 'success',
-                                        'medium' => 'warning',
-                                        'hard' => 'danger',
-                                        'expert' => 'purple',
-                                        default => 'gray',
-                                    })
-                                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                                        'easy' => 'Dễ',
-                                        'medium' => 'Trung bình',
-                                        'hard' => 'Khó',
-                                        'expert' => 'Chuyên gia',
-                                        default => $state,
-                                    }),
-                            ]),
-                        Infolists\Components\TextEntry::make('description')
-                            ->label('Mô tả')
-                            ->columnSpanFull(),
-                        Infolists\Components\TextEntry::make('summary')
-                            ->label('Tóm tắt')
-                            ->columnSpanFull()
-                            ->placeholder('Chưa có tóm tắt'),
-                    ]),
-
-                Infolists\Components\Section::make('Chi tiết nấu ăn')
-                    ->schema([
-                        Infolists\Components\Grid::make(4)
-                            ->schema([
-                                Infolists\Components\TextEntry::make('cooking_time')
-                                    ->label('Thời gian nấu')
-                                    ->suffix(' phút')
-                                    ->placeholder('N/A'),
-                                Infolists\Components\TextEntry::make('preparation_time')
-                                    ->label('Thời gian chuẩn bị')
-                                    ->suffix(' phút')
-                                    ->placeholder('N/A'),
-                                Infolists\Components\TextEntry::make('servings')
-                                    ->label('Khẩu phần')
-                                    ->suffix(' người'),
-                                Infolists\Components\TextEntry::make('calories_per_serving')
-                                    ->label('Calo/khẩu phần')
-                                    ->suffix(' kcal')
-                                    ->placeholder('N/A'),
-                            ]),
-                    ]),
-
-                Infolists\Components\Section::make('Media')
-                    ->schema([
-                        Infolists\Components\ImageEntry::make('featured_image')
-                            ->label('Ảnh đại diện')
-                            ->size(300)
-                            ->placeholder('Chưa có ảnh'),
-                        Infolists\Components\TextEntry::make('video_url')
-                            ->label('Video URL')
-                            ->url(fn($state) => $state)
-                            ->openUrlInNewTab()
-                            ->placeholder('Chưa có video'),
-                    ])->columns(2),
-
-                Infolists\Components\Section::make('Nguyên liệu')
-                    ->schema([
-                        Infolists\Components\TextEntry::make('ingredients')
-                            ->label('Danh sách nguyên liệu')
-                            ->formatStateUsing(function ($state) {
-                                if (!$state || !is_array($state)) {
-                                    return 'Chưa có nguyên liệu';
-                                }
-
-                                $output = '';
-                                foreach ($state as $ingredient) {
-                                    if (!is_array($ingredient)) continue;
-
-                                    $name = $ingredient['name'] ?? 'N/A';
-                                    $amount = $ingredient['amount'] ?? '';
-                                    $unit = $ingredient['unit'] ?? '';
-
-                                    $line = "• **{$name}**";
-                                    if ($amount) {
-                                        $line .= ": {$amount}";
-                                        if ($unit) {
-                                            $line .= " {$unit}";
-                                        }
-                                    }
-                                    $output .= $line . "\n";
-                                }
-                                return trim($output);
-                            })
-                            ->markdown()
-                            ->columnSpanFull(),
-                    ]),
-
-                Infolists\Components\Section::make('Hướng dẫn nấu ăn')
-                    ->schema([
-                        Infolists\Components\TextEntry::make('instructions')
-                            ->label('Các bước thực hiện')
-                            ->formatStateUsing(function ($state) {
-                                if (!$state || !is_array($state)) {
-                                    return 'Chưa có hướng dẫn';
-                                }
-
-                                $output = '';
-                                foreach ($state as $index => $instruction) {
-                                    $stepNumber = $index + 1;
-                                    $content = '';
-
-                                    if (is_array($instruction)) {
-                                        $content = $instruction['instruction'] ?? '';
-                                    } elseif (is_string($instruction)) {
-                                        $content = $instruction;
-                                    }
-
-                                    if ($content) {
-                                        $output .= "**Bước {$stepNumber}:** {$content}\n\n";
-                                    }
-                                }
-                                return trim($output);
-                            })
-                            ->markdown()
-                            ->columnSpanFull(),
-                    ]),
-
-                Infolists\Components\Section::make('Mẹo và ghi chú')
-                    ->schema([
-                        Infolists\Components\TextEntry::make('tips')
-                            ->label('Mẹo nấu ăn')
-                            ->markdown()
-                            ->columnSpanFull()
-                            ->placeholder('Chưa có mẹo nấu ăn'),
-                        Infolists\Components\TextEntry::make('notes')
-                            ->label('Ghi chú')
-                            ->markdown()
-                            ->columnSpanFull()
-                            ->placeholder('Chưa có ghi chú'),
-                    ]),
-
-                Infolists\Components\Section::make('Phân loại')
-                    ->schema([
-                        Infolists\Components\TextEntry::make('categories.name')
-                            ->label('Danh mục')
-                            ->badge()
-                            ->separator(',')
-                            ->placeholder('Chưa phân loại'),
-                        Infolists\Components\TextEntry::make('tags.name')
-                            ->label('Thẻ')
-                            ->badge()
-                            ->separator(',')
-                            ->placeholder('Chưa có thẻ'),
-                    ])->columns(2),
-
-                Infolists\Components\Section::make('Thông tin phê duyệt')
-                    ->schema([
-                        Infolists\Components\Grid::make(2)
-                            ->schema([
-                                Infolists\Components\TextEntry::make('approved_by')
-                                    ->label('Phê duyệt bởi')
-                                    ->formatStateUsing(fn($state) => $state ? User::find($state)?->name : 'Chưa duyệt')
-                                    ->placeholder('Chưa duyệt'),
-                                Infolists\Components\TextEntry::make('approved_at')
-                                    ->label('Thời gian phê duyệt')
-                                    ->dateTime('d/m/Y H:i')
-                                    ->placeholder('Chưa duyệt'),
-                                Infolists\Components\TextEntry::make('rejection_reason')
-                                    ->label('Lý do từ chối')
-                                    ->color('danger')
-                                    ->columnSpanFull()
-                                    ->placeholder('Không có')
-                                    ->visible(fn($record) => $record->status === 'rejected'),
-                            ]),
-                    ]),
-
-                Infolists\Components\Section::make('Thống kê')
-                    ->schema([
-                        Infolists\Components\Grid::make(4)
-                            ->schema([
-                                Infolists\Components\TextEntry::make('view_count')
-                                    ->label('Lượt xem')
-                                    ->numeric(),
-                                Infolists\Components\TextEntry::make('favorite_count')
-                                    ->label('Yêu thích')
-                                    ->numeric(),
-                                Infolists\Components\TextEntry::make('rating_count')
-                                    ->label('Đánh giá')
-                                    ->numeric(),
-                                Infolists\Components\TextEntry::make('average_rating')
-                                    ->label('Điểm TB')
-                                    ->numeric(
-                                        decimalPlaces: 1,
-                                    )
-                                    ->suffix('/5'),
-                            ]),
-                    ]),
-
-                Infolists\Components\Section::make('Thời gian')
-                    ->schema([
-                        Infolists\Components\Grid::make(3)
-                            ->schema([
-                                Infolists\Components\TextEntry::make('created_at')
-                                    ->label('Tạo lúc')
-                                    ->dateTime('d/m/Y H:i'),
-                                Infolists\Components\TextEntry::make('updated_at')
-                                    ->label('Cập nhật lúc')
-                                    ->dateTime('d/m/Y H:i'),
-                                Infolists\Components\TextEntry::make('published_at')
-                                    ->label('Xuất bản lúc')
-                                    ->dateTime('d/m/Y H:i')
-                                    ->placeholder('Chưa xuất bản'),
-                            ]),
-                    ])->collapsible(),
-            ]);
-    }
-
-    /**
-     * Form được tối ưu cho Manager - chỉ hiển thị các trường cần thiết
-     */
+    // FORM ĐẦY ĐỦ GIỐNG ADMIN - ĐỂ VIEW CHI TIẾT ĐẦY ĐỦ THÔNG TIN
     public static function form(Form $form): Form
     {
         return $form
@@ -364,6 +81,10 @@ class RecipeResource extends Resource
                             ->required()
                             ->maxLength(1000)
                             ->columnSpanFull(),
+                        Forms\Components\TextInput::make('summary')
+                            ->label('Tóm tắt')
+                            ->maxLength(500)
+                            ->columnSpanFull(),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Chi tiết công thức')
@@ -376,6 +97,12 @@ class RecipeResource extends Resource
                             ->label('Thời gian chuẩn bị (phút)')
                             ->numeric()
                             ->minValue(0),
+                        Forms\Components\TextInput::make('total_time')
+                            ->label('Tổng thời gian (phút)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->disabled()
+                            ->dehydrated(false),
                         Forms\Components\Select::make('difficulty')
                             ->label('Độ khó')
                             ->options([
@@ -391,7 +118,117 @@ class RecipeResource extends Resource
                             ->numeric()
                             ->minValue(1)
                             ->default(1),
-                    ])->columns(4),
+                        Forms\Components\TextInput::make('calories_per_serving')
+                            ->label('Calo mỗi khẩu phần')
+                            ->numeric()
+                            ->minValue(0),
+                    ])->columns(3),
+
+                Forms\Components\Section::make('Nguyên liệu')
+                    ->schema([
+                        Forms\Components\Repeater::make('ingredients')
+                            ->label('Danh sách nguyên liệu')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Tên nguyên liệu')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->placeholder('Ví dụ: Thịt bò, Gạo, Rau cải...'),
+                                Forms\Components\TextInput::make('amount')
+                                    ->label('Số lượng')
+                                    ->required()
+                                    ->maxLength(50)
+                                    ->placeholder('Ví dụ: 500, 2, 1kg...'),
+                                Forms\Components\TextInput::make('unit')
+                                    ->label('Đơn vị')
+                                    ->maxLength(50)
+                                    ->placeholder('g, kg, cái, quả, muỗng...'),
+                            ])
+                            ->defaultItems(1)
+                            ->minItems(1)
+                            ->maxItems(50)
+                            ->reorderable(false)
+                            ->columnSpanFull()
+                            ->itemLabel(fn(array $state): ?string => $state['name'] ?? null),
+                    ]),
+
+                Forms\Components\Section::make('Hướng dẫn nấu ăn')
+                    ->schema([
+                        Forms\Components\Repeater::make('instructions')
+                            ->label('Các bước thực hiện')
+                            ->schema([
+                                Forms\Components\Textarea::make('instruction')
+                                    ->label('Hướng dẫn')
+                                    ->required()
+                                    ->maxLength(1000)
+                                    ->rows(3)
+                                    ->placeholder('Mô tả chi tiết bước thực hiện...'),
+                            ])
+                            ->defaultItems(1)
+                            ->minItems(1)
+                            ->maxItems(20)
+                            ->reorderable(true)
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('Mẹo và ghi chú')
+                    ->schema([
+                        Forms\Components\Textarea::make('tips')
+                            ->label('Mẹo nấu ăn')
+                            ->maxLength(1000)
+                            ->rows(3)
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('notes')
+                            ->label('Ghi chú')
+                            ->maxLength(1000)
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('Media')
+                    ->schema([
+                        Forms\Components\FileUpload::make('featured_image')
+                            ->label('Ảnh đại diện')
+                            ->image()
+                            ->imageEditor()
+                            ->directory('recipes')
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('video_url')
+                            ->label('URL Video')
+                            ->url()
+                            ->maxLength(500),
+                    ])->columns(2),
+
+                Forms\Components\Section::make('Phân loại')
+                    ->description('Chọn danh mục và thẻ để phân loại công thức')
+                    ->schema([
+                        Forms\Components\Select::make('category_ids')
+                            ->label('Danh mục')
+                            ->multiple()
+                            ->options(function () {
+                                return Category::where('is_active', true)
+                                    ->orderBy('sort_order')
+                                    ->orderBy('name')
+                                    ->pluck('name', 'id');
+                            })
+                            ->preload()
+                            ->searchable()
+                            ->required()
+                            ->helperText('Chọn một hoặc nhiều danh mục cho công thức')
+                            ->placeholder('Chọn danh mục...'),
+                        Forms\Components\Select::make('tag_ids')
+                            ->label('Thẻ')
+                            ->multiple()
+                            ->options(function () {
+                                return Tag::orderBy('usage_count', 'desc')
+                                    ->orderBy('name')
+                                    ->pluck('name', 'id');
+                            })
+                            ->preload()
+                            ->searchable()
+                            ->helperText('Chọn các thẻ phù hợp với công thức')
+                            ->placeholder('Chọn thẻ...'),
+                    ])->columns(2),
 
                 Forms\Components\Section::make('Trạng thái và phê duyệt')
                     ->schema([
@@ -422,9 +259,6 @@ class RecipeResource extends Resource
             ]);
     }
 
-    /**
-     * Bảng được tối ưu cho Manager - tập trung vào việc duyệt công thức
-     */
     public static function table(Table $table): Table
     {
         return $table
@@ -487,37 +321,16 @@ class RecipeResource extends Resource
                     ->label('Tạo lúc')
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('approved_at')
-                    ->label('Duyệt lúc')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Trạng thái')
                     ->options([
-                        'draft' => 'Bản nháp',
                         'pending' => 'Chờ phê duyệt',
                         'approved' => 'Đã phê duyệt',
                         'rejected' => 'Từ chối',
-                        'published' => 'Đã xuất bản',
                     ])
-                    ->default('pending'), // Mặc định hiển thị công thức chờ duyệt
-                Tables\Filters\SelectFilter::make('difficulty')
-                    ->label('Độ khó')
-                    ->options([
-                        'easy' => 'Dễ',
-                        'medium' => 'Trung bình',
-                        'hard' => 'Khó',
-                        'expert' => 'Chuyên gia',
-                    ]),
-                Tables\Filters\Filter::make('created_today')
-                    ->label('Tạo hôm nay')
-                    ->query(fn(Builder $query): Builder => $query->whereDate('created_at', today())),
-                Tables\Filters\Filter::make('pending_approval')
-                    ->label('Chờ phê duyệt')
-                    ->query(fn(Builder $query): Builder => $query->where('status', 'pending')),
+                    ->default('pending'),
                 Tables\Filters\Filter::make('my_recipes')
                     ->label('Công thức của tôi')
                     ->query(fn(Builder $query): Builder => $query->where('user_id', Auth::id())),
@@ -583,7 +396,7 @@ class RecipeResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    // BULK ACTION CHÍNH: Phê duyệt hàng loạt
+                    // BULK ACTION: Phê duyệt hàng loạt
                     Tables\Actions\BulkAction::make('approve_selected')
                         ->label('Phê duyệt đã chọn')
                         ->icon('heroicon-o-check-circle')
@@ -609,7 +422,7 @@ class RecipeResource extends Resource
                                 ->send();
                         }),
 
-                    // BULK ACTION CHÍNH: Từ chối hàng loạt
+                    // BULK ACTION: Từ chối hàng loạt
                     Tables\Actions\BulkAction::make('reject_selected')
                         ->label('Từ chối đã chọn')
                         ->icon('heroicon-o-x-circle')
@@ -642,7 +455,7 @@ class RecipeResource extends Resource
                 ]),
             ])
             ->defaultSort('created_at', 'desc')
-            ->poll('30s'); // Tự động làm mới mỗi 30 giây để cập nhật trạng thái
+            ->poll('30s');
     }
 
     public static function getPages(): array
@@ -663,7 +476,6 @@ class RecipeResource extends Resource
 
     /**
      * Kiểm tra Manager có thể chỉnh sửa công thức không
-     * Manager chỉ có thể chỉnh sửa công thức của chính mình
      */
     public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
     {
@@ -672,7 +484,6 @@ class RecipeResource extends Resource
 
     /**
      * Kiểm tra Manager có thể xóa công thức không
-     * Manager chỉ có thể xóa công thức của chính mình
      */
     public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
     {

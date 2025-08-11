@@ -27,29 +27,33 @@ class ManagerStatsOverview extends BaseWidget
             Stat::make('Công thức chờ duyệt', Recipe::where('status', 'pending')
                 ->where('user_id', '!=', $userId)
                 ->count())
-                ->description('Của người khác')
-                ->descriptionIcon('heroicon-o-clock')
-                ->color('warning'),
+                ->description('Cần phê duyệt ngay')
+                ->descriptionIcon('heroicon-m-clock')
+                ->color('warning')
+                ->chart([7, 2, 10, 3, 15, 4, 17]),
 
             // Công thức của chính mình
             Stat::make('Công thức của tôi', Recipe::where('user_id', $userId)->count())
-                ->description('Tổng số')
-                ->descriptionIcon('heroicon-o-cake')
-                ->color('info'),
+                ->description('Đã tạo tổng cộng')
+                ->descriptionIcon('heroicon-m-cake')
+                ->color('info')
+                ->chart([3, 8, 5, 10, 15, 8, 12]),
 
             // Bài viết của chính mình
             Stat::make('Bài viết của tôi', Post::where('user_id', $userId)->count())
-                ->description('Tổng số')
-                ->descriptionIcon('heroicon-o-document-text')
-                ->color('success'),
+                ->description('Đã viết tổng cộng')
+                ->descriptionIcon('heroicon-m-document-text')
+                ->color('success')
+                ->chart([2, 5, 8, 12, 7, 15, 10]),
 
             // Bài viết đã xuất bản của mình
             Stat::make('Đã xuất bản', Post::where('user_id', $userId)
                 ->where('status', 'published')
                 ->count())
-                ->description('Bài viết của tôi')
-                ->descriptionIcon('heroicon-o-globe-alt')
-                ->color('primary'),
+                ->description('Bài viết công khai')
+                ->descriptionIcon('heroicon-m-globe-alt')
+                ->color('primary')
+                ->chart([1, 3, 5, 8, 12, 15, 18]),
         ];
     }
 }

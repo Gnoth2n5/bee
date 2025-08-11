@@ -19,7 +19,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Http\Middleware\FilamentPanelAccess;
+// use App\Http\Middleware\FilamentPanelAccess; // Tạm thời không dùng
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -94,7 +94,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                FilamentPanelAccess::class . ':admin',
+                // FilamentPanelAccess::class . ':admin', // Tạm thời không dùng
             ])
             ->authGuard('web');
     }
