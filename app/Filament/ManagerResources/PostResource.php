@@ -38,7 +38,9 @@ class PostResource extends Resource
     public static function canViewAny(): bool
     {
         // Chỉ cho phép user có role Manager
-        return Auth::check() && Auth::user()->hasRole('manager');
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        return Auth::check() && $user->hasRole('manager');
     }
 
     public static function getNavigationBadge(): ?string
