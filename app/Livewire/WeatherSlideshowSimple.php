@@ -137,27 +137,38 @@ class WeatherSlideshowSimple extends Component
         $this->userLatitude = $latitude;
         $this->userLongitude = $longitude;
 
-        // Tìm thành phố gần nhất
-        $this->nearestCity = $this->findNearestCity($latitude, $longitude);
+        // Sử dụng LocationService để xác định chính xác tỉnh
+        $locationService = new \App\Services\LocationService();
+        $locationInfo = $locationService->getLocationInfo($latitude, $longitude);
 
-        if ($this->nearestCity) {
-            Log::info('Nearest city found: ' . $this->nearestCity->name . ' (' . $this->nearestCity->code . ')');
-            $this->selectedCity = $this->nearestCity->code;
-            $this->currentSlide = 0; // Reset slide
+        if ($locationInfo) {
+            // Tìm thành phố trong database
+            $this->nearestCity = VietnamCity::where('code', $locationInfo['province_code'])->first();
 
-            // Lưu vào session để dùng ở trang khác
-            session([
-                'user_location' => [
-                    'latitude' => $latitude,
-                    'longitude' => $longitude,
-                    'nearest_city_code' => $this->nearestCity->code,
-                    'nearest_city_name' => $this->nearestCity->name
-                ]
-            ]);
+            if ($this->nearestCity) {
+                $accuracyText = $locationInfo['is_exact'] ? 'chính xác' : 'gần nhất';
+                Log::info("Found {$accuracyText} city: " . $this->nearestCity->name . ' (' . $this->nearestCity->code . ')');
 
-            $this->loadData();
+                $this->selectedCity = $this->nearestCity->code;
+                $this->currentSlide = 0; // Reset slide
+
+                // Lưu vào session để dùng ở trang khác
+                session([
+                    'user_location' => [
+                        'latitude' => $latitude,
+                        'longitude' => $longitude,
+                        'nearest_city_code' => $this->nearestCity->code,
+                        'nearest_city_name' => $this->nearestCity->name,
+                        'is_exact' => $locationInfo['is_exact']
+                    ]
+                ]);
+
+                $this->loadData();
+            } else {
+                Log::info('City not found in database with code: ' . $locationInfo['province_code']);
+            }
         } else {
-            Log::info('No nearest city found');
+            Log::info('No location info found');
         }
     }
 
