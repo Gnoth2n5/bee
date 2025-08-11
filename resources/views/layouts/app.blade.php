@@ -111,9 +111,16 @@
                 }, 3000);
             });
 
-
-
+            // Handle copy to clipboard
+            Livewire.on('copy-to-clipboard', (event) => {
+                const url = event.url;
+                navigator.clipboard.writeText(url).then(() => {
+                    console.log('URL copied to clipboard:', url);
+                }).catch(err => {
+                    console.error('Failed to copy URL:', err);
                 });
+            });
+
         });
         </script>
     </body>

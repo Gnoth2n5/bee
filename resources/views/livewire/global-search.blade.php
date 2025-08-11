@@ -72,7 +72,7 @@
                      <div class="space-y-3">
                                                  @foreach($searchResults['recipes'] as $recipe)
                             <a 
-                                href="{{ route('recipes.show', $recipe->id) }}"
+                                href="{{ route('recipes.show', $recipe) }}"
                                 class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
                                 wire:click="$wire.showResults = false"
                             >

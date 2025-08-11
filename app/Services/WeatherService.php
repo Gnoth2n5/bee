@@ -37,17 +37,42 @@ class WeatherService
                 return $this->processWeatherData($city, $data);
             }
 
-            Log::error('OpenWeatherMap API error', [
-                'city' => $city->name,
-                'response' => $response->body()
+            // Log chi tiết lỗi API với thông tin đầy đủ
+            Log::error('OpenWeatherMap API request failed', [
+                'city_id' => $city->id,
+                'city_name' => $city->name,
+                'city_code' => $city->code,
+                'coordinates' => [
+                    'lat' => $city->latitude,
+                    'lon' => $city->longitude
+                ],
+                'status_code' => $response->status(),
+                'response_body' => $response->body(),
+                'response_headers' => $response->headers(),
+                'request_url' => "{$this->baseUrl}/weather",
+                'timestamp' => now()->toISOString()
             ]);
 
             return null;
 
         } catch (\Exception $e) {
-            Log::error('Weather API request failed', [
-                'city' => $city->name,
-                'error' => $e->getMessage()
+            // Log chi tiết exception với stack trace
+            Log::error('Weather API request exception', [
+                'city_id' => $city->id,
+                'city_name' => $city->name,
+                'city_code' => $city->code,
+                'coordinates' => [
+                    'lat' => $city->latitude,
+                    'lon' => $city->longitude
+                ],
+                'exception_class' => get_class($e),
+                'exception_message' => $e->getMessage(),
+                'exception_code' => $e->getCode(),
+                'exception_file' => $e->getFile(),
+                'exception_line' => $e->getLine(),
+                'stack_trace' => $e->getTraceAsString(),
+                'request_url' => "{$this->baseUrl}/weather",
+                'timestamp' => now()->toISOString()
             ]);
 
             return null;

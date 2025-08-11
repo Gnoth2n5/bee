@@ -6,8 +6,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Permission\Traits\HasPermissions;
+use App\Models\UserProfile;
+use App\Models\Recipe;
+use App\Models\Rating;
+use App\Models\Favorite;
+use App\Models\Collection;
+use App\Models\Post;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -107,4 +115,50 @@ class User extends Authenticatable
     {
         return $this->hasMany(Post::class);
     }
+
+    /**
+     * Get the user's avatar URL, prioritizing Google avatar if available.
+     */
+    public function getAvatarUrl()
+    {
+        // Nếu user có google_id và avatar là URL (bắt đầu bằng http/https), ưu tiên sử dụng
+        if ($this->google_id && $this->avatar && filter_var($this->avatar, FILTER_VALIDATE_URL)) {
+            return $this->avatar;
+        }
+        
+        // Nếu có avatar local, sử dụng Storage URL
+        if ($this->avatar && !filter_var($this->avatar, FILTER_VALIDATE_URL)) {
+            return Storage::url($this->avatar);
+        }
+        
+        // Nếu không có avatar, trả về null
+        return null;
+    }
+
+    /**
+     * Check if user has avatar (either Google or local).
+     */
+    public function hasAvatar()
+    {
+        return !empty($this->avatar);
+    }
+
+    /**
+     * Check if user has Google avatar (URL).
+     */
+    public function hasGoogleAvatar()
+    {
+        return $this->google_id && $this->avatar && filter_var($this->avatar, FILTER_VALIDATE_URL);
+    }
+
+    /**
+     * Check if user has local avatar (file).
+     */
+    public function hasLocalAvatar()
+    {
+        return $this->avatar && !filter_var($this->avatar, FILTER_VALIDATE_URL);
+    }
+
+  
+
 }

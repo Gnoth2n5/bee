@@ -34,30 +34,23 @@ class Dashboard extends BaseDashboard
     protected function getHeaderWidgets(): array
     {
         return [
-            \App\Filament\Widgets\StatsOverview::class,
-            \App\Filament\Widgets\UserStatsWidget::class,
-            \App\Filament\Widgets\QuickStatsCards::class,
-            \App\Filament\Widgets\SystemHealthCards::class,
-            \App\Filament\Widgets\PerformanceCards::class,
-            \App\Filament\Widgets\SystemInfoCards::class,
-            \App\Filament\Widgets\ModerationStatsWidget::class,
-            \App\Filament\Widgets\CategoryTagStatsWidget::class,
-            \App\Filament\Widgets\ScheduledApprovalsWidget::class,
+            // 8 card thống kê
+            \App\Filament\Widgets\DashboardStatsOverview::class,
         ];
     }
 
     protected function getFooterWidgets(): array
     {
         return [
-            \App\Filament\Widgets\LatestRecipes::class,
-            \App\Filament\Widgets\TopUsersWidget::class,
-            \App\Filament\Widgets\UserGrowthChart::class,
+            // 2 biểu đồ
             \App\Filament\Widgets\RecipeStatusChart::class,
-            \App\Filament\Widgets\TopCategoriesChart::class,
-            \App\Filament\Widgets\RatingDistributionChart::class,
+            \App\Filament\Widgets\UserGrowthChart::class,
+            
+            // 1 bảng công thức mới
+            \App\Filament\Widgets\RecentRecipesWidget::class,
+            
+            // 1 bảng hoạt động gần đây
             \App\Filament\Widgets\RecentActivityWidget::class,
-            \App\Filament\Widgets\ModerationRulesWidget::class,
-            \App\Filament\Widgets\PopularCategoriesWidget::class,
         ];
     }
 }

@@ -3,42 +3,36 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Recipe;
-use App\Models\User;
-use App\Models\Rating;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Database\Eloquent\Builder;
 
-class RecentActivityWidget extends BaseWidget
+class RecentRecipesWidget extends BaseWidget
 {
-    protected static ?string $heading = 'Hoạt động gần đây';
+    protected static ?string $heading = 'Công thức mới nhất';
 
     protected int|string|array $columnSpan = 'full';
 
-    protected static ?int $sort = 5;
-
-
+    protected static ?int $sort = 4;
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
                 Recipe::query()
-                    ->with(['user'])
+                    ->with(['user', 'categories'])
                     ->latest()
-                    ->limit(8)
+                    ->limit(5)
             )
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->label('Hoạt động')
-                    ->formatStateUsing(function (Recipe $record): string {
-                        return "Tạo công thức: {$record->title}";
-                    }),
+                    ->label('Tên công thức')
+                    ->searchable()
+                    ->limit(30),
 
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Người thực hiện')
-                    ->default('Không xác định'),
+                    ->label('Người tạo')
+                    ->sortable(),
 
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Trạng thái')
@@ -59,9 +53,9 @@ class RecentActivityWidget extends BaseWidget
                     }),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Thời gian')
+                    ->label('Tạo lúc')
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
             ]);
     }
-}
+} 

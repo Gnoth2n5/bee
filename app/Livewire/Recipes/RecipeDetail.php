@@ -12,11 +12,29 @@ use Illuminate\Support\Facades\Auth;
 class RecipeDetail extends Component
 {
     public Recipe $recipe;
+    public bool $showShareModal = false;
 
     public function mount(Recipe $recipe)
     {
         $this->recipe = $recipe->load(['user.profile', 'categories', 'tags', 'images', 'ratings.user', 'favorites']);
         $this->recipe->incrementViewCount();
+    }
+
+    public function openShareModal()
+    {
+        $this->showShareModal = true;
+    }
+
+    public function closeShareModal()
+    {
+        $this->showShareModal = false;
+    }
+
+    public function copyLink()
+    {
+        $url = request()->fullUrl();
+        $this->dispatch('copy-to-clipboard', url: $url);
+        $this->dispatch('flash-message', message: 'Đã sao chép link vào clipboard!', type: 'success');
     }
 
     public function toggleFavorite()

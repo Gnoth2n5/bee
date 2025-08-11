@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Auth;
 
 class UserRecipeStatusChart extends ChartWidget
 {
-    protected static ?string $heading = 'Trạng thái công thức của tôi';
-    protected static ?int $sort = 3;
+    protected static ?string $heading = 'Trạng thái công thức';
+    protected static ?int $sort = 2;
     protected int|string|array $columnSpan = 1;
     protected static ?int $contentHeight = 1;
 

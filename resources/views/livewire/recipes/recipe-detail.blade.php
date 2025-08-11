@@ -64,8 +64,8 @@
                 class="absolute bottom-4 left-6 bg-white/80 px-6 py-3 rounded-xl flex flex-col md:flex-row md:items-center gap-2 shadow">
                 <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mr-4">{{ $recipe->title }}</h1>
                 <div class="flex items-center gap-2 text-sm text-gray-600">
-                    @if ($profile && $profile->avatar)
-                        <img src="{{ Storage::url($profile->avatar) }}" alt="{{ $user->name }}"
+                    @if ($user->hasAvatar())
+                        <img src="{{ $user->getAvatarUrl() }}" alt="{{ $user->name }}"
                             class="w-7 h-7 rounded-full object-cover" />
                     @else
                         <span
@@ -184,23 +184,22 @@
             </div>
             <div class="flex gap-2">
                 <!-- Nút chia sẻ -->
-                <div x-data="{ open: false }">
-                    <button @click="open = true"
-                        class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 transition"
-                        type="button">
-                        <x-heroicon-o-share class="w-5 h-5" />
-                        Chia sẻ
-                    </button>
-                </div>
+                <button wire:click="openShareModal"
+                    class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 transition"
+                    type="button">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                    </svg>
+                    Chia sẻ
+                </button>
                 <!-- Component bộ sưu tập -->
                 @livewire('recipes.recipe-collection-manager', ['recipe' => $recipe])
 
                 <!-- Modal chia sẻ -->
-                <div x-show="open" @click.away="open = false"
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
-                    style="display: none;">
-                    <div class="bg-white rounded-xl shadow-lg p-6 w-80 relative">
-                        <button @click="open = false"
+                @if($showShareModal)
+                <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" wire:click="closeShareModal">
+                    <div class="bg-white rounded-xl shadow-lg p-6 w-80 relative" wire:click.stop>
+                        <button wire:click="closeShareModal"
                             class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -242,8 +241,7 @@
                                 </svg>
                             </a>
                             <!-- Copy link -->
-                            <button
-                                onclick="navigator.clipboard.writeText('{{ request()->fullUrl() }}'); window.dispatchEvent(new CustomEvent('copied'))"
+                            <button wire:click="copyLink"
                                 title="Sao chép link"
                                 class="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full p-3 flex items-center justify-center"
                                 aria-label="Sao chép link">
@@ -257,6 +255,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>

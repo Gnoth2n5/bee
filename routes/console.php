@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Log;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -14,10 +15,10 @@ Schedule::command('recipes:auto-moderate')
     ->withoutOverlapping()
     ->runInBackground()
     ->onSuccess(function () {
-        \Log::info('Auto moderation scheduled task completed successfully');
+        Log::info('Auto moderation scheduled task completed successfully');
     })
     ->onFailure(function () {
-        \Log::error('Auto moderation scheduled task failed');
+        Log::error('Auto moderation scheduled task failed');
     });
 
 // Schedule scheduled approvals every 15 minutes
@@ -26,11 +27,12 @@ Schedule::command('recipes:process-scheduled-approvals')
     ->withoutOverlapping()
     ->runInBackground()
     ->onSuccess(function () {
-        \Log::info('Scheduled approvals task completed successfully');
+        Log::info('Scheduled approvals task completed successfully');
     })
     ->onFailure(function () {
-        \Log::error('Scheduled approvals task failed');
+        Log::error('Scheduled approvals task failed');
     });
+        
 
 // Schedule daily weather update at 6 AM
 Schedule::command('weather:daily-update')
@@ -38,20 +40,20 @@ Schedule::command('weather:daily-update')
     ->withoutOverlapping()
     ->runInBackground()
     ->onSuccess(function () {
-        \Log::info('Daily weather update completed successfully');
+        Log::info('Daily weather update completed successfully');
     })
     ->onFailure(function () {
-        \Log::error('Daily weather update failed');
+        Log::error('Daily weather update failed');
     });
 
-// Schedule posts publishing every minute
+// Schedule posts publishing every 5 minutes
 Schedule::command('posts:publish-scheduled')
-    ->everyMinute()
+    ->everyFiveMinutes()
     ->withoutOverlapping()
     ->runInBackground()
     ->onSuccess(function () {
-        \Log::info('Scheduled posts publishing completed successfully');
+        Log::info('Scheduled posts publishing completed successfully');
     })
     ->onFailure(function () {
-        \Log::error('Scheduled posts publishing failed');
+        Log::error('Scheduled posts publishing failed');
     });

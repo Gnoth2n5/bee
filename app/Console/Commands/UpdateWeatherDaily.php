@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Services\WeatherService;
-use App\Services\WeatherRecipeService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -21,19 +20,17 @@ class UpdateWeatherDaily extends Command
      *
      * @var string
      */
-    protected $description = 'Update weather data and generate recipe suggestions daily at 6 AM';
+    protected $description = 'Update weather data daily at 6 AM';
 
     protected $weatherService;
-    protected $weatherRecipeService;
 
     /**
      * Create a new command instance.
      */
-    public function __construct(WeatherService $weatherService, WeatherRecipeService $weatherRecipeService)
+    public function __construct(WeatherService $weatherService)
     {
         parent::__construct();
         $this->weatherService = $weatherService;
-        $this->weatherRecipeService = $weatherRecipeService;
     }
 
     /**
@@ -51,18 +48,12 @@ class UpdateWeatherDaily extends Command
             $updatedCities = $this->weatherService->updateAllCitiesWeather();
             $this->info("✅ Đã cập nhật thời tiết cho {$updatedCities} thành phố");
 
-            // Step 2: Generate recipe suggestions
-            $this->info('🍽️  Đang tạo đề xuất món ăn theo thời tiết...');
-            $generatedSuggestions = $this->weatherRecipeService->generateAllCitiesSuggestions();
-            $this->info("✅ Đã tạo đề xuất cho {$generatedSuggestions} thành phố");
-
-            // Step 3: Clean old data
+            // Step 2: Clean old data
             $this->info('🧹 Đang dọn dẹp dữ liệu cũ...');
             $cleanedWeather = $this->weatherService->cleanOldWeatherData(7);
-            $cleanedSuggestions = $this->weatherRecipeService->cleanOldSuggestions(7);
-            $this->info("✅ Đã dọn dẹp {$cleanedWeather} bản ghi thời tiết cũ và {$cleanedSuggestions} đề xuất cũ");
+            $this->info("✅ Đã dọn dẹp {$cleanedWeather} bản ghi thời tiết cũ");
 
-            // Step 4: Log completion
+            // Step 3: Log completion
             $endTime = now();
             $duration = $startTime->diffInSeconds($endTime);
 
@@ -70,9 +61,7 @@ class UpdateWeatherDaily extends Command
 
             Log::info('Daily weather update completed', [
                 'updated_cities' => $updatedCities,
-                'generated_suggestions' => $generatedSuggestions,
                 'cleaned_weather_records' => $cleanedWeather,
-                'cleaned_suggestion_records' => $cleanedSuggestions,
                 'duration_seconds' => $duration,
                 'completed_at' => now()
             ]);

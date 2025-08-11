@@ -46,13 +46,7 @@ class VietnamCity extends Model
             ->latest('last_updated');
     }
 
-    /**
-     * Get the weather recipe suggestions for this city.
-     */
-    public function weatherRecipeSuggestions()
-    {
-        return $this->hasMany(WeatherRecipeSuggestion::class, 'city_code', 'code');
-    }
+
 
     /**
      * Scope a query to only include active cities.
