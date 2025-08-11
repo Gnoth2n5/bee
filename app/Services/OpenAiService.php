@@ -18,7 +18,7 @@ class OpenAiService
 
     public function __construct()
     {
-        $this->apiKey = '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';
+        $this->apiKey = env('OPEN_AI_API_KEY');
     }
 
     /**
