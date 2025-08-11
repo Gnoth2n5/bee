@@ -4,6 +4,7 @@ namespace App\Filament\ManagerResources\PostResource\Pages;
 
 use App\Filament\ManagerResources\PostResource;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 
 class CreatePost extends CreateRecord
 {
@@ -16,7 +17,7 @@ class CreatePost extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['user_id'] = auth()->user()->id;
+        $data['user_id'] = Auth::id();
         return $data;
     }
 }
