@@ -406,6 +406,11 @@ class RecipeResource extends Resource
                         ->modalSubmitActionLabel('Phê duyệt')
                         ->action(function (Recipe $record) {
                             app(RecipeService::class)->approve($record, Auth::user());
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Đã phê duyệt công thức')
+                                ->success()
+                                ->send();
                         })
                         ->visible(fn(Recipe $record): bool => $record->status === 'pending' && Auth::user()->hasRole(['admin', 'manager'])),
                     Tables\Actions\Action::make('reject')
@@ -424,6 +429,11 @@ class RecipeResource extends Resource
                         ->modalSubmitActionLabel('Từ chối')
                         ->action(function (Recipe $record, array $data) {
                             app(RecipeService::class)->reject($record, Auth::user(), $data['reason']);
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Đã từ chối công thức')
+                                ->success()
+                                ->send();
                         })
                         ->visible(fn(Recipe $record): bool => $record->status === 'pending' && Auth::user()->hasRole(['admin', 'manager'])),
                     Tables\Actions\Action::make('publish')

@@ -123,7 +123,7 @@ class OpenAiService
             $payload = [
                 'model' => 'deepseek/deepseek-chat-v3-0324:free',
                 'messages' => $messages,
-                'max_tokens' => 300,
+                'max_tokens' => 1000,
                 'temperature' => 0.5, // Re-enable temperature for better response variety
                 'top_p' => 0.5,
                 'stream' => false, // Ensure we get a complete response
