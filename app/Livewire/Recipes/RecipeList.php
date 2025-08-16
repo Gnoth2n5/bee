@@ -177,36 +177,79 @@ class RecipeList extends Component
             $this->dispatch('favorite-added', recipeId: $recipeId);
             $this->dispatch('flash-message', message: 'Đã thêm vào danh sách yêu thích!', type: 'success');
         }
-        
+
         // Refresh component để cập nhật UI
         $this->dispatch('$refresh');
     }
 
+    /**
+     * Scroll to top when page changes
+     */
+    public function updatedPage()
+    {
+        $this->dispatch('scroll-to-top');
+    }
+
+    /**
+     * Custom pagination methods for better UX
+     */
+    public function nextPage()
+    {
+        $this->setPage($this->getPage() + 1);
+        $this->dispatch('scroll-to-top');
+    }
+
+    public function previousPage()
+    {
+        if ($this->getPage() > 1) {
+            $this->setPage($this->getPage() - 1);
+            $this->dispatch('scroll-to-top');
+        }
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+        $this->dispatch('scroll-to-top');
+    }
+
     public function render()
     {
-        $filters = [
-            'category' => $this->category,
-            'difficulty' => $this->difficulty,
-            'cooking_time' => $this->cookingTime,
-            'search' => $this->search,
-            'sort' => $this->sort,
-            'tags' => $this->selectedTags,
-            'min_rating' => $this->minRating,
-            'max_calories' => $this->maxCalories,
-            'servings' => $this->servings,
-            'price_range' => $this->priceRange,
-        ];
+        try {
+            $filters = [
+                'category' => $this->category,
+                'difficulty' => $this->difficulty,
+                'cooking_time' => $this->cookingTime,
+                'search' => $this->search,
+                'sort' => $this->sort,
+                'tags' => $this->selectedTags,
+                'min_rating' => $this->minRating,
+                'max_calories' => $this->maxCalories,
+                'servings' => $this->servings,
+                'price_range' => $this->priceRange,
+            ];
 
-        $recipeService = app(RecipeService::class);
-        $recipes = $recipeService->getFilteredRecipes($filters, $this->perPage);
+            $recipeService = app(RecipeService::class);
+            $recipes = $recipeService->getFilteredRecipes($filters, $this->perPage);
 
-        $categories = Category::where('parent_id', null)->with('children')->get();
-        $tags = Tag::orderBy('usage_count', 'desc')->limit(30)->get();
+            $categories = Category::where('parent_id', null)->with('children')->get();
+            $tags = Tag::orderBy('usage_count', 'desc')->limit(30)->get();
 
-        return view('livewire.recipes.recipe-list', [
-            'recipes' => $recipes,
-            'categories' => $categories,
-            'tags' => $tags,
-        ]);
+            return view('livewire.recipes.recipe-list', [
+                'recipes' => $recipes,
+                'categories' => $categories,
+                'tags' => $tags,
+            ]);
+        } catch (\Exception $e) {
+            // Log error for debugging
+            \Log::error('RecipeList render error: ' . $e->getMessage());
+
+            // Return empty results on error
+            return view('livewire.recipes.recipe-list', [
+                'recipes' => collect([])->paginate($this->perPage),
+                'categories' => collect([]),
+                'tags' => collect([]),
+            ]);
+        }
     }
 }

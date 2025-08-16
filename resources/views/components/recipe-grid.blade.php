@@ -120,8 +120,8 @@
             </div>
 
             <!-- Pagination -->
-            <div class="mt-8">
-                {{ $recipes->links() }}
+            <div class="mt-8" wire:loading.class="opacity-50">
+                <x-livewire-pagination :paginator="$recipes" />
             </div>
         @else
             <!-- Empty State -->
