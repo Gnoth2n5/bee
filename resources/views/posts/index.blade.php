@@ -112,8 +112,8 @@
             </div>
 
             <!-- Pagination -->
-            <div class="mt-12" wire:loading.class="opacity-50">
-                <x-livewire-pagination :paginator="$posts" />
+            <div class="mt-12">
+                {{ $posts->links() }}
             </div>
         @else
             <div class="text-center py-16">

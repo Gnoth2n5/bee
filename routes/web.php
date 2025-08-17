@@ -100,6 +100,8 @@ Route::post('/admin/logout', [AdminLogoutController::class, 'logout'])->name('fi
 // Filament user logout route
 Route::post('/user/logout', [AdminLogoutController::class, 'logout'])->name('filament.user.auth.logout');
 
+// Storage Manager route (for debugging)
+Route::get('/storage-manager', App\Livewire\StorageManager::class)->name('storage.manager');
 
 
 require __DIR__ . '/auth.php';
