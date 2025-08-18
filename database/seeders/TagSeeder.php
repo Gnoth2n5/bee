@@ -69,13 +69,15 @@ class TagSeeder extends Seeder
         ];
 
         foreach ($tags as $tagData) {
-            Tag::create([
-                'name' => $tagData['name'],
-                'slug' => $tagData['slug'],
-                'description' => $tagData['description'],
-                'color' => $tagData['color'],
-                'usage_count' => 0
-            ]);
+            Tag::updateOrCreate(
+                ['slug' => $tagData['slug']],
+                [
+                    'name' => $tagData['name'],
+                    'description' => $tagData['description'],
+                    'color' => $tagData['color'],
+                    'usage_count' => 0
+                ]
+            );
         }
 
         $this->command->info('Tags seeded successfully!');
