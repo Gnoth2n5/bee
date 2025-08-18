@@ -7,4 +7,5 @@ return [
     App\Providers\Filament\UserPanelProvider::class,
     App\Providers\VoltServiceProvider::class,
     Laravel\Socialite\SocialiteServiceProvider::class,
+    BladeUI\Heroicons\BladeHeroiconsServiceProvider::class,
 ];

@@ -8,6 +8,7 @@ use App\Http\Controllers\RatingController;
 
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\AdminLogoutController;
 use App\Livewire\HomePage;
 use App\Livewire\Recipes\RecipeDetail;
@@ -39,6 +40,10 @@ Route::get('/search', App\Livewire\AdvancedSearch::class)->name('search.advanced
 
 // Weather-based recipe suggestions
 Route::get('/weather-suggestions', App\Livewire\WeatherRecipeSuggestions::class)->name('weather.suggestions');
+
+// Restaurant routes
+Route::get('/restaurants', [RestaurantController::class, 'index'])->name('restaurants.index');
+Route::get('/restaurants/map', App\Livewire\Restaurants\RestaurantMap::class)->name('restaurants.map');
 
 // Vietnam Provinces API
 Route::prefix('api/vietnam-provinces')->name('api.vietnam-provinces.')->group(function () {
@@ -79,6 +84,12 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('collections', CollectionController::class)->except(['show']);
     Route::post('/collections/{collection}/recipes/{recipe}', [CollectionController::class, 'addRecipe'])->name('collections.add-recipe');
     Route::delete('/collections/{collection}/recipes/{recipe}', [CollectionController::class, 'removeRecipe'])->name('collections.remove-recipe');
+
+    // Restaurant favorites and ratings
+    Route::post('/restaurants/favorites', [RestaurantController::class, 'addToFavorites'])->name('restaurants.favorites.add');
+    Route::delete('/restaurants/favorites', [RestaurantController::class, 'removeFromFavorites'])->name('restaurants.favorites.remove');
+    Route::get('/restaurants/favorites', [RestaurantController::class, 'getFavorites'])->name('restaurants.favorites.index');
+    Route::post('/restaurants/rate', [RestaurantController::class, 'rate'])->name('restaurants.rate');
 });
 
 // Admin routes
@@ -102,6 +113,7 @@ Route::post('/user/logout', [AdminLogoutController::class, 'logout'])->name('fil
 
 // Storage Manager route (for debugging)
 Route::get('/storage-manager', App\Livewire\StorageManager::class)->name('storage.manager');
+
 
 
 require __DIR__ . '/auth.php';

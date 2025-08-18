@@ -15,6 +15,8 @@ use App\Models\Rating;
 use App\Models\Favorite;
 use App\Models\Collection;
 use App\Models\Post;
+use App\Models\Restaurant;
+use App\Models\RestaurantRating;
 use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
@@ -117,6 +119,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the favorite restaurants for the user.
+     */
+    public function favoriteRestaurants()
+    {
+        return $this->belongsToMany(Restaurant::class, 'restaurant_favorites');
+    }
+
+    /**
+     * Get the restaurant ratings for the user.
+     */
+    public function restaurantRatings()
+    {
+        return $this->hasMany(RestaurantRating::class);
+    }
+
+    /**
      * Get the user's avatar URL, prioritizing Google avatar if available.
      */
     public function getAvatarUrl()
@@ -125,12 +143,12 @@ class User extends Authenticatable
         if ($this->google_id && $this->avatar && filter_var($this->avatar, FILTER_VALIDATE_URL)) {
             return $this->avatar;
         }
-        
+
         // Nếu có avatar local, sử dụng Storage URL
         if ($this->avatar && !filter_var($this->avatar, FILTER_VALIDATE_URL)) {
             return Storage::url($this->avatar);
         }
-        
+
         // Nếu không có avatar, trả về null
         return null;
     }
@@ -159,6 +177,6 @@ class User extends Authenticatable
         return $this->avatar && !filter_var($this->avatar, FILTER_VALIDATE_URL);
     }
 
-  
+
 
 }
