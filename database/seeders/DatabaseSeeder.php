@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             RecipeDataSeeder::class, // Thêm seeder mới
             PostSeeder::class,
             WeatherConditionRuleSeeder::class,
+            TestDataSeeder::class,
         ]);
 
         // Tạo thêm user test nếu cần

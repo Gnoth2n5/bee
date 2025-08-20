@@ -17,6 +17,8 @@ use App\Models\Collection;
 use App\Models\Post;
 use App\Models\Restaurant;
 use App\Models\RestaurantRating;
+use App\Models\UserSubscription;
+use App\Models\RestaurantAd;
 use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
@@ -177,6 +179,66 @@ class User extends Authenticatable
         return $this->avatar && !filter_var($this->avatar, FILTER_VALIDATE_URL);
     }
 
+    /**
+     * Get the user's subscriptions.
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
 
+    /**
+     * Get the user's active subscription.
+     */
+    public function activeSubscription()
+    {
+        return $this->subscriptions()
+            ->where('status', '=', 'active')
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->first();
+    }
+
+    /**
+     * Check if user is VIP.
+     */
+    public function isVip()
+    {
+        $subscription = $this->activeSubscription();
+        return $subscription && $subscription->subscription_type === 'vip';
+    }
+
+    /**
+     * Check if user is Premium.
+     */
+    public function isPremium()
+    {
+        $subscription = $this->activeSubscription();
+        return $subscription && $subscription->subscription_type === 'premium';
+    }
+
+    /**
+     * Get the user's restaurant ads.
+     */
+    public function restaurantAds()
+    {
+        return $this->hasMany(RestaurantAd::class);
+    }
+
+    public function paymentInvoices()
+    {
+        return $this->hasMany(PaymentInvoice::class);
+    }
+
+    /**
+     * Get the user's active restaurant ads.
+     */
+    public function activeRestaurantAds()
+    {
+        return $this->restaurantAds()
+            ->where('status', 'active')
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now());
+    }
 
 }
