@@ -45,4 +45,9 @@ return [
         'api_key' => env('OPENWEATHER_API_KEY'),
     ],
 
+    'google_maps' => [
+        'api_key' => env('GOOGLE_MAPS_API_KEY', 'AIzaSyAmMy0OV-imvLmAjGyIUlIsPtmYVto8F-4'),
+        'places_api_key' => env('GOOGLE_PLACES_API_KEY', 'AIzaSyAmMy0OV-imvLmAjGyIUlIsPtmYVto8F-4'),
+    ],
+
 ];

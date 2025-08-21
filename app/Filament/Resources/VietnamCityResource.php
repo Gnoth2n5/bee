@@ -173,7 +173,11 @@ class VietnamCityResource extends Resource
                                 ->body("Đã cập nhật thông tin thành phố: {$provinceData['name']}")
                                 ->success()
                                 ->send();
+
+
                         } catch (\Exception $e) {
+                            Log::error("Lỗi khi cập nhật thành phố {$record->name}: " . $e->getMessage());
+
                             \Filament\Notifications\Notification::make()
                                 ->title('Lỗi cập nhật!')
                                 ->body($e->getMessage())
@@ -225,7 +229,32 @@ class VietnamCityResource extends Resource
                     ->action(function (VietnamCity $record) {
                         try {
                             $provinceService = new VietnamProvinceService();
-                            // TODO: Thêm logic lấy quận/huyện từ API nếu cần
+
+
+                            // Lấy danh sách quận/huyện từ API
+                            $districts = $provinceService->getDistrictsByProvinceCode($record->code);
+
+                            if (!$districts) {
+                                throw new \Exception('Không thể lấy thông tin quận/huyện từ API');
+                            }
+
+                            // Hiển thị dữ liệu quận/huyện
+                            $data = [
+                                'districts' => $districts,
+                                'total' => count($districts)
+                            ];
+
+                            return view('components.api-data-view', [
+                                'data' => $data,
+                                'cityName' => $record->name
+                            ]);
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Lấy quận/huyện thành công!')
+                                ->body("Đã lấy " . count($districts) . " quận/huyện cho thành phố: {$record->name}")
+                                ->success()
+                                ->send();
+
                         } catch (\Exception $e) {
                             Log::error("Lỗi khi cập nhật thành phố {$record->name}: " . $e->getMessage());
                             \Filament\Notifications\Notification::make()
@@ -236,33 +265,6 @@ class VietnamCityResource extends Resource
                         }
                     })
                     ->visible(fn(VietnamCity $record) => !empty($record->code)),
-                Action::make('viewApiData')
-                    ->label('Xem dữ liệu API')
-                    ->icon('heroicon-o-eye')
-                    ->color('gray')
-                    ->size('sm')
-                    ->modalHeading('Dữ liệu API')
-                    ->modalContent(function (VietnamCity $record) {
-                        if (!$record->api_data) {
-                            return view('components.empty-state', [
-                                'title' => 'Chưa có dữ liệu API',
-                                'description' => 'Thành phố này chưa được đồng bộ từ API'
-                            ]);
-                        }
-
-                        $data = json_decode($record->api_data, true);
-                        if (!$data) {
-                            return view('components.empty-state', [
-                                'title' => 'Dữ liệu API lỗi',
-                                'description' => 'Không thể đọc dữ liệu API'
-                            ]);
-                        }
-
-                        return view('components.api-data-view', [
-                            'data' => $data,
-                            'cityName' => $record->name
-                        ]);
-                    })
 
             ])
             ->bulkActions([
@@ -564,6 +566,7 @@ class VietnamCityResource extends Resource
                                 ->danger()
                                 ->send();
                         }
+
                     })
             ])
             ->defaultSort('sort_order', 'asc');

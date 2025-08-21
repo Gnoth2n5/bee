@@ -144,16 +144,16 @@ class RecipeController extends Controller
     public function myRecipes(Request $request): View
     {
         $user = $request->user();
-        
+
         $recipes = Recipe::where('user_id', $user->id)
-                        ->with(['categories', 'tags', 'images'])
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(12);
+            ->with(['categories', 'tags', 'images'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
 
         $collections = Collection::where('user_id', $user->id)
-                                ->withCount('recipes')
-                                ->orderBy('created_at', 'desc')
-                                ->get();
+            ->withCount('recipes')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $stats = [
             'recipes_count' => Recipe::where('user_id', $user->id)->count(),
@@ -169,7 +169,7 @@ class RecipeController extends Controller
      */
     public function pending(Request $request): View
     {
-        $this->authorize('approve', Recipe::class);
+        $this->authorize('approveAny', Recipe::class);
 
         $recipes = Recipe::where('status', 'pending')
             ->with(['user', 'categories', 'tags'])

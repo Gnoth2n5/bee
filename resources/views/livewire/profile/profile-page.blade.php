@@ -106,6 +106,13 @@
 
     <script>
     document.addEventListener('livewire:init', () => {
+        // Kiểm tra localStorage khi component được load
+        const savedLocation = LocationManager.getLocation();
+        if (savedLocation) {
+            console.log('Using saved location from localStorage:', savedLocation);
+            @this.setUserLocation(savedLocation.latitude, savedLocation.longitude);
+        }
+        
         // Hàm hiển thị modal
         function showLocationModal() {
             const modal = document.getElementById('location-modal');
@@ -122,33 +129,24 @@
         document.getElementById('location-yes').addEventListener('click', function() {
             hideLocationModal();
             // Lấy vị trí
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const latitude = position.coords.latitude;
-                        const longitude = position.coords.longitude;
-                        console.log('Location obtained:', latitude, longitude);
-                        
-                        // Gửi tọa độ về Livewire component
-                        @this.setUserLocation(latitude, longitude);
-                    },
-                    (error) => {
-                        console.error('Geolocation error:', error);
-                        
-                        // Khi người dùng từ chối vị trí, tự động chọn ngẫu nhiên
-                        if (error.code === 1) { // PERMISSION_DENIED
-                            console.log('Người dùng từ chối vị trí, chọn ngẫu nhiên...');
-                            @this.randomCity();
-                        } else {
-                            alert('Không thể lấy vị trí của bạn. Vui lòng kiểm tra quyền truy cập vị trí.');
-                            @this.randomCity();
-                        }
+            LocationManager.getCurrentLocation()
+                .then((result) => {
+                    console.log('Location obtained:', result.latitude, result.longitude);
+                    // Gửi tọa độ về Livewire component
+                    @this.setUserLocation(result.latitude, result.longitude);
+                })
+                .catch((error) => {
+                    console.error('Geolocation error:', error);
+                    
+                    // Khi người dùng từ chối vị trí, tự động chọn ngẫu nhiên
+                    if (error.code === 1) { // PERMISSION_DENIED
+                        console.log('Người dùng từ chối vị trí, chọn ngẫu nhiên...');
+                        @this.randomCity();
+                    } else {
+                        alert('Không thể lấy vị trí của bạn. Vui lòng kiểm tra quyền truy cập vị trí.');
+                        @this.randomCity();
                     }
-                );
-            } else {
-                alert('Trình duyệt của bạn không hỗ trợ định vị địa lý.');
-                @this.randomCity();
-            }
+                });
         });
         
         document.getElementById('location-no').addEventListener('click', function() {
@@ -165,31 +163,23 @@
 
         // Xử lý khi người dùng click nút lấy vị trí thủ công
         Livewire.on('get-user-location', () => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const latitude = position.coords.latitude;
-                        const longitude = position.coords.longitude;
-                        console.log('Location obtained:', latitude, longitude);
-                        
-                        // Gửi tọa độ về Livewire component
-                        @this.setUserLocation(latitude, longitude);
-                    },
-                    (error) => {
-                        console.error('Geolocation error:', error);
-                        
-                        // Khi người dùng từ chối vị trí, tự động chọn ngẫu nhiên
-                        if (error.code === 1) { // PERMISSION_DENIED
-                            console.log('Người dùng từ chối vị trí, chọn ngẫu nhiên...');
-                            @this.randomCity();
-                        } else {
-                            alert('Không thể lấy vị trí của bạn. Vui lòng kiểm tra quyền truy cập vị trí.');
-                        }
+            LocationManager.getCurrentLocation()
+                .then((result) => {
+                    console.log('Location obtained:', result.latitude, result.longitude);
+                    // Gửi tọa độ về Livewire component
+                    @this.setUserLocation(result.latitude, result.longitude);
+                })
+                .catch((error) => {
+                    console.error('Geolocation error:', error);
+                    
+                    // Khi người dùng từ chối vị trí, tự động chọn ngẫu nhiên
+                    if (error.code === 1) { // PERMISSION_DENIED
+                        console.log('Người dùng từ chối vị trí, chọn ngẫu nhiên...');
+                        @this.randomCity();
+                    } else {
+                        alert('Không thể lấy vị trí của bạn. Vui lòng kiểm tra quyền truy cập vị trí.');
                     }
-                );
-            } else {
-                alert('Trình duyệt của bạn không hỗ trợ định vị địa lý.');
-            }
+                });
         });
     });
     </script>

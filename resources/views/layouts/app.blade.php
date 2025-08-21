@@ -129,10 +129,14 @@
         });
         </script>
 
+		@stack('scripts')
+
+
         <!-- Ingredient Substitute Modal -->
         <x-ingredient-substitute-modal />
         
         <!-- Ingredient Substitute JavaScript -->
         <script src="{{ asset('js/ingredient-substitute.js') }}"></script>
     </body>
+
 </html>

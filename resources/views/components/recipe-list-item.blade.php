@@ -1,6 +1,6 @@
 @props(['recipe'])
 
-<div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group border border-gray-200" data-recipe-slug="{{ $recipe->slug }}" data-recipe-id="{{ $recipe->id }}">
+<div class="recipe-card bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group border border-gray-200" data-recipe-slug="{{ $recipe->slug }}" data-recipe-id="{{ $recipe->id }}">
     <div class="flex h-28">
         <!-- Recipe Image -->
         <div class="w-28 h-full flex-shrink-0 relative overflow-hidden">

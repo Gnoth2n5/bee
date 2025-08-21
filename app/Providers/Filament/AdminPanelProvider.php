@@ -39,7 +39,15 @@ class AdminPanelProvider extends PanelProvider
                 \Filament\Navigation\NavigationItem::make('Về web')
                     ->url('/')
                     ->icon('heroicon-o-home')
-                    ->sort(100)
+                    ->sort(100),
+                \Filament\Navigation\NavigationItem::make('Quản lý thanh toán')
+                    ->url('/admin/payments')
+                    ->icon('heroicon-o-credit-card')
+                    ->sort(200)
+                    ->badge(function () {
+                        $pendingCount = \App\Models\PaymentInvoice::where('status', 'pending')->count();
+                        return $pendingCount > 0 ? $pendingCount : null;
+                    })
             ])
             ->colors([
                 'primary' => [

@@ -18,7 +18,7 @@ class RecipePolicy
         return true; // Anyone can view recipes
     }
 
-        /**
+    /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, Recipe $recipe): bool
@@ -29,8 +29,8 @@ class RecipePolicy
         }
 
         // Draft/pending recipes can only be viewed by owner or admins
-        return $user->id === $recipe->user_id || 
-               $user->hasRole(['manager', 'admin']);
+        return $user->id === $recipe->user_id ||
+            $user->hasRole(['manager', 'admin']);
     }
 
     /**
@@ -97,6 +97,22 @@ class RecipePolicy
      * Determine whether the user can reject the model.
      */
     public function reject(User $user, Recipe $recipe): bool
+    {
+        return $user->hasRole(['manager', 'admin']);
+    }
+
+    /**
+     * Determine whether the user can approve any model.
+     */
+    public function approveAny(User $user): bool
+    {
+        return $user->hasRole(['manager', 'admin']);
+    }
+
+    /**
+     * Determine whether the user can reject any model.
+     */
+    public function rejectAny(User $user): bool
     {
         return $user->hasRole(['manager', 'admin']);
     }

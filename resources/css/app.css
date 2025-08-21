@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'pagination-enhancements.css';
+
 /* Line clamp utilities */
 .line-clamp-1 {
     overflow: hidden;

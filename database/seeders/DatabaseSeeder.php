@@ -21,8 +21,10 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             ModerationRuleSeeder::class,
             RecipeSeeder::class,
+            RecipeDataSeeder::class, // Thêm seeder mới
             PostSeeder::class,
             WeatherConditionRuleSeeder::class,
+            TestDataSeeder::class,
         ]);
 
         // Tạo thêm user test nếu cần

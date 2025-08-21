@@ -311,6 +311,14 @@
                             
                             console.log('Đã lấy được vị trí:', latitude, longitude);
                             
+                            // Lưu vào localStorage
+                            localStorage.setItem('user_location', JSON.stringify({
+                                latitude: latitude,
+                                longitude: longitude,
+                                timestamp: new Date().getTime()
+                            }));
+                            console.log('Location saved to localStorage');
+                            
                             // Hiển thị thông báo thành công
                             Swal.fire({
                                 title: 'Thành công!',
@@ -378,6 +386,29 @@
     }
 
     document.addEventListener('livewire:init', () => {
+        // Kiểm tra localStorage khi component được load
+        const savedLocation = localStorage.getItem('user_location');
+        if (savedLocation) {
+            try {
+                const locationData = JSON.parse(savedLocation);
+                const now = new Date().getTime();
+                const oneHour = 60 * 60 * 1000; // 1 giờ
+                
+                // Kiểm tra xem vị trí có còn mới không (trong vòng 1 giờ)
+                if (now - locationData.timestamp < oneHour) {
+                    console.log('Found saved location in localStorage:', locationData);
+                    @this.setUserLocation(locationData.latitude, locationData.longitude);
+                } else {
+                    console.log('Saved location is too old, removing from localStorage');
+                    localStorage.removeItem('user_location');
+                }
+            } catch (error) {
+                console.error('Error parsing saved location:', error);
+                localStorage.removeItem('user_location');
+            }
+        }
+        
+        // Hàm hiển thị modal
         }
 
         // Tự động lấy vị trí khi component được load
@@ -394,6 +425,14 @@
                         const longitude = position.coords.longitude;
                         
                         console.log('Đã lấy được vị trí:', latitude, longitude);
+                        
+                        // Lưu vào localStorage
+                        localStorage.setItem('user_location', JSON.stringify({
+                            latitude: latitude,
+                            longitude: longitude,
+                            timestamp: new Date().getTime()
+                        }));
+                        console.log('Location saved to localStorage');
                         
                         // Gửi tọa độ về Livewire
                         @this.setUserLocation(latitude, longitude);

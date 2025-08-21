@@ -2,6 +2,40 @@
     <!-- Hero Section -->
     <x-hero-section :stats="$stats" />
 
+    <!-- VIP Banner -->
+    @auth
+        @unless(auth()->user()->isVip())
+            <section class="bg-gradient-to-r from-yellow-400 to-orange-500 py-8">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex flex-col md:flex-row items-center justify-between">
+                        <div class="text-center md:text-left mb-4 md:mb-0">
+                            <h3 class="text-xl font-bold text-white mb-2">
+                                🚀 Nâng cấp lên VIP ngay hôm nay!
+                            </h3>
+                            <p class="text-white/90">
+                                Tận hưởng tính năng tìm món ăn theo bản đồ nâng cao và nhiều ưu đãi đặc biệt
+                            </p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <a href="{{ route('subscriptions.packages') }}" 
+                               class="inline-flex items-center px-6 py-3 bg-white text-orange-600 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Nâng cấp VIP
+                            </a>
+                            <button onclick="this.parentElement.parentElement.parentElement.style.display='none'" 
+                                    class="px-4 py-3 text-white/80 hover:text-white transition-colors">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        @endunless
+    @endauth
+
     <!-- Weather Recipe Slideshow -->
     <livewire:weather-slideshow-simple />
 
