@@ -17,6 +17,21 @@
                         </div>
                     @endif
 
+                    {{-- <!-- VietQR Test Button (dev only) -->
+                    @if(app()->environment('local') || request()->has('debug'))
+                    <div class="mb-6 p-4 bg-blue-100 border border-blue-400 rounded">
+                        <h3 class="font-bold text-blue-800 mb-2">VietQR Test & Debug</h3>
+                        <div class="space-x-2">
+                            <button onclick="testVietQR()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                Test VietQR API
+                            </button>
+                            <button onclick="checkAuthStatus()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                                Check Auth
+                            </button>
+                        </div>
+                    </div>
+                    @endif --}}
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         @foreach($packages as $package)
                             <div class="border rounded-lg p-6 {{ $package['id'] === 'vip' ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200' }}">
@@ -227,36 +242,115 @@
         let currentTransactionId = '';
         const qrGenerator = new QRCodeGenerator();
 
-        function purchasePackage(packageId) {
-            fetch('{{ route("subscriptions.purchase") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    package_id: packageId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('API Response:', data);
-                if (data.success) {
-                    showPaymentModal(
-                        data.qr_code, 
-                        data.amount, 
-                        data.transaction_id, 
-                        false, 
-                        data.vietqr_data
-                    );
-                } else {
-                    alert('Lỗi: ' + data.message);
+        async function purchasePackage(packageId) {
+            // Kiểm tra xem VietQRPayment đã sẵn sàng chưa
+            if (typeof window.VietQRPayment === 'undefined') {
+                alert('VietQR Payment service chưa sẵn sàng. Vui lòng tải lại trang.');
+                return;
+            }
+
+            try {
+                // Lấy thông tin gói từ PHP data (hoặc API)
+                const packageData = getPackageData(packageId);
+                if (!packageData) {
+                    alert('Không tìm thấy thông tin gói dịch vụ');
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra khi tạo QR code');
-            });
+
+                console.log('Processing package:', packageData);
+
+                // Sử dụng VietQR Payment Service
+                const result = await window.VietQRPayment.processVipPayment(packageId, packageData.price);
+                
+                if (result.success) {
+                    console.log('VietQR Payment successful:', result);
+                    // Modal đã được hiển thị bởi VietQRPayment.processVipPayment
+                } else {
+                    throw new Error(result.error || 'Lỗi không xác định');
+                }
+            } catch (error) {
+                console.error('Purchase error:', error);
+                alert('Có lỗi xảy ra khi tạo QR code: ' + error.message);
+            }
+        }
+
+        // Helper function để lấy thông tin gói
+        function getPackageData(packageId) {
+            const packages = {
+                'basic': { price: 0, name: 'Basic' },
+                'premium': { price: 10000, name: 'Premium' },
+                'vip': { price: 99000, name: 'VIP' }
+            };
+            return packages[packageId] || null;
+        }
+
+        // Debug function để check auth status
+        async function checkAuthStatus() {
+            try {
+                console.log('Checking authentication status...');
+                
+                // Test API endpoint trực tiếp
+                const response = await fetch('/api/vietqr/user-id', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin'
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Auth check success:', data);
+                    alert('✅ Auth OK!\nUser ID: ' + data.user_id + '\nMemo: ' + data.memo);
+                } else {
+                    const errorText = await response.text();
+                    console.log('Auth check failed:', errorText);
+                    alert('❌ Auth Failed!\nStatus: ' + response.status + '\nResponse: ' + errorText);
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                alert('❌ Auth Check Error:\n' + error.message);
+            }
+        }
+
+        // Test function cho VietQR
+        async function testVietQR() {
+            console.log('Testing VietQR integration...');
+            
+            if (typeof window.VietQRPayment === 'undefined') {
+                alert('VietQR Payment service chưa được load. Vui lòng kiểm tra console để debug.');
+                return;
+            }
+
+            try {
+                // Test lấy user ID
+                console.log('Step 1: Testing getUserId()');
+                const userResult = await window.VietQRPayment.getUserId();
+                console.log('User ID result:', userResult);
+
+                // Test tạo QR
+                console.log('Step 2: Testing QR generation');
+                const qrResult = await window.VietQRPayment.generatePaymentQR({
+                    amount: 10000,
+                    message: 'Test VietQR BeeFood'
+                });
+                console.log('QR generation result:', qrResult);
+
+                if (qrResult.success) {
+                    alert('✅ VietQR Test thành công!\n\nKiểm tra console để xem chi tiết.\nQR code sẽ được hiển thị trong modal.');
+                    window.VietQRPayment.showPaymentModal(qrResult, 'TEST');
+                } else {
+                    alert('❌ VietQR Test thất bại:\n' + qrResult.message);
+                }
+            } catch (error) {
+                console.error('VietQR Test Error:', error);
+                alert('❌ VietQR Test lỗi:\n' + error.message);
+            }
         }
 
                     function showPaymentModal(qrCode, amount, transactionId, isDemo = false, payosInfo = null) {

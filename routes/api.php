@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\RestaurantController;
 
 /*
@@ -17,6 +18,25 @@ use App\Http\Controllers\RestaurantController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+// VietQR API routes  
+Route::middleware('web')->prefix('vietqr')->name('api.vietqr.')->group(function () {
+    Route::get('/user-id', function (Request $request) {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        return response()->json([
+            'success' => true,
+            'user_id' => $user->id,
+            'memo' => 'VIPPAY' . $user->id
+        ]);
+    })->name('user-id');
 });
 
 // Restaurant API routes

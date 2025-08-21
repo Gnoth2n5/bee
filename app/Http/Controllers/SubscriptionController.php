@@ -25,6 +25,7 @@ class SubscriptionController extends Controller
 
     public function index()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $subscriptions = $user->subscriptions()->orderBy('created_at', 'desc')->get();
         $activeSubscription = $user->activeSubscription();
@@ -49,7 +50,7 @@ class SubscriptionController extends Controller
             [
                 'id' => 'premium',
                 'name' => 'Gói Premium',
-                'price' => 1000,
+                'price' => 10000,
                 'duration' => 30,
                 'features' => [
                     'Tất cả tính năng cơ bản',
@@ -73,6 +74,7 @@ class SubscriptionController extends Controller
                 ]
             ]
         ];
+        /** @var \App\Models\User $user */
 
         $user = Auth::user();
         $activeSubscription = $user->activeSubscription();
@@ -88,8 +90,9 @@ class SubscriptionController extends Controller
             $request->validate([
                 'package_id' => 'required|in:basic,premium,vip',
             ]);
+        /** @var \App\Models\User $user */
 
-            $user = auth()->user();
+            $user = Auth::user();
             $packageId = $request->package_id;
 
             Log::info('Package ID: ' . $packageId);
@@ -195,7 +198,7 @@ class SubscriptionController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $subscription = $user->subscriptions()
             ->where('transaction_id', $request->transaction_id)
@@ -286,7 +289,7 @@ class SubscriptionController extends Controller
             }
         } catch (\Exception $e) {
             // Log lỗi gửi email nhưng không ảnh hưởng đến quá trình thanh toán
-            \Log::error('Failed to send payment success email: ' . $e->getMessage());
+            Log::error('Failed to send payment success email: ' . $e->getMessage());
         }
 
         return response()->json([
@@ -299,6 +302,7 @@ class SubscriptionController extends Controller
 
     public function cancel(Request $request)
     {
+                /** @var \App\Models\User $user */
         $user = Auth::user();
         $subscription = $user->activeSubscription();
 
