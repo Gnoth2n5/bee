@@ -1,0 +1,195 @@
+<?php
+
+namespace App\Livewire;
+
+use App\Services\IngredientSubstituteService;
+use Livewire\Component;
+use Livewire\Attributes\Rule;
+use Livewire\Attributes\On;
+use Illuminate\Support\Facades\Log;
+
+class IngredientSubstituteModal extends Component
+{
+    protected $ingredientSubstituteService;
+
+    /**
+     * Modal hiển thị/ẩn
+     */
+    public $showModal = false;
+
+    /**
+     * Nguyên liệu nhập bằng tiếng Việt
+     */
+    #[Rule('string|min:1|max:100')]
+    public $ingredientVi = '';
+
+    /**
+     * Danh sách nguyên liệu thay thế
+     */
+    public $substitutes = [];
+
+    /**
+     * Trạng thái loading
+     */
+    public $loading = false;
+
+    /**
+     * Error message
+     */
+    public $error = null;
+
+    /**
+     * Success message
+     */
+    public $success = null;
+
+    // Search history sẽ được quản lý bởi JavaScript thuần
+
+    public function boot(IngredientSubstituteService $ingredientSubstituteService)
+    {
+        $this->ingredientSubstituteService = $ingredientSubstituteService;
+    }
+
+    public function mount()
+    {
+        // Search history sẽ được quản lý bởi JavaScript
+    }
+
+    /**
+     * Mở modal từ navigation
+     */
+    #[On('open-ingredient-substitute-modal')]
+    public function openModal()
+    {
+        $this->showModal = true;
+        $this->resetMessages();
+        $this->resetForm();
+
+        // Focus vào input khi modal mở
+        $this->dispatch('focus-ingredient-input');
+    }
+
+    /**
+     * Đóng modal
+     */
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->resetForm();
+    }
+
+    /**
+     * Tìm kiếm nguyên liệu thay thế
+     */
+    public function findSubstitutes()
+    {
+        // Reset trạng thái
+        $this->resetMessages();
+        $this->substitutes = [];
+
+        // Kiểm tra input trước
+        if (empty(trim($this->ingredientVi))) {
+            $this->addError('ingredientVi', 'Vui lòng nhập tên nguyên liệu.');
+            return;
+        }
+
+        // Validate input
+        $this->validate();
+
+        $this->loading = true;
+
+        try {
+            Log::info('Modal search for ingredient substitutes', [
+                'ingredient' => $this->ingredientVi,
+                'user_ip' => request()->ip()
+            ]);
+
+            // Gọi service để tìm nguyên liệu thay thế
+            $result = $this->ingredientSubstituteService->getSubstitutes($this->ingredientVi);
+
+            if ($result['success'] && !empty($result['substitutes'])) {
+                $this->substitutes = $result['substitutes'];
+                $this->success = 'Tìm thấy ' . count($this->substitutes) . ' nguyên liệu có thể thay thế cho "' . $this->ingredientVi . '".';
+
+                // Dispatch event để JavaScript lưu vào lịch sử
+                $this->dispatch('search-success');
+
+                Log::info('Modal ingredient substitutes found successfully', [
+                    'ingredient' => $this->ingredientVi,
+                    'substitutes_count' => count($this->substitutes),
+                    'from_cache' => $result['from_cache'] ?? false
+                ]);
+            } else {
+                $this->error = $result['error'] ?? 'Không tìm thấy nguyên liệu thay thế cho "' . $this->ingredientVi . '".';
+
+                Log::warning('Modal failed to find ingredient substitutes', [
+                    'ingredient' => $this->ingredientVi,
+                    'error' => $this->error
+                ]);
+            }
+        } catch (\Exception $e) {
+            $this->error = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+
+            Log::error('Exception in IngredientSubstituteModal', [
+                'ingredient' => $this->ingredientVi,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        } finally {
+            $this->loading = false;
+        }
+    }
+
+    /**
+     * Reset form và kết quả
+     */
+    public function resetForm()
+    {
+        $this->reset(['ingredientVi', 'substitutes', 'error', 'success']);
+    }
+
+
+
+    // Các method liên quan đến search history đã được chuyển sang JavaScript thuần
+
+    /**
+     * Reset error và success messages
+     */
+    protected function resetMessages()
+    {
+        $this->error = null;
+        $this->success = null;
+    }
+
+    /**
+     * Kiểm tra validation realtime
+     */
+    public function updated($propertyName)
+    {
+        if ($propertyName === 'ingredientVi') {
+            $this->resetMessages();
+            // Clear error nếu có input
+            if (!empty(trim($this->ingredientVi))) {
+                $this->resetErrorBag('ingredientVi');
+            }
+        }
+    }
+
+    /**
+     * Handle keyboard shortcuts
+     */
+    #[On('handle-keyboard-shortcut')]
+    public function handleKeyboardShortcut($key)
+    {
+        if ($key === 'Escape') {
+            $this->closeModal();
+        } elseif ($key === 'Enter' && !empty(trim($this->ingredientVi))) {
+            $this->findSubstitutes();
+        }
+    }
+
+    public function render()
+    {
+        return view('livewire.ingredient-substitute-modal');
+    }
+}

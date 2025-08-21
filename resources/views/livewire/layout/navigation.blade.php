@@ -12,6 +12,8 @@ new class extends Component {
         $this->showSearch = !$this->showSearch;
     }
 
+    // Ingredient modal đã chuyển sang JavaScript thuần
+
     public function logout()
     {
         \Log::info('Logout method called');
@@ -70,6 +72,7 @@ new class extends Component {
                     </div>
                 </a>
 
+
                 <a href="{{ route('restaurants.index') }}"
                     class="text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-500 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('restaurants.*') ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20' : '' }}">
                     <div class="flex items-center space-x-2">
@@ -82,6 +85,15 @@ new class extends Component {
                         <span>Nhà hàng</span>
                     </div>
                 </a>
+
+                <button onclick="openIngredientSubstituteModal()"
+                    class="text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-500 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200">
+                    <div class="flex items-center space-x-2">
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                        <span>Tìm nguyên liệu thay thế</span>
+                    </div>
+                </button>
+
 
 
 
@@ -259,17 +271,33 @@ new class extends Component {
                         @if (auth()->user()->hasRole(['admin', 'manager']))
                             <hr class="my-1 border-gray-200 dark:border-gray-600">
 
-                            <a href="{{ route('filament.admin.pages.dashboard') }}"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                                role="menuitem" tabindex="-1" id="user-menu-item-admin">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                    </svg>
-                                    <span>Quản trị hệ thống</span>
-                                </div>
-                            </a>
+                            @if (auth()->user()->hasRole('admin'))
+                                {{-- Admin được vào Admin panel --}}
+                                <a href="{{ route('filament.admin.pages.dashboard') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                    role="menuitem" tabindex="-1" id="user-menu-item-admin">
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                        </svg>
+                                        <span>Quản trị Admin</span>
+                                    </div>
+                                </a>
+                            @elseif (auth()->user()->hasRole('manager'))
+                                {{-- Manager được vào Manager panel --}}
+                                <a href="{{ route('filament.manager.pages.manager-dashboard') }}"
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                    role="menuitem" tabindex="-1" id="user-menu-item-manager">
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                        </svg>
+                                        <span>Quản lý Manager</span>
+                                    </div>
+                                </a>
+                            @endif
                         @endif
 
                         <hr class="my-1 border-gray-200 dark:border-gray-600">
@@ -358,6 +386,14 @@ new class extends Component {
                     <span>Công thức</span>
                 </div>
             </a>
+
+            <button onclick="openIngredientSubstituteModal()"
+                class="block w-full text-left py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">
+                <div class="flex items-center space-x-2">
+                    <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                    <span>Thay thế nguyên liệu</span>
+                </div>
+            </button>
 
             @auth
                 <a href="{{ route('recipes.my') }}"

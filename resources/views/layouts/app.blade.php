@@ -42,6 +42,11 @@
                 @endif
             </main>
             <x-footer />
+
+            <!-- OpenAI Quick Chat Button (show on all pages except AI chat) -->
+            @unless(request()->routeIs('openai.*'))
+                <x-openai-quick-chat />
+            @endunless
         </div>
 
         <script>
@@ -123,6 +128,15 @@
 
         });
         </script>
+
 		@stack('scripts')
-	</body>
+
+
+        <!-- Ingredient Substitute Modal -->
+        <x-ingredient-substitute-modal />
+        
+        <!-- Ingredient Substitute JavaScript -->
+        <script src="{{ asset('js/ingredient-substitute.js') }}"></script>
+    </body>
+
 </html>

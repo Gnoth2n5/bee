@@ -86,7 +86,7 @@ class UserResource extends Resource
                             ->columnSpanFull(),
                         Forms\Components\DateTimePicker::make('email_verified_at')
                             ->label('Xác thực email lúc')
-                            ->disabled(),                            
+                            ->disabled(),
                         Forms\Components\DateTimePicker::make('last_login_at')
                             ->label('Đăng nhập cuối lúc')
                             ->disabled(),
@@ -261,10 +261,10 @@ class UserResource extends Resource
                             // Lọc ra những user không phải admin
                             $nonAdminUsers = $records->filter(fn($user) => !$user->hasRole('admin'));
                             $adminUsers = $records->filter(fn($user) => $user->hasRole('admin'));
-                            
+
                             // Xóa những user không phải admin
                             $nonAdminUsers->each->delete();
-                            
+
                             // Thông báo nếu có admin bị bỏ qua
                             if ($adminUsers->count() > 0) {
                                 \Filament\Notifications\Notification::make()

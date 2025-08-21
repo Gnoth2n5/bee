@@ -174,6 +174,7 @@ class VietnamCityResource extends Resource
                                 ->success()
                                 ->send();
 
+
                         } catch (\Exception $e) {
                             Log::error("Lỗi khi cập nhật thành phố {$record->name}: " . $e->getMessage());
 
@@ -229,6 +230,7 @@ class VietnamCityResource extends Resource
                         try {
                             $provinceService = new VietnamProvinceService();
 
+
                             // Lấy danh sách quận/huyện từ API
                             $districts = $provinceService->getDistrictsByProvinceCode($record->code);
 
@@ -254,16 +256,16 @@ class VietnamCityResource extends Resource
                                 ->send();
 
                         } catch (\Exception $e) {
-                            Log::error("Lỗi khi lấy quận/huyện cho thành phố {$record->name}: " . $e->getMessage());
-
+                            Log::error("Lỗi khi cập nhật thành phố {$record->name}: " . $e->getMessage());
                             \Filament\Notifications\Notification::make()
-                                ->title('Lỗi lấy quận/huyện!')
+                                ->title('Lỗi cập nhật!')
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
                         }
                     })
                     ->visible(fn(VietnamCity $record) => !empty($record->code)),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -393,7 +395,7 @@ class VietnamCityResource extends Resource
                                         $data['longitude'] = (float) $province['longitude'];
                                     }
                                     // Nếu không có tọa độ từ API, giữ nguyên tọa độ hiện tại (nếu có)
-            
+
                                     if ($city) {
                                         $city->update($data);
                                         $updated++;
@@ -415,7 +417,6 @@ class VietnamCityResource extends Resource
                                 ->body("Đã tạo mới: {$created}, Cập nhật: {$updated}, Bỏ qua: {$skipped}")
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Log::error('Lỗi khi đồng bộ dữ liệu tỉnh thành: ' . $e->getMessage());
 
@@ -445,7 +446,6 @@ class VietnamCityResource extends Resource
                                 ->body('Đã xóa cache dữ liệu API tỉnh thành')
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Log::error('Lỗi khi xóa cache API: ' . $e->getMessage());
 
@@ -517,7 +517,6 @@ class VietnamCityResource extends Resource
 
                                     VietnamCity::create($data);
                                     $created++;
-
                                 } catch (\Exception $e) {
                                     Log::error("Lỗi khi tạo tỉnh {$province['name']}: " . $e->getMessage());
                                     $skipped++;
@@ -529,7 +528,6 @@ class VietnamCityResource extends Resource
                                 ->body("Đã xóa {$deletedCount} bản ghi cũ, tạo mới: {$created}, bỏ qua: {$skipped}")
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Log::error('Lỗi khi reset và đồng bộ: ' . $e->getMessage());
 
@@ -560,10 +558,8 @@ class VietnamCityResource extends Resource
                                 ->body('Đã cập nhật tọa độ chính xác cho các thành phố')
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Log::error('Lỗi khi cập nhật tọa độ: ' . $e->getMessage());
-
                             \Filament\Notifications\Notification::make()
                                 ->title('Lỗi cập nhật tọa độ!')
                                 ->body($e->getMessage())
@@ -574,7 +570,6 @@ class VietnamCityResource extends Resource
                     })
             ])
             ->defaultSort('sort_order', 'asc');
-
     }
 
     public static function getRelations(): array

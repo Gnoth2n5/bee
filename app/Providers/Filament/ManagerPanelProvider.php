@@ -21,16 +21,23 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 // use App\Http\Middleware\FilamentPanelAccess; // Tạm thời không dùng
 
-class AdminPanelProvider extends PanelProvider
+/**
+ * Panel dành riêng cho Manager
+ * 
+ * Panel này cung cấp giao diện quản trị riêng cho role Manager với các tính năng:
+ * - Quản lý công thức (có action duyệt/từ chối)
+ * - CRUD bài viết
+ * - Dashboard và widgets phù hợp với role Manager
+ */
+class ManagerPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('manager')
+            ->path('manager')
             ->login()
-            ->brandName('BeeFood Admin')
+            ->brandName('BeeFood Manager')
             ->brandLogo(asset('images/bee-logo.png'))
             ->brandLogoHeight('2.5rem')
             ->favicon(asset('images/bee-favicon.ico'))
@@ -39,15 +46,7 @@ class AdminPanelProvider extends PanelProvider
                 \Filament\Navigation\NavigationItem::make('Về web')
                     ->url('/')
                     ->icon('heroicon-o-home')
-                    ->sort(100),
-                \Filament\Navigation\NavigationItem::make('Quản lý thanh toán')
-                    ->url('/admin/payments')
-                    ->icon('heroicon-o-credit-card')
-                    ->sort(200)
-                    ->badge(function () {
-                        $pendingCount = \App\Models\PaymentInvoice::where('status', 'pending')->count();
-                        return $pendingCount > 0 ? $pendingCount : null;
-                    })
+                    ->sort(100)
             ])
             ->colors([
                 'primary' => [
@@ -78,15 +77,15 @@ class AdminPanelProvider extends PanelProvider
                 ],
             ])
             ->font('Inter')
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/ManagerResources'), for: 'App\\Filament\\ManagerResources')
+            ->discoverPages(in: app_path('Filament/ManagerPages'), for: 'App\\Filament\\ManagerPages')
             ->pages([
-                \App\Filament\Pages\Dashboard::class,
+                \App\Filament\ManagerPages\ManagerDashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/ManagerWidgets'), for: 'App\\Filament\\ManagerWidgets')
             ->widgets([
-                StatsOverview::class,
-                LatestRecipes::class,
+                \App\Filament\ManagerWidgets\ManagerStatsOverview::class,
+                \App\Filament\ManagerWidgets\PendingRecipes::class,
                 Widgets\AccountWidget::class,
             ])
             ->middleware([
@@ -102,7 +101,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                // FilamentPanelAccess::class . ':admin', // Tạm thời không dùng
+                // FilamentPanelAccess::class . ':manager', // Tạm thời không dùng
             ])
             ->authGuard('web');
     }

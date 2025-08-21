@@ -19,13 +19,9 @@ use App\Livewire\Recipes\RecipeDetail;
 
 Route::get('/', HomePage::class)->name('home');
 
-
-
 // Post routes
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
 Route::get('/posts/{slug}', [PostController::class, 'show'])->name('posts.show');
-
-
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -48,6 +44,10 @@ Route::get('/weather-suggestions', App\Livewire\WeatherRecipeSuggestions::class)
 // Restaurant routes
 Route::get('/restaurants', [RestaurantController::class, 'index'])->name('restaurants.index');
 Route::get('/restaurants/map', App\Livewire\Restaurants\RestaurantMap::class)->name('restaurants.map');
+
+// Ingredient Substitute API
+Route::post('/api/ingredient-substitute', [App\Http\Controllers\IngredientSubstituteController::class, 'getSubstitutes'])->name('api.ingredient.substitute');
+
 
 // Vietnam Provinces API
 Route::prefix('api/vietnam-provinces')->name('api.vietnam-provinces.')->group(function () {
@@ -520,5 +520,6 @@ Route::get('/check-vip-status', function () {
     ]);
 })->middleware('auth')->name('check.vip.status');
 
+require __DIR__ . '/ai.php';
 
 require __DIR__ . '/auth.php';
