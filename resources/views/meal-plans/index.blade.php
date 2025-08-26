@@ -24,10 +24,19 @@
                         <h1 class="text-2xl font-bold text-gray-900">Danh sách kế hoạch bữa ăn</h1>
                         <p class="text-gray-600 mt-1">Xem tất cả kế hoạch bữa ăn đã tạo</p>
                     </div>
-                    <a href="{{ route('weekly-meal-plan') }}" 
-                       class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors">
-                        + Tạo kế hoạch mới
-                    </a>
+                    <div class="flex space-x-3">
+                        <a href="{{ route('meal-plans.export-all') }}" 
+                           class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Xuất Excel
+                        </a>
+                        <a href="{{ route('weekly-meal-plan') }}" 
+                           class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            + Tạo kế hoạch mới
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Statistics -->
@@ -113,6 +122,13 @@
                                         <a href="{{ route('meal-plans.show', $mealPlan) }}" 
                                            class="flex-1 bg-orange-600 hover:bg-orange-700 text-white text-center px-3 py-2 rounded-lg text-sm transition-colors">
                                             Xem chi tiết
+                                        </a>
+                                        <a href="{{ route('meal-plans.export', $mealPlan) }}" 
+                                           class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm transition-colors" 
+                                           title="Xuất Excel">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
                                         </a>
                                         <a href="{{ route('meal-plans.edit', $mealPlan) }}" 
                                            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm transition-colors">

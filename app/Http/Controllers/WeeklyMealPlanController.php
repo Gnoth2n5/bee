@@ -7,6 +7,8 @@ use App\Models\Favorite;
 use App\Services\WeeklyMealPlanService;
 use App\Services\WeatherService;
 use App\Services\OpenAiService;
+use App\Exports\WeeklyMealPlanExport;
+use App\Exports\AllMealPlansExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -14,6 +16,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class WeeklyMealPlanController extends Controller
 {
@@ -40,7 +43,7 @@ class WeeklyMealPlanController extends Controller
     /**
      * Store a newly created meal plan.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -53,25 +56,45 @@ class WeeklyMealPlanController extends Controller
         // Check if meal plan already exists for this week
         $existingPlan = $this->mealPlanService->getMealPlanForWeek($user, $weekStart);
         if ($existingPlan) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Đã có kế hoạch bữa ăn cho tuần này'
-            ], 400);
+            return back()->withErrors(['week_start' => 'Đã có kế hoạch bữa ăn cho tuần này']);
         }
 
         $mealPlan = $this->mealPlanService->createMealPlan($user, $request->name, $weekStart);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Tạo kế hoạch bữa ăn thành công',
-            'data' => $mealPlan
-        ], 201);
+        // Update additional fields if provided
+        if ($request->has('is_active')) {
+            $mealPlan->is_active = $request->boolean('is_active');
+        }
+        if ($request->has('weather_optimized')) {
+            $mealPlan->weather_optimized = $request->boolean('weather_optimized');
+        }
+        if ($request->has('ai_suggestions_used')) {
+            $mealPlan->ai_suggestions_used = $request->boolean('ai_suggestions_used');
+        }
+        $mealPlan->save();
+
+        return redirect()->route('meal-plans.show', $mealPlan)
+            ->with('success', 'Tạo kế hoạch bữa ăn thành công');
     }
 
     /**
      * Display the specified meal plan.
      */
-    public function show(WeeklyMealPlan $mealPlan): JsonResponse
+    public function show(WeeklyMealPlan $mealPlan)
+    {
+        $user = Auth::user();
+
+        if ($mealPlan->user_id !== $user->id) {
+            abort(403, 'Không có quyền truy cập');
+        }
+
+        return view('meal-plans.show', compact('mealPlan'));
+    }
+
+    /**
+     * Display the specified meal plan as JSON (API).
+     */
+    public function showJson(WeeklyMealPlan $mealPlan): JsonResponse
     {
         $user = Auth::user();
 
@@ -95,31 +118,62 @@ class WeeklyMealPlanController extends Controller
     }
 
     /**
-     * Update the specified meal plan.
+     * Show the form for editing the specified meal plan.
      */
-    public function update(Request $request, WeeklyMealPlan $mealPlan): JsonResponse
+    public function edit(WeeklyMealPlan $mealPlan)
     {
         $user = Auth::user();
 
         if ($mealPlan->user_id !== $user->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không có quyền truy cập'
-            ], 403);
+            abort(403, 'Không có quyền truy cập');
+        }
+
+        return view('meal-plans.edit', compact('mealPlan'));
+    }
+
+    /**
+     * Show the form for creating a new meal plan.
+     */
+    public function create()
+    {
+        return view('meal-plans.create');
+    }
+
+    /**
+     * Update the specified meal plan.
+     */
+    public function update(Request $request, WeeklyMealPlan $mealPlan)
+    {
+        $user = Auth::user();
+
+        if ($mealPlan->user_id !== $user->id) {
+            abort(403, 'Không có quyền truy cập');
         }
 
         $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'is_active' => 'sometimes|boolean'
+            'name' => 'required|string|max:255',
+            'week_start' => 'required|date'
         ]);
 
-        $mealPlan->update($request->only(['name', 'is_active']));
+        // Check if week_start is changed and if it conflicts with existing plan
+        if ($mealPlan->week_start->format('Y-m-d') !== $request->week_start) {
+            $weekStart = Carbon::parse($request->week_start);
+            $existingPlan = $this->mealPlanService->getMealPlanForWeek($user, $weekStart);
+            if ($existingPlan && $existingPlan->id !== $mealPlan->id) {
+                return back()->withErrors(['week_start' => 'Đã có kế hoạch bữa ăn cho tuần này']);
+            }
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Cập nhật kế hoạch bữa ăn thành công',
-            'data' => $mealPlan
+        $mealPlan->update([
+            'name' => $request->name,
+            'week_start' => $request->week_start,
+            'is_active' => $request->boolean('is_active'),
+            'weather_optimized' => $request->boolean('weather_optimized'),
+            'ai_suggestions_used' => $request->boolean('ai_suggestions_used')
         ]);
+
+        return redirect()->route('meal-plans.show', $mealPlan)
+            ->with('success', 'Cập nhật kế hoạch bữa ăn thành công');
     }
 
     /**
@@ -360,5 +414,32 @@ class WeeklyMealPlanController extends Controller
         $weeklyMeals = $this->mealPlanService->generateWeeklyMeals($mealPlan);
 
         return view('meal-plans.weekly-meals', compact('mealPlan', 'weeklyMeals'));
+    }
+
+    /**
+     * Export a specific meal plan to Excel.
+     */
+    public function exportMealPlan(WeeklyMealPlan $mealPlan)
+    {
+        $user = Auth::user();
+
+        if ($mealPlan->user_id !== $user->id) {
+            abort(403, 'Không có quyền truy cập');
+        }
+
+        $fileName = 'ke-hoach-bua-an-' . $mealPlan->week_start->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new WeeklyMealPlanExport($mealPlan), $fileName);
+    }
+
+    /**
+     * Export all meal plans to Excel.
+     */
+    public function exportAllMealPlans()
+    {
+        $user = Auth::user();
+        $fileName = 'danh-sach-ke-hoach-bua-an-' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new AllMealPlansExport($user), $fileName);
     }
 }

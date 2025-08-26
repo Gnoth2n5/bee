@@ -38,12 +38,22 @@ use Illuminate\Support\Facades\App;
                             <input type="date" wire:model.live="selectedWeek" 
                                    class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-orange-500 focus:border-orange-500">
                             
-                                                         @if(!$currentMealPlan)
-                                 <button wire:click="createMealPlan" 
-                                         class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors">
-                                     Tạo kế hoạch mới
-                                 </button>
-                             @endif
+                            @if($currentMealPlan)
+                                <a href="{{ route('meal-plans.export', $currentMealPlan) }}" 
+                                   class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Xuất Excel
+                                </a>
+                            @endif
+                            
+                            @if(!$currentMealPlan)
+                                <button wire:click="createMealPlan" 
+                                        class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                    Tạo kế hoạch mới
+                                </button>
+                            @endif
                         </div>
                     </div>
 

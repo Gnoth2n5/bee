@@ -68,9 +68,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/meal-plans/create', [WeeklyMealPlanController::class, 'create'])->name('meal-plans.create');
     Route::post('/meal-plans', [WeeklyMealPlanController::class, 'store'])->name('meal-plans.store');
     Route::get('/meal-plans/{mealPlan}', [WeeklyMealPlanController::class, 'show'])->name('meal-plans.show');
+    Route::get('/meal-plans/{mealPlan}/json', [WeeklyMealPlanController::class, 'showJson'])->name('meal-plans.show-json');
     Route::get('/meal-plans/{mealPlan}/edit', [WeeklyMealPlanController::class, 'edit'])->name('meal-plans.edit');
     Route::put('/meal-plans/{mealPlan}', [WeeklyMealPlanController::class, 'update'])->name('meal-plans.update');
     Route::delete('/meal-plans/{mealPlan}', [WeeklyMealPlanController::class, 'destroy'])->name('meal-plans.destroy');
+
+    // Export routes
+    Route::get('/meal-plans/{mealPlan}/export', [WeeklyMealPlanController::class, 'exportMealPlan'])->name('meal-plans.export');
+    Route::get('/meal-plans/export/all', [WeeklyMealPlanController::class, 'exportAllMealPlans'])->name('meal-plans.export-all');
+
+    // API routes for JSON responses
+    Route::get('/meal-plans/{mealPlan}/json', [WeeklyMealPlanController::class, 'showJson'])->name('meal-plans.show-json');
 });
 
 // Weekly Meal Plan Livewire Component
