@@ -120,6 +120,31 @@ new class extends Component {
                         </div>
                     </a>
 
+                    
+                     <a href="{{ route('meal-plans.index') }}"
+                         class="text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-500 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('meal-plans.index') ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20' : '' }}">
+                         <div class="flex items-center space-x-2">
+                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                             </svg>
+                             <span>Danh sách kế hoạch</span>
+                         </div>
+                     </a>
+                     
+                     <a href="{{ route('weekly-meal-plan') }}"
+                         class="text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-500 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('weekly-meal-plan') ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20' : '' }}">
+                         <div class="flex items-center space-x-2">
+                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                             </svg>
+                             <span>Tạo kế hoạch mới</span>
+                         </div>
+                     </a>
+
+
+
                     <!-- VIP Package Link -->
                     <a href="{{ route('subscriptions.packages') }}"
                         class="text-gray-900 hover:text-orange-600 dark:text-white dark:hover:text-orange-500 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('subscriptions.*') ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20' : '' }} relative">
@@ -404,6 +429,17 @@ new class extends Component {
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         <span>Công thức của tôi</span>
+                    </div>
+                </a>
+
+                <a href="{{ route('meal-plans.index') }}"
+                    class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 {{ request()->routeIs('meal-plans.*') ? 'text-orange-600' : '' }}">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>Kế hoạch bữa ăn</span>
                     </div>
                 </a>
 

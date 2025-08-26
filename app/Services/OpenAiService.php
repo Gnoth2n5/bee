@@ -4,14 +4,14 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Exception;
+
 use Illuminate\Support\Facades\Cache;
 
 
 class OpenAiService
 {
     protected $apiKey;
-    protected $baseUrl = 'https://openrouter.ai/api/v1';
+    protected $baseUrl = 'https://api.openai.com/v1';
     protected static $circuitBreakerKey = 'openai_service_circuit_breaker';
     protected static $failureThreshold = 5; // Number of failures before opening circuit
     protected static $recoveryTimeout = 300; // 5 minutes
@@ -69,6 +69,63 @@ class OpenAiService
     }
 
     /**
+     * Test OpenAI API connection
+     */
+    public function testConnection()
+    {
+        try {
+            if (!$this->apiKey) {
+                return [
+                    'success' => false,
+                    'error' => 'OpenAI API key chưa được cấu hình.'
+                ];
+            }
+
+            $payload = [
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    [
+                        'role' => 'user',
+                        'content' => 'Xin chào! Hãy trả lời "API hoạt động tốt!"'
+                    ]
+                ],
+                'max_tokens' => 50,
+                'temperature' => 0.7,
+            ];
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type' => 'application/json',
+            ])->withOptions([
+                        'verify' => env('APP_ENV') === 'production' ? true : false,
+                        'timeout' => 10,
+                    ])->post($this->baseUrl . '/chat/completions', $payload);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $messageContent = $data['choices'][0]['message']['content'] ?? '';
+
+                return [
+                    'success' => true,
+                    'message' => 'API hoạt động tốt!',
+                    'response' => $messageContent
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => 'API test failed: ' . $response->status() . ' - ' . $response->body()
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'API test error: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Send a chat message to OpenAI and get response
      */
     public function sendMessage(string $message, array $conversationHistory = [])
@@ -76,7 +133,7 @@ class OpenAiService
         try {
             // Check circuit breaker first
             if ($this->isCircuitBreakerOpen()) {
-                Log::warning('OpenRouter service circuit breaker is open');
+                Log::warning('OpenAI service circuit breaker is open');
                 return [
                     'success' => false,
                     'error' => 'Dịch vụ AI hiện tại không khả dụng do quá nhiều lỗi. Vui lòng thử lại sau 5 phút.'
@@ -91,7 +148,7 @@ class OpenAiService
             if (!$this->apiKey) {
                 return [
                     'success' => false,
-                    'error' => 'OpenRouter API key chưa được cấu hình. Vui lòng kiểm tra cài đặt.'
+                    'error' => 'OpenAI API key chưa được cấu hình. Vui lòng kiểm tra cài đặt.'
                 ];
             }
 
@@ -121,13 +178,12 @@ class OpenAiService
 
 
             $payload = [
-                'model' => 'deepseek/deepseek-chat-v3-0324:free',
+                'model' => 'gpt-3.5-turbo',
                 'messages' => $messages,
                 'max_tokens' => 1000,
-                'temperature' => 0.5, // Re-enable temperature for better response variety
-                'top_p' => 0.5,
-                'stream' => false, // Ensure we get a complete response
-
+                'temperature' => 0.7,
+                'top_p' => 0.9,
+                'stream' => false,
             ];
 
             // Implement retry logic with exponential backoff
@@ -137,7 +193,7 @@ class OpenAiService
             for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
                 try {
                     $timeout = min(15 + ($attempt * 5), 30); // Progressive timeout: 20s, 25s, 30s
-                    Log::info('OpenRouter API request', [
+                    Log::info('OpenAI API request', [
                         'attempt' => $attempt,
                         'payload' => $payload,
                         'timeout' => $timeout
@@ -146,13 +202,11 @@ class OpenAiService
                     $response = Http::withHeaders([
                         'Authorization' => 'Bearer ' . $this->apiKey,
                         'Content-Type' => 'application/json',
-                        'HTTP-Referer' => request()->getSchemeAndHttpHost() ?? 'http://localhost',
-                        'X-Title' => 'Bee Recipe Assistant',
                     ])->withOptions([
-                        'verify' => env('APP_ENV') === 'production' ? true : false,
-                        'timeout' => $timeout,
-                        'connect_timeout' => 10, // Separate connection timeout
-                    ])->timeout($timeout)->post($this->baseUrl . '/chat/completions', $payload);
+                                'verify' => env('APP_ENV') === 'production' ? true : false,
+                                'timeout' => $timeout,
+                                'connect_timeout' => 10, // Separate connection timeout
+                            ])->timeout($timeout)->post($this->baseUrl . '/chat/completions', $payload);
 
 
                     // If successful, break out of retry loop
@@ -163,7 +217,7 @@ class OpenAiService
                     // If not the last attempt and it's a timeout/server error, retry
                     if ($attempt < $maxRetries && ($response->status() >= 500 || $response->status() === 408)) {
                         $delay = $baseDelay * pow(2, $attempt - 1); // Exponential backoff
-                        Log::warning("OpenRouter API attempt {$attempt} failed, retrying in {$delay}s", [
+                        Log::warning("OpenAI API attempt {$attempt} failed, retrying in {$delay}s", [
                             'status' => $response->status(),
                             'attempt' => $attempt
                         ]);
@@ -171,7 +225,7 @@ class OpenAiService
                         continue;
                     }
                 } catch (\Illuminate\Http\Client\ConnectionException $e) {
-                    Log::warning("OpenRouter connection error on attempt {$attempt}", [
+                    Log::warning("OpenAI connection error on attempt {$attempt}", [
                         'message' => $e->getMessage(),
                         'attempt' => $attempt
                     ]);
@@ -190,7 +244,7 @@ class OpenAiService
 
             if ($response->successful()) {
                 $data = $response->json();
-                Log::info('OpenRouter API data', [
+                Log::info('OpenAI API data', [
                     'data' => $data
                 ]);
 

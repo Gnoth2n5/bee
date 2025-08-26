@@ -1,9 +1,14 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\App;
 use App\Http\Controllers\RecipeController;
+use App\Models\Recipe;
 use App\Http\Controllers\CategoryController;
+use App\Services\VietQrService;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\WeeklyMealPlanController;
 use App\Http\Controllers\RatingController;
 
 use App\Http\Controllers\CollectionController;
@@ -14,7 +19,23 @@ use App\Http\Controllers\VietQrController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\RestaurantAdController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\IngredientSubstituteController;
+use App\Http\Controllers\VietnamProvinceController;
+use App\Http\Controllers\Admin\PaymentController;
+
+use App\Livewire\MealPlans\WeeklyMealPlanPage;
 use App\Livewire\HomePage;
+use App\Livewire\Recipes\RecipeList;
+use App\Livewire\AdvancedSearch;
+use App\Livewire\WeatherRecipeSuggestions;
+use App\Livewire\Restaurants\RestaurantMap;
+use App\Livewire\Favorites\FavoritesPage;
+use App\Livewire\Collections\CollectionDetail;
+use App\Livewire\Admin\ModerationTest;
+use App\Livewire\Admin\ScheduledPosts;
+use App\Livewire\Admin\PendingPosts;
+use App\Livewire\StorageManager;
+use App\Livewire\Profile\ProfilePage;
 use App\Livewire\Recipes\RecipeDetail;
 
 Route::get('/', HomePage::class)->name('home');
@@ -27,52 +48,87 @@ Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::get('profile', App\Livewire\Profile\ProfilePage::class)
+Route::get('profile', ProfilePage::class)
     ->middleware(['auth'])
     ->name('profile');
 
 // Recipe routes
-Route::get('/recipes', App\Livewire\Recipes\RecipeList::class)->name('recipes.index');
+Route::get('/recipes', RecipeList::class)->name('recipes.index');
 Route::get('/recipes/{recipe}', RecipeDetail::class)->name('recipes.show');
 
 // Advanced Search route
-Route::get('/search', App\Livewire\AdvancedSearch::class)->name('search.advanced');
+Route::get('/search', AdvancedSearch::class)->name('search.advanced');
 
 // Weather-based recipe suggestions
-Route::get('/weather-suggestions', App\Livewire\WeatherRecipeSuggestions::class)->name('weather.suggestions');
+Route::get('/weather-suggestions', WeatherRecipeSuggestions::class)->name('weather.suggestions');
+
+// Weekly Meal Plan routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/meal-plans', [WeeklyMealPlanController::class, 'index'])->name('meal-plans.index');
+    Route::get('/meal-plans/create', [WeeklyMealPlanController::class, 'create'])->name('meal-plans.create');
+    Route::post('/meal-plans', [WeeklyMealPlanController::class, 'store'])->name('meal-plans.store');
+    Route::get('/meal-plans/{mealPlan}', [WeeklyMealPlanController::class, 'show'])->name('meal-plans.show');
+    Route::get('/meal-plans/{mealPlan}/edit', [WeeklyMealPlanController::class, 'edit'])->name('meal-plans.edit');
+    Route::put('/meal-plans/{mealPlan}', [WeeklyMealPlanController::class, 'update'])->name('meal-plans.update');
+    Route::delete('/meal-plans/{mealPlan}', [WeeklyMealPlanController::class, 'destroy'])->name('meal-plans.destroy');
+});
+
+// Weekly Meal Plan Livewire Component
+Route::get('/weekly-meal-plan', \App\Livewire\MealPlans\WeeklyMealPlanPage::class)->name('weekly-meal-plan');
+
+// Weekly Meals Display
+Route::get('/weekly-meals/{mealPlan}', [WeeklyMealPlanController::class, 'showWeeklyMeals'])->name('weekly-meals.show');
+
+// Recipe search API for meal plans
+Route::get('/api/recipes/search', function (Request $request) {
+    $query = $request->get('q', '');
+
+    $recipes = Recipe::where('status', 'approved')
+        ->where(function ($q) use ($query) {
+            $q->where('title', 'like', "%{$query}%")
+                ->orWhere('description', 'like', "%{$query}%");
+        })
+        ->limit(10)
+        ->get(['id', 'title', 'description', 'calories_per_serving']);
+
+    return response()->json([
+        'success' => true,
+        'data' => $recipes
+    ]);
+})->name('api.recipes.search');
 
 // Restaurant routes
 Route::get('/restaurants', [RestaurantController::class, 'index'])->name('restaurants.index');
-Route::get('/restaurants/map', App\Livewire\Restaurants\RestaurantMap::class)->name('restaurants.map');
+Route::get('/restaurants/map', RestaurantMap::class)->name('restaurants.map');
 
 // Ingredient Substitute API
-Route::post('/api/ingredient-substitute', [App\Http\Controllers\IngredientSubstituteController::class, 'getSubstitutes'])->name('api.ingredient.substitute');
+Route::post('/api/ingredient-substitute', [IngredientSubstituteController::class, 'getSubstitutes'])->name('api.ingredient.substitute');
 
 
 // Vietnam Provinces API
 Route::prefix('api/vietnam-provinces')->name('api.vietnam-provinces.')->group(function () {
-    Route::get('/', [App\Http\Controllers\VietnamProvinceController::class, 'index'])->name('index');
-    Route::get('/stats', [App\Http\Controllers\VietnamProvinceController::class, 'stats'])->name('stats');
-    Route::get('/health', [App\Http\Controllers\VietnamProvinceController::class, 'health'])->name('health');
-    Route::get('/search', [App\Http\Controllers\VietnamProvinceController::class, 'search'])->name('search');
-    Route::get('/region/{region}', [App\Http\Controllers\VietnamProvinceController::class, 'provincesByRegion'])->name('provinces-by-region');
-    Route::get('/communes-with-coordinates', [App\Http\Controllers\VietnamProvinceController::class, 'communesWithCoordinates'])->name('communes-with-coordinates');
-    Route::get('/{code}', [App\Http\Controllers\VietnamProvinceController::class, 'show'])->name('show');
-    Route::get('/{provinceCode}/districts', [App\Http\Controllers\VietnamProvinceController::class, 'districts'])->name('districts');
-    Route::get('/districts/{districtCode}/wards', [App\Http\Controllers\VietnamProvinceController::class, 'wards'])->name('wards');
-    Route::delete('/cache', [App\Http\Controllers\VietnamProvinceController::class, 'clearCache'])->name('clear-cache');
+    Route::get('/', [VietnamProvinceController::class, 'index'])->name('index');
+    Route::get('/stats', [VietnamProvinceController::class, 'stats'])->name('stats');
+    Route::get('/health', [VietnamProvinceController::class, 'health'])->name('health');
+    Route::get('/search', [VietnamProvinceController::class, 'search'])->name('search');
+    Route::get('/region/{region}', [VietnamProvinceController::class, 'provincesByRegion'])->name('provinces-by-region');
+    Route::get('/communes-with-coordinates', [VietnamProvinceController::class, 'communesWithCoordinates'])->name('communes-with-coordinates');
+    Route::get('/{code}', [VietnamProvinceController::class, 'show'])->name('show');
+    Route::get('/{provinceCode}/districts', [VietnamProvinceController::class, 'districts'])->name('districts');
+    Route::get('/districts/{districtCode}/wards', [VietnamProvinceController::class, 'wards'])->name('wards');
+    Route::delete('/cache', [VietnamProvinceController::class, 'clearCache'])->name('clear-cache');
 });
 
 // PayOS API routes
 Route::prefix('api/payos')->name('api.payos.')->group(function () {
     Route::get('/banks', function () {
-        $vietqrService = new \App\Services\VietQrService();
+        $vietqrService = new VietQrService();
         $banks = $vietqrService->getBanks();
         return response()->json($banks);
     })->name('banks');
 
     Route::post('/generate', function (Request $request) {
-        $vietqrService = new \App\Services\VietQrService();
+        $vietqrService = new VietQrService();
         $qrData = $vietqrService->generateQrCode($request->all());
         return response()->json($qrData);
     })->name('generate');
@@ -87,6 +143,27 @@ Route::prefix('api/restaurant-ads')->name('api.restaurant-ads.')->group(function
 
 // Protected routes
 Route::middleware(['auth'])->group(function () {
+    // Weekly Meal Plan page - REMOVED DUPLICATE ROUTE
+
+    // Weekly Meal Plan API routes
+    Route::prefix('meal-plans')->name('meal-plans.')->group(function () {
+        Route::post('/', [WeeklyMealPlanController::class, 'store'])->name('store');
+        Route::get('/current', [WeeklyMealPlanController::class, 'current'])->name('current');
+        Route::get('/suggestions', [WeeklyMealPlanController::class, 'generateSuggestions'])->name('suggestions');
+        Route::get('/personalized-suggestions', [WeeklyMealPlanController::class, 'getPersonalizedSuggestions'])->name('personalized-suggestions');
+
+        Route::prefix('{mealPlan}')->group(function () {
+            Route::get('/', [WeeklyMealPlanController::class, 'show'])->name('show');
+            Route::put('/', [WeeklyMealPlanController::class, 'update'])->name('update');
+            Route::delete('/', [WeeklyMealPlanController::class, 'destroy'])->name('destroy');
+            Route::post('/meals', [WeeklyMealPlanController::class, 'addMeal'])->name('add-meal');
+            Route::delete('/meals', [WeeklyMealPlanController::class, 'removeMeal'])->name('remove-meal');
+            Route::get('/shopping-list', [WeeklyMealPlanController::class, 'generateShoppingList'])->name('shopping-list');
+            Route::post('/duplicate', [WeeklyMealPlanController::class, 'duplicateForNextWeek'])->name('duplicate');
+            Route::get('/statistics', [WeeklyMealPlanController::class, 'getStatistics'])->name('statistics');
+        });
+    });
+
     // Recipe management
     Route::get('/recipes/create', [RecipeController::class, 'create'])->name('recipes.create');
     Route::post('/recipes', [RecipeController::class, 'store'])->name('recipes.store');
@@ -103,13 +180,15 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/recipes/{recipe}/rate', [RatingController::class, 'destroy'])->name('recipes.rate.destroy');
 
     // Favorites
-    Route::get('/favorites', App\Livewire\Favorites\FavoritesPage::class)->name('favorites.index');
+    Route::get('/favorites', FavoritesPage::class)->name('favorites.index');
 
     // Collections
-    Route::get('/collections/{collection}', \App\Livewire\Collections\CollectionDetail::class)->name('collections.show');
+    Route::get('/collections/{collection}', CollectionDetail::class)->name('collections.show');
     Route::resource('collections', CollectionController::class)->except(['show']);
     Route::post('/collections/{collection}/recipes/{recipe}', [CollectionController::class, 'addRecipe'])->name('collections.add-recipe');
     Route::delete('/collections/{collection}/recipes/{recipe}', [CollectionController::class, 'removeRecipe'])->name('collections.remove-recipe');
+
+
 
     // Restaurant favorites and ratings
     Route::post('/restaurants/favorites', [RestaurantController::class, 'addToFavorites'])->name('restaurants.favorites.add');
@@ -336,16 +415,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/recipes/pending', [RecipeController::class, 'pending'])->name('recipes.pending');
     Route::post('/recipes/{recipe}/approve', [RecipeController::class, 'approve'])->name('recipes.approve');
     Route::post('/recipes/{recipe}/reject', [RecipeController::class, 'reject'])->name('recipes.reject');
-    Route::get('/moderation-test', \App\Livewire\Admin\ModerationTest::class)->name('moderation.test');
-    Route::get('/scheduled-posts', \App\Livewire\Admin\ScheduledPosts::class)->name('scheduled-posts');
-    Route::get('/pending-posts', \App\Livewire\Admin\PendingPosts::class)->name('pending-posts');
+    Route::get('/moderation-test', ModerationTest::class)->name('moderation.test');
+    Route::get('/scheduled-posts', ScheduledPosts::class)->name('scheduled-posts');
+    Route::get('/pending-posts', PendingPosts::class)->name('pending-posts');
 
     // Payment management routes
-    Route::get('/payments', [App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('payments.index');
-    Route::get('/payments/{id}', [App\Http\Controllers\Admin\PaymentController::class, 'show'])->name('payments.show');
-    Route::post('/payments/{id}/approve', [App\Http\Controllers\Admin\PaymentController::class, 'approve'])->name('payments.approve');
-    Route::post('/payments/{id}/reject', [App\Http\Controllers\Admin\PaymentController::class, 'reject'])->name('payments.reject');
-    Route::get('/payments/statistics', [App\Http\Controllers\Admin\PaymentController::class, 'statistics'])->name('payments.statistics');
+    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
+    Route::post('/payments/{id}/approve', [PaymentController::class, 'approve'])->name('payments.approve');
+    Route::post('/payments/{id}/reject', [PaymentController::class, 'reject'])->name('payments.reject');
+    Route::get('/payments/statistics', [PaymentController::class, 'statistics'])->name('payments.statistics');
 });
 
 // Admin logout route
@@ -358,7 +437,7 @@ Route::post('/admin/logout', [AdminLogoutController::class, 'logout'])->name('fi
 Route::post('/user/logout', [AdminLogoutController::class, 'logout'])->name('filament.user.auth.logout');
 
 // Storage Manager route (for debugging)
-Route::get('/storage-manager', App\Livewire\StorageManager::class)->name('storage.manager');
+Route::get('/storage-manager', StorageManager::class)->name('storage.manager');
 
 // Test route để kiểm tra admin access
 Route::get('/test-admin', function () {
@@ -519,6 +598,82 @@ Route::get('/check-vip-status', function () {
         ] : null
     ]);
 })->middleware('auth')->name('check.vip.status');
+
+// Test OpenAI API
+Route::get('/test-openai', function () {
+    $openAiService = new \App\Services\OpenAiService();
+    $result = $openAiService->testConnection();
+
+    return response()->json($result);
+})->name('test.openai');
+
+// Test WeeklyMealPlan creation
+Route::get('/test-mealplan', function () {
+    try {
+        $user = \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['error' => 'No user found']);
+        }
+
+        $service = new \App\Services\WeeklyMealPlanService();
+
+        $mealPlan = $service->createMealPlan($user, 'Test Plan', now()->startOfWeek());
+
+        return response()->json([
+            'success' => true,
+            'meal_plan' => $mealPlan->toArray()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
+})->name('test.mealplan');
+
+// Test Livewire component
+Route::get('/test-livewire', function () {
+    return view('test-livewire');
+})->name('test.livewire');
+
+// Test weekly meals generation
+Route::get('/test-weekly-meals', function () {
+    try {
+        $user = \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['error' => 'No user found']);
+        }
+
+        $mealPlanId = request()->get('meal_plan_id');
+
+        if ($mealPlanId) {
+            $mealPlan = \App\Models\WeeklyMealPlan::find($mealPlanId);
+        } else {
+            $mealPlan = \App\Models\WeeklyMealPlan::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->first();
+        }
+
+        if (!$mealPlan) {
+            return response()->json(['error' => 'No meal plan found']);
+        }
+
+        $service = new \App\Services\WeeklyMealPlanService();
+        $weeklyMeals = $service->generateWeeklyMeals($mealPlan);
+
+        return response()->json([
+            'success' => true,
+            'meal_plan_id' => $mealPlan->id,
+            'weekly_meals' => $weeklyMeals,
+            'weekly_meals_count' => count($weeklyMeals)
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
+})->name('test.weekly.meals');
 
 require __DIR__ . '/ai.php';
 
