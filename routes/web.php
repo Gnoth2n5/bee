@@ -99,6 +99,12 @@ Route::get('/weekly-meal-plan', \App\Livewire\MealPlans\WeeklyMealPlanPage::clas
 // Weekly Meals Display
 Route::get('/weekly-meals/{mealPlan}', [WeeklyMealPlanController::class, 'showWeeklyMeals'])->name('weekly-meals.show');
 
+// Shopping List routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/shopping-lists', \App\Livewire\ShoppingList\ShoppingListManager::class)->name('shopping-lists.index');
+    Route::get('/shopping-lists/dashboard', \App\Livewire\ShoppingList\ShoppingListDashboard::class)->name('shopping-lists.dashboard');
+});
+
 // Recipe search API for meal plans
 Route::get('/api/recipes/search', function (Request $request) {
     $query = $request->get('q', '');

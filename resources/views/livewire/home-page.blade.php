@@ -1,6 +1,125 @@
 <div>
-    <!-- Hero Section -->
-    <x-hero-section :stats="$stats" />
+    <!-- Hero Section với thiết kế mới -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <!-- Background với gradient và pattern -->
+        <div class="absolute inset-0 bg-gradient-to-br from-orange-50 via-yellow-50 to-red-50 dark:from-[#1D0002] dark:via-[#391800] dark:to-[#733000]"></div>
+        
+        <!-- Decorative elements -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-20 left-20 w-32 h-32 bg-orange-200 dark:bg-orange-800 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-20 right-20 w-40 h-40 bg-red-200 dark:bg-red-800 rounded-full blur-3xl"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-yellow-200 dark:bg-yellow-800 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div class="text-center">
+                <!-- Logo và Brand -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-center space-x-4 mb-6">
+                        <div class="w-16 h-16 bg-orange-500 rounded-2xl flex items-center justify-center shadow-2xl">
+                            <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <h1 class="text-6xl md:text-7xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                            BeeFood
+                        </h1>
+                    </div>
+                    <p class="text-2xl md:text-3xl text-gray-700 dark:text-gray-300 font-light mb-4">
+                        Khám phá thế giới ẩm thực
+                    </p>
+                    <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                        Chia sẻ và khám phá những công thức nấu ăn ngon nhất từ cộng đồng BeeFood. 
+                        Từ món ăn truyền thống đến hiện đại, tất cả đều có tại đây.
+                    </p>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="max-w-2xl mx-auto mb-12">
+                    <livewire:quick-search />
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-16">
+                    <div class="group">
+                        <div class="bg-white/80 dark:bg-[#161615]/80 backdrop-blur-sm rounded-2xl p-8 border border-white/20 dark:border-[#3E3E3A] shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
+                                    <svg class="w-8 h-8 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                </div>
+                                <div class="text-4xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                                    {{ $stats['recipes'] ?? 0 }}+
+                                </div>
+                                <div class="text-gray-600 dark:text-gray-400 font-medium">Công thức</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <div class="bg-white/80 dark:bg-[#161615]/80 backdrop-blur-sm rounded-2xl p-8 border border-white/20 dark:border-[#3E3E3A] shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-red-200 dark:group-hover:bg-red-900/50 transition-colors">
+                                    <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                </div>
+                                <div class="text-4xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                                    {{ $stats['users'] ?? 0 }}+
+                                </div>
+                                <div class="text-gray-600 dark:text-gray-400 font-medium">Thành viên</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <div class="bg-white/80 dark:bg-[#161615]/80 backdrop-blur-sm rounded-2xl p-8 border border-white/20 dark:border-[#3E3E3A] shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-yellow-200 dark:group-hover:bg-yellow-900/50 transition-colors">
+                                    <svg class="w-8 h-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                    </svg>
+                                </div>
+                                <div class="text-4xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">
+                                    {{ $stats['categories'] ?? 0 }}+
+                                </div>
+                                <div class="text-gray-600 dark:text-gray-400 font-medium">Danh mục</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    @auth
+                        <a href="{{ route('recipes.index') }}" 
+                           class="inline-flex items-center px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            Khám phá công thức
+                        </a>
+                    @else
+                        <a href="{{ route('register') }}" 
+                           class="inline-flex items-center px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                            </svg>
+                            Bắt đầu ngay
+                        </a>
+                    @endauth
+                    <a href="{{ route('recipes.index') }}" 
+                       class="inline-flex items-center px-8 py-4 border-2 border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105">
+                        Tìm hiểu thêm
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- VIP Banner -->
     @auth
@@ -18,11 +137,7 @@
                         </div>
                         <div class="flex space-x-3">
                             <a href="{{ route('subscriptions.packages') }}" 
-                               class="inline-flex items-center px-6 py-3 bg-white text-orange-600 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                               class="inline-flex items-center px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
                                 Nâng cấp VIP
                             </a>
                             <button onclick="this.parentElement.parentElement.parentElement.style.display='none'" 

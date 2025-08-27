@@ -131,7 +131,6 @@
 
 		@stack('scripts')
 
-
         <!-- Ingredient Substitute Modal -->
         <x-ingredient-substitute-modal />
         
