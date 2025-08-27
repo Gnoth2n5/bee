@@ -9,6 +9,12 @@ use App\Services\WeatherService;
 use App\Services\OpenAiService;
 use App\Exports\WeeklyMealPlanExport;
 use App\Exports\AllMealPlansExport;
+use App\Exports\MealPlansCsvExport;
+use App\Exports\MealPlansPdfExport;
+use App\Exports\MealPlansZipExport;
+use App\Exports\MealPlansXmlExport;
+use App\Exports\MealPlansMarkdownExport;
+use App\Exports\MealPlansJsonExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -441,5 +447,217 @@ class WeeklyMealPlanController extends Controller
         $fileName = 'danh-sach-ke-hoach-bua-an-' . now()->format('Y-m-d') . '.xlsx';
 
         return Excel::download(new AllMealPlansExport($user), $fileName);
+    }
+
+    /**
+     * Export a specific meal plan to CSV.
+     */
+    public function exportMealPlanCsv(WeeklyMealPlan $mealPlan)
+    {
+        $user = Auth::user();
+
+        if ($mealPlan->user_id !== $user->id) {
+            abort(403, 'Không có quyền truy cập');
+        }
+
+        $fileName = 'ke-hoach-bua-an-' . $mealPlan->week_start->format('Y-m-d') . '.csv';
+
+        return Excel::download(new MealPlansCsvExport(null, $mealPlan), $fileName);
+    }
+
+    /**
+     * Export all meal plans to CSV.
+     */
+    public function exportAllMealPlansCsv()
+    {
+        $user = Auth::user();
+        $fileName = 'danh-sach-ke-hoach-bua-an-' . now()->format('Y-m-d') . '.csv';
+
+        return Excel::download(new MealPlansCsvExport($user), $fileName);
+    }
+
+    /**
+     * Export a specific meal plan to PDF.
+     */
+    public function exportMealPlanPdf(WeeklyMealPlan $mealPlan)
+    {
+        $user = Auth::user();
+
+        if ($mealPlan->user_id !== $user->id) {
+            abort(403, 'Không có quyền truy cập');
+        }
+
+        $pdfExport = new MealPlansPdfExport(null, $mealPlan);
+        $pdfContent = $pdfExport->export();
+
+        $fileName = 'ke-hoach-bua-an-' . $mealPlan->week_start->format('Y-m-d') . '.pdf';
+
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
+
+    /**
+     * Export all meal plans to PDF.
+     */
+    public function exportAllMealPlansPdf()
+    {
+        $user = Auth::user();
+        $pdfExport = new MealPlansPdfExport($user);
+        $pdfContent = $pdfExport->export();
+
+        $fileName = 'danh-sach-ke-hoach-bua-an-' . now()->format('Y-m-d') . '.pdf';
+
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
+
+    /**
+     * Export a specific meal plan to ZIP.
+     */
+    public function exportMealPlanZip(WeeklyMealPlan $mealPlan, Request $request)
+    {
+        $user = Auth::user();
+
+        if ($mealPlan->user_id !== $user->id) {
+            abort(403, 'Không có quyền truy cập');
+        }
+
+        $template = $request->get('template', 'default');
+        $zipExport = new MealPlansZipExport(null, $mealPlan, $template);
+        $zipPath = $zipExport->export();
+
+        $fileName = 'ke-hoach-bua-an-' . $mealPlan->week_start->format('Y-m-d') . '.zip';
+
+        return response()->download($zipPath, $fileName)->deleteFileAfterSend();
+    }
+
+    /**
+     * Export all meal plans to ZIP.
+     */
+    public function exportAllMealPlansZip(Request $request)
+    {
+        $user = Auth::user();
+        $template = $request->get('template', 'default');
+
+        $zipExport = new MealPlansZipExport($user, null, $template);
+        $zipPath = $zipExport->export();
+
+        $fileName = 'danh-sach-ke-hoach-bua-an-' . now()->format('Y-m-d_H-i-s') . '.zip';
+
+        return response()->download($zipPath, $fileName)->deleteFileAfterSend();
+    }
+
+    /**
+     * Export a specific meal plan to XML.
+     */
+    public function exportMealPlanXml(WeeklyMealPlan $mealPlan)
+    {
+        $user = Auth::user();
+
+        if ($mealPlan->user_id !== $user->id) {
+            abort(403, 'Không có quyền truy cập');
+        }
+
+        $xmlExport = new MealPlansXmlExport(null, $mealPlan);
+        $xmlContent = $xmlExport->export();
+
+        $fileName = 'ke-hoach-bua-an-' . $mealPlan->week_start->format('Y-m-d') . '.xml';
+
+        return response($xmlContent)
+            ->header('Content-Type', 'application/xml')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
+
+    /**
+     * Export all meal plans to XML.
+     */
+    public function exportAllMealPlansXml()
+    {
+        $user = Auth::user();
+        $xmlExport = new MealPlansXmlExport($user);
+        $xmlContent = $xmlExport->export();
+
+        $fileName = 'danh-sach-ke-hoach-bua-an-' . now()->format('Y-m-d') . '.xml';
+
+        return response($xmlContent)
+            ->header('Content-Type', 'application/xml')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
+
+    /**
+     * Export a specific meal plan to Markdown.
+     */
+    public function exportMealPlanMarkdown(WeeklyMealPlan $mealPlan)
+    {
+        $user = Auth::user();
+
+        if ($mealPlan->user_id !== $user->id) {
+            abort(403, 'Không có quyền truy cập');
+        }
+
+        $markdownExport = new MealPlansMarkdownExport(null, $mealPlan);
+        $markdownContent = $markdownExport->export();
+
+        $fileName = 'ke-hoach-bua-an-' . $mealPlan->week_start->format('Y-m-d') . '.md';
+
+        return response($markdownContent)
+            ->header('Content-Type', 'text/markdown')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
+
+    /**
+     * Export all meal plans to Markdown.
+     */
+    public function exportAllMealPlansMarkdown()
+    {
+        $user = Auth::user();
+        $markdownExport = new MealPlansMarkdownExport($user);
+        $markdownContent = $markdownExport->export();
+
+        $fileName = 'danh-sach-ke-hoach-bua-an-' . now()->format('Y-m-d') . '.md';
+
+        return response($markdownContent)
+            ->header('Content-Type', 'text/markdown')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
+
+    /**
+     * Export a specific meal plan to JSON with different formats.
+     */
+    public function exportMealPlanJson(WeeklyMealPlan $mealPlan, Request $request)
+    {
+        $user = Auth::user();
+
+        if ($mealPlan->user_id !== $user->id) {
+            abort(403, 'Không có quyền truy cập');
+        }
+
+        $format = $request->get('format', 'detailed');
+        $jsonExport = new MealPlansJsonExport(null, $mealPlan, $format);
+        $jsonContent = $jsonExport->export();
+
+        $fileName = 'ke-hoach-bua-an-' . $mealPlan->week_start->format('Y-m-d') . '-' . $format . '.json';
+
+        return response($jsonContent)
+            ->header('Content-Type', 'application/json')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
+
+    /**
+     * Export all meal plans to JSON.
+     */
+    public function exportAllMealPlansJson()
+    {
+        $user = Auth::user();
+        $jsonExport = new MealPlansJsonExport($user);
+        $jsonContent = $jsonExport->export();
+
+        $fileName = 'danh-sach-ke-hoach-bua-an-' . now()->format('Y-m-d') . '.json';
+
+        return response($jsonContent)
+            ->header('Content-Type', 'application/json')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
     }
 }

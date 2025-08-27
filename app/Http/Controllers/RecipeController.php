@@ -14,6 +14,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use App\Models\Collection;
 use App\Models\Favorite;
+use App\Exports\RecipesExcelExport;
+use App\Exports\RecipesCsvExport;
+use App\Exports\RecipesZipExport;
+use App\Exports\RecipesPdfExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RecipeController extends Controller
 {
@@ -247,5 +252,96 @@ class RecipeController extends Controller
             'recipe' => $recipe,
             'related_recipes' => $this->recipeService->getRelatedRecipes($recipe)
         ]);
+    }
+
+    /**
+     * Export recipes to Excel format.
+     */
+    public function exportExcel(Request $request)
+    {
+        $user = $request->user();
+        $filters = $request->only(['category', 'difficulty', 'search', 'status']);
+
+        $fileName = 'danh-sach-cong-thuc-' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new RecipesExcelExport($user, $filters), $fileName);
+    }
+
+    /**
+     * Export recipes to CSV format.
+     */
+    public function exportCsv(Request $request)
+    {
+        $user = $request->user();
+        $filters = $request->only(['category', 'difficulty', 'search', 'status']);
+
+        $fileName = 'danh-sach-cong-thuc-' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+        return Excel::download(new RecipesCsvExport($user, $filters), $fileName);
+    }
+
+    /**
+     * Export recipes to ZIP format with custom templates.
+     */
+    public function exportZip(Request $request)
+    {
+        $user = $request->user();
+        $filters = $request->only(['category', 'difficulty', 'search', 'status']);
+        $template = $request->get('template', 'default');
+
+        $zipExport = new RecipesZipExport($user, $filters, $template);
+        $zipPath = $zipExport->export();
+
+        $fileName = 'cong-thuc-' . now()->format('Y-m-d_H-i-s') . '.zip';
+
+        return response()->download($zipPath, $fileName)->deleteFileAfterSend();
+    }
+
+    /**
+     * Export recipes to PDF format.
+     */
+    public function exportPdf(Request $request)
+    {
+        $user = $request->user();
+        $filters = $request->only(['category', 'difficulty', 'search', 'status']);
+
+        $pdfExport = new RecipesPdfExport($user, $filters);
+        $pdfContent = $pdfExport->export();
+
+        $fileName = 'danh-sach-cong-thuc-' . now()->format('Y-m-d_H-i-s') . '.pdf';
+
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
+
+    /**
+     * Export user's own recipes to Excel format.
+     */
+    public function exportMyRecipesExcel(Request $request)
+    {
+        $user = $request->user();
+        $filters = $request->only(['category', 'difficulty', 'search', 'status']);
+
+        $fileName = 'cong-thuc-cua-toi-' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new RecipesExcelExport($user, $filters), $fileName);
+    }
+
+    /**
+     * Export user's own recipes to ZIP format.
+     */
+    public function exportMyRecipesZip(Request $request)
+    {
+        $user = $request->user();
+        $filters = $request->only(['category', 'difficulty', 'search', 'status']);
+        $template = $request->get('template', 'default');
+
+        $zipExport = new RecipesZipExport($user, $filters, $template);
+        $zipPath = $zipExport->export();
+
+        $fileName = 'cong-thuc-cua-toi-' . now()->format('Y-m-d_H-i-s') . '.zip';
+
+        return response()->download($zipPath, $fileName)->deleteFileAfterSend();
     }
 }

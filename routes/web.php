@@ -75,7 +75,19 @@ Route::middleware(['auth'])->group(function () {
 
     // Export routes
     Route::get('/meal-plans/{mealPlan}/export', [WeeklyMealPlanController::class, 'exportMealPlan'])->name('meal-plans.export');
+    Route::get('/meal-plans/{mealPlan}/export/csv', [WeeklyMealPlanController::class, 'exportMealPlanCsv'])->name('meal-plans.export-csv');
+    Route::get('/meal-plans/{mealPlan}/export/pdf', [WeeklyMealPlanController::class, 'exportMealPlanPdf'])->name('meal-plans.export-pdf');
+    Route::get('/meal-plans/{mealPlan}/export/zip', [WeeklyMealPlanController::class, 'exportMealPlanZip'])->name('meal-plans.export-zip');
+    Route::get('/meal-plans/{mealPlan}/export/xml', [WeeklyMealPlanController::class, 'exportMealPlanXml'])->name('meal-plans.export-xml');
+    Route::get('/meal-plans/{mealPlan}/export/markdown', [WeeklyMealPlanController::class, 'exportMealPlanMarkdown'])->name('meal-plans.export-markdown');
+    Route::get('/meal-plans/{mealPlan}/export/json', [WeeklyMealPlanController::class, 'exportMealPlanJson'])->name('meal-plans.export-json');
     Route::get('/meal-plans/export/all', [WeeklyMealPlanController::class, 'exportAllMealPlans'])->name('meal-plans.export-all');
+    Route::get('/meal-plans/export/all/csv', [WeeklyMealPlanController::class, 'exportAllMealPlansCsv'])->name('meal-plans.export-all-csv');
+    Route::get('/meal-plans/export/all/pdf', [WeeklyMealPlanController::class, 'exportAllMealPlansPdf'])->name('meal-plans.export-all-pdf');
+    Route::get('/meal-plans/export/all/zip', [WeeklyMealPlanController::class, 'exportAllMealPlansZip'])->name('meal-plans.export-all-zip');
+    Route::get('/meal-plans/export/all/xml', [WeeklyMealPlanController::class, 'exportAllMealPlansXml'])->name('meal-plans.export-all-xml');
+    Route::get('/meal-plans/export/all/markdown', [WeeklyMealPlanController::class, 'exportAllMealPlansMarkdown'])->name('meal-plans.export-all-markdown');
+    Route::get('/meal-plans/export/all/json', [WeeklyMealPlanController::class, 'exportAllMealPlansJson'])->name('meal-plans.export-all-json');
 
     // API routes for JSON responses
     Route::get('/meal-plans/{mealPlan}/json', [WeeklyMealPlanController::class, 'showJson'])->name('meal-plans.show-json');
@@ -181,6 +193,14 @@ Route::middleware(['auth'])->group(function () {
 
     // User recipes
     Route::get('/my-recipes', [RecipeController::class, 'myRecipes'])->name('recipes.my');
+
+    // Export routes
+    Route::get('/recipes/export/excel', [RecipeController::class, 'exportExcel'])->name('recipes.export.excel');
+    Route::get('/recipes/export/csv', [RecipeController::class, 'exportCsv'])->name('recipes.export.csv');
+    Route::get('/recipes/export/zip', [RecipeController::class, 'exportZip'])->name('recipes.export.zip');
+    Route::get('/recipes/export/pdf', [RecipeController::class, 'exportPdf'])->name('recipes.export.pdf');
+    Route::get('/my-recipes/export/excel', [RecipeController::class, 'exportMyRecipesExcel'])->name('recipes.my.export.excel');
+    Route::get('/my-recipes/export/zip', [RecipeController::class, 'exportMyRecipesZip'])->name('recipes.my.export.zip');
 
     // Ratings
     Route::post('/recipes/{recipe}/rate', [RatingController::class, 'store'])->name('recipes.rate');
