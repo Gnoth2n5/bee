@@ -460,27 +460,71 @@
                                         <p>Calories: {{ number_format($mealPlan->total_calories) }}</p>
                                     </div>
 
-                                    <div class="space-y-2">
-                                        <h5 class="font-medium text-gray-900 text-sm">Chọn bữa ăn:</h5>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <button wire:click="addRecipeToMealPlan({{ $mealPlan->id }}, 'monday', 'breakfast')"
-                                                    class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
-                                                🌅 Bữa sáng
-                                            </button>
-                                            <button wire:click="addRecipeToMealPlan({{ $mealPlan->id }}, 'monday', 'lunch')"
-                                                    class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
-                                                🌞 Bữa trưa
-                                            </button>
-                                            <button wire:click="addRecipeToMealPlan({{ $mealPlan->id }}, 'monday', 'dinner')"
-                                                    class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
-                                                🌙 Bữa tối
-                                            </button>
-                                            <button wire:click="addRecipeToMealPlan({{ $mealPlan->id }}, 'monday', 'snack')"
-                                                    class="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
-                                                🍎 Bữa phụ
-                                            </button>
-                                        </div>
-                                    </div>
+                                                                         <div class="space-y-3">
+                                         <h5 class="font-medium text-gray-900 text-sm">Chọn ngày và bữa ăn:</h5>
+                                         
+                                         <!-- Chọn ngày -->
+                                         <div>
+                                             <label class="block text-xs font-medium text-gray-700 mb-1">📅 Ngày:</label>
+                                             <select wire:model="selectedDay" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                 @foreach($this->getDaysOfWeek() as $dayKey => $dayName)
+                                                     <option value="{{ $dayKey }}">{{ $dayName }}</option>
+                                                 @endforeach
+                                             </select>
+                                         </div>
+                                         
+                                         <!-- Chọn bữa ăn -->
+                                         <div>
+                                             <label class="block text-xs font-medium text-gray-700 mb-1">🍽️ Bữa ăn:</label>
+                                             <select wire:model="selectedMealType" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                 @foreach($this->getMealTypes() as $mealKey => $mealName)
+                                                     <option value="{{ $mealKey }}">{{ $mealName }}</option>
+                                                 @endforeach
+                                             </select>
+                                         </div>
+                                         
+                                                                                   <!-- Nút thêm -->
+                                          <button wire:click="addRecipeToMealPlan({{ $mealPlan->id }})"
+                                                  class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105">
+                                              ➕ Thêm vào {{ $this->getDaysOfWeek()[$selectedDay] ?? 'Thứ 2' }} - {{ $this->getMealTypes()[$selectedMealType] ?? 'Bữa tối' }}
+                                          </button>
+                                         
+                                                                                   <!-- Hiển thị món ăn hiện tại trong meal plan -->
+                                          <div class="mt-4 pt-4 border-t border-gray-200">
+                                              <h6 class="text-xs font-medium text-gray-700 mb-2">🍽️ Món ăn hiện tại:</h6>
+                                              <div class="space-y-2 max-h-32 overflow-y-auto">
+                                                  @foreach($this->getDaysOfWeek() as $dayKey => $dayName)
+                                                      <div class="text-xs">
+                                                          <span class="font-medium text-blue-600">{{ $dayName }}:</span>
+                                                          @foreach($this->getMealTypes() as $mealKey => $mealName)
+                                                              @if(isset($mealPlan->meals[$dayKey][$mealKey]) && !empty($mealPlan->meals[$dayKey][$mealKey]))
+                                                                  <div class="ml-2 text-gray-600">
+                                                                      <span class="text-orange-600">{{ $mealName }}:</span>
+                                                                      @php
+                                                                          $recipes = is_array($mealPlan->meals[$dayKey][$mealKey]) 
+                                                                              ? $mealPlan->meals[$dayKey][$mealKey] 
+                                                                              : [$mealPlan->meals[$dayKey][$mealKey]];
+                                                                      @endphp
+                                                                      @foreach($recipes as $recipeId)
+                                                                          @php $recipe = \App\Models\Recipe::find($recipeId); @endphp
+                                                                          @if($recipe)
+                                                                              <span class="inline-block bg-gray-100 px-2 py-1 rounded text-xs mr-1 mb-1">
+                                                                                  {{ $recipe->title }}
+                                                                              </span>
+                                                                          @endif
+                                                                      @endforeach
+                                                                  </div>
+                                                              @else
+                                                                  <div class="ml-2 text-gray-400">
+                                                                      <span class="text-gray-400">{{ $mealName }}: Chưa có món</span>
+                                                                  </div>
+                                                              @endif
+                                                          @endforeach
+                                                      </div>
+                                                  @endforeach
+                                              </div>
+                                          </div>
+                                     </div>
                                 </div>
                             @endforeach
                         </div>

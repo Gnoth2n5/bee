@@ -476,27 +476,73 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                         <p>Calories: <?php echo e(number_format($mealPlan->total_calories)); ?></p>
                                     </div>
 
-                                    <div class="space-y-2">
-                                        <h5 class="font-medium text-gray-900 text-sm">Chọn bữa ăn:</h5>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <button wire:click="addRecipeToMealPlan(<?php echo e($mealPlan->id); ?>, 'monday', 'breakfast')"
-                                                    class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
-                                                🌅 Bữa sáng
-                                            </button>
-                                            <button wire:click="addRecipeToMealPlan(<?php echo e($mealPlan->id); ?>, 'monday', 'lunch')"
-                                                    class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
-                                                🌞 Bữa trưa
-                                            </button>
-                                            <button wire:click="addRecipeToMealPlan(<?php echo e($mealPlan->id); ?>, 'monday', 'dinner')"
-                                                    class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
-                                                🌙 Bữa tối
-                                            </button>
-                                            <button wire:click="addRecipeToMealPlan(<?php echo e($mealPlan->id); ?>, 'monday', 'snack')"
-                                                    class="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
-                                                🍎 Bữa phụ
-                                            </button>
-                                        </div>
-                                    </div>
+                                                                         <div class="space-y-3">
+                                         <h5 class="font-medium text-gray-900 text-sm">Chọn ngày và bữa ăn:</h5>
+                                         
+                                         <!-- Chọn ngày -->
+                                         <div>
+                                             <label class="block text-xs font-medium text-gray-700 mb-1">📅 Ngày:</label>
+                                             <select wire:model="selectedDay" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                 <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $this->getDaysOfWeek(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $dayKey => $dayName): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                     <option value="<?php echo e($dayKey); ?>"><?php echo e($dayName); ?></option>
+                                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                             </select>
+                                         </div>
+                                         
+                                         <!-- Chọn bữa ăn -->
+                                         <div>
+                                             <label class="block text-xs font-medium text-gray-700 mb-1">🍽️ Bữa ăn:</label>
+                                             <select wire:model="selectedMealType" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                 <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $this->getMealTypes(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $mealKey => $mealName): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                     <option value="<?php echo e($mealKey); ?>"><?php echo e($mealName); ?></option>
+                                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                             </select>
+                                         </div>
+                                         
+                                                                                   <!-- Nút thêm -->
+                                          <button wire:click="addRecipeToMealPlan(<?php echo e($mealPlan->id); ?>)"
+                                                  class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105">
+                                              ➕ Thêm vào <?php echo e($this->getDaysOfWeek()[$selectedDay] ?? 'Thứ 2'); ?> - <?php echo e($this->getMealTypes()[$selectedMealType] ?? 'Bữa tối'); ?>
+
+                                          </button>
+                                         
+                                                                                   <!-- Hiển thị món ăn hiện tại trong meal plan -->
+                                          <div class="mt-4 pt-4 border-t border-gray-200">
+                                              <h6 class="text-xs font-medium text-gray-700 mb-2">🍽️ Món ăn hiện tại:</h6>
+                                              <div class="space-y-2 max-h-32 overflow-y-auto">
+                                                  <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $this->getDaysOfWeek(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $dayKey => $dayName): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                      <div class="text-xs">
+                                                          <span class="font-medium text-blue-600"><?php echo e($dayName); ?>:</span>
+                                                          <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $this->getMealTypes(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $mealKey => $mealName): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                              <!--[if BLOCK]><![endif]--><?php if(isset($mealPlan->meals[$dayKey][$mealKey]) && !empty($mealPlan->meals[$dayKey][$mealKey])): ?>
+                                                                  <div class="ml-2 text-gray-600">
+                                                                      <span class="text-orange-600"><?php echo e($mealName); ?>:</span>
+                                                                      <?php
+                                                                          $recipes = is_array($mealPlan->meals[$dayKey][$mealKey]) 
+                                                                              ? $mealPlan->meals[$dayKey][$mealKey] 
+                                                                              : [$mealPlan->meals[$dayKey][$mealKey]];
+                                                                      ?>
+                                                                      <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $recipes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $recipeId): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                                          <?php $recipe = \App\Models\Recipe::find($recipeId); ?>
+                                                                          <!--[if BLOCK]><![endif]--><?php if($recipe): ?>
+                                                                              <span class="inline-block bg-gray-100 px-2 py-1 rounded text-xs mr-1 mb-1">
+                                                                                  <?php echo e($recipe->title); ?>
+
+                                                                              </span>
+                                                                          <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                                                      <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                                                  </div>
+                                                              <?php else: ?>
+                                                                  <div class="ml-2 text-gray-400">
+                                                                      <span class="text-gray-400"><?php echo e($mealName); ?>: Chưa có món</span>
+                                                                  </div>
+                                                              <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                                          <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                                      </div>
+                                                  <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                              </div>
+                                          </div>
+                                     </div>
                                 </div>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                         </div>

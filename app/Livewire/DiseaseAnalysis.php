@@ -26,6 +26,8 @@ class DiseaseAnalysis extends Component
     public $showMealPlanModal = false;
     public $selectedRecipeForMealPlan = null;
     public $availableMealPlans = [];
+    public $selectedDay = 'monday';
+    public $selectedMealType = 'dinner';
 
     protected $listeners = ['diseaseSelected' => 'loadRecommendations'];
 
@@ -198,6 +200,12 @@ class DiseaseAnalysis extends Component
             }
 
             $this->selectedRecipeForMealPlan = $recipe;
+
+            // Reset về giá trị mặc định
+            $this->selectedDay = 'monday';
+            $this->selectedMealType = 'dinner';
+
+            // Refresh danh sách meal plans với dữ liệu mới nhất
             $this->availableMealPlans = \App\Models\WeeklyMealPlan::where('user_id', auth()->id())
                 ->where('is_active', true)
                 ->orderBy('created_at', 'desc')
@@ -209,7 +217,7 @@ class DiseaseAnalysis extends Component
         }
     }
 
-    public function addRecipeToMealPlan($mealPlanId, $day = 'monday', $mealType = 'dinner')
+    public function addRecipeToMealPlan($mealPlanId)
     {
         try {
             $mealPlan = \App\Models\WeeklyMealPlan::find($mealPlanId);
@@ -218,23 +226,24 @@ class DiseaseAnalysis extends Component
                 return;
             }
 
-            // Lấy meals hiện tại
+            // Lấy meals hiện tại từ database (fresh data)
+            $mealPlan->refresh();
             $meals = $mealPlan->meals ?? [];
 
             // Thêm recipe vào meal plan
-            if (!isset($meals[$day])) {
-                $meals[$day] = [];
+            if (!isset($meals[$this->selectedDay])) {
+                $meals[$this->selectedDay] = [];
             }
 
             // Nếu đã có meal type này, thêm vào array
-            if (isset($meals[$day][$mealType])) {
-                if (is_array($meals[$day][$mealType])) {
-                    $meals[$day][$mealType][] = $this->selectedRecipeForMealPlan->id;
+            if (isset($meals[$this->selectedDay][$this->selectedMealType])) {
+                if (is_array($meals[$this->selectedDay][$this->selectedMealType])) {
+                    $meals[$this->selectedDay][$this->selectedMealType][] = $this->selectedRecipeForMealPlan->id;
                 } else {
-                    $meals[$day][$mealType] = [$meals[$day][$mealType], $this->selectedRecipeForMealPlan->id];
+                    $meals[$this->selectedDay][$this->selectedMealType] = [$meals[$this->selectedDay][$this->selectedMealType], $this->selectedRecipeForMealPlan->id];
                 }
             } else {
-                $meals[$day][$mealType] = [$this->selectedRecipeForMealPlan->id];
+                $meals[$this->selectedDay][$this->selectedMealType] = [$this->selectedRecipeForMealPlan->id];
             }
 
             // Cập nhật meal plan
@@ -242,11 +251,21 @@ class DiseaseAnalysis extends Component
 
             $recipeTitle = $this->selectedRecipeForMealPlan->title;
 
-            $this->showMealPlanModal = false;
-            $this->selectedRecipeForMealPlan = null;
+            // Refresh danh sách meal plans để hiển thị món ăn mới (fresh data)
+            $this->availableMealPlans = \App\Models\WeeklyMealPlan::where('user_id', auth()->id())
+                ->where('is_active', true)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Không đóng modal để user có thể thêm tiếp
+            // $this->showMealPlanModal = false;
+            // $this->selectedRecipeForMealPlan = null;
+
+            $dayName = $this->getDaysOfWeek()[$this->selectedDay];
+            $mealName = $this->getMealTypes()[$this->selectedMealType];
 
             $this->dispatch('meal-plan-success', [
-                'message' => "Đã thêm '{$recipeTitle}' vào {$mealPlan->name}",
+                'message' => "Đã thêm '{$recipeTitle}' vào {$mealPlan->name} - {$dayName} - {$mealName}",
                 'recipe' => $this->selectedRecipeForMealPlan
             ]);
         } catch (\Exception $e) {
@@ -258,6 +277,41 @@ class DiseaseAnalysis extends Component
     {
         $this->showMealPlanModal = false;
         $this->selectedRecipeForMealPlan = null;
+    }
+
+    public function getDaysOfWeek()
+    {
+        return [
+            'monday' => 'Thứ 2',
+            'tuesday' => 'Thứ 3',
+            'wednesday' => 'Thứ 4',
+            'thursday' => 'Thứ 5',
+            'friday' => 'Thứ 6',
+            'saturday' => 'Thứ 7',
+            'sunday' => 'Chủ nhật'
+        ];
+    }
+
+    public function getMealTypes()
+    {
+        return [
+            'breakfast' => '🌅 Bữa sáng',
+            'lunch' => '🌞 Bữa trưa',
+            'dinner' => '🌙 Bữa tối',
+            'snack' => '🍎 Bữa phụ'
+        ];
+    }
+
+    public function updatedSelectedDay()
+    {
+        // Method này sẽ được gọi khi selectedDay thay đổi
+        $this->dispatch('day-changed', ['day' => $this->selectedDay]);
+    }
+
+    public function updatedSelectedMealType()
+    {
+        // Method này sẽ được gọi khi selectedMealType thay đổi
+        $this->dispatch('meal-type-changed', ['mealType' => $this->selectedMealType]);
     }
 
     public function goToMealPlan()
