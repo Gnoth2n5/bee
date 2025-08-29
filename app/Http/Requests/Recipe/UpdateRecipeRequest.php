@@ -23,7 +23,7 @@ class UpdateRecipeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'min:5', 'max:255'],
+            'title' => ['required', 'string', 'min:5', 'max:255', 'regex:/^[\p{L}\p{N}\s\-\.\,\!\?\(\)\:\;\'\"]+$/u'],
             'description' => ['required', 'string', 'min:10', 'max:1000'],
             'summary' => ['required', 'string', 'max:500'],
             'cooking_time' => ['required', 'integer', 'min:1', 'max:1440'],
@@ -58,6 +58,7 @@ class UpdateRecipeRequest extends FormRequest
             'title.required' => 'Tiêu đề công thức là bắt buộc.',
             'title.min' => 'Tiêu đề phải có ít nhất 5 ký tự.',
             'title.max' => 'Tiêu đề không được vượt quá 255 ký tự.',
+            'title.regex' => 'Tiêu đề không được chứa ký hiệu đặc biệt.',
             'description.required' => 'Mô tả công thức là bắt buộc.',
             'description.min' => 'Mô tả phải có ít nhất 10 ký tự.',
             'description.max' => 'Mô tả không được vượt quá 1000 ký tự.',

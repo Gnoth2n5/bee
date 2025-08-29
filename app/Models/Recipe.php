@@ -156,6 +156,27 @@ class Recipe extends Model
     }
 
     /**
+     * Get the disease conditions for the recipe.
+     */
+    public function diseaseConditions()
+    {
+        return $this->belongsToMany(DiseaseCondition::class, 'recipe_disease_conditions')
+            ->withPivot('suitability', 'notes', 'modifications')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get suitable disease conditions for this recipe.
+     */
+    public function suitableDiseaseConditions()
+    {
+        return $this->belongsToMany(DiseaseCondition::class, 'recipe_disease_conditions')
+            ->wherePivot('suitability', 'suitable')
+            ->withPivot('notes', 'modifications')
+            ->withTimestamps();
+    }
+
+    /**
      * Scope a query to only include published recipes.
      */
     public function scopePublished($query)

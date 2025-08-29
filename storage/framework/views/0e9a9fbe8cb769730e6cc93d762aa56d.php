@@ -3,42 +3,13 @@
 use Livewire\Volt\Component;
 use App\Services\AuthService;
 
-new class extends Component {
-    public $searchQuery = '';
-    public $showSearch = false;
-
-    public function toggleSearch()
-    {
-        $this->showSearch = !$this->showSearch;
-    }
-
-    // Ingredient modal đã chuyển sang JavaScript thuần
-
-    public function logout()
-    {
-        \Log::info('Logout method called');
-
-        try {
-            Auth::logout();
-            session()->invalidate();
-            session()->regenerateToken();
-
-            \Log::info('Logout successful');
-            session()->flash('success', 'Đăng xuất thành công!');
-
-            return $this->redirect('/', navigate: true);
-        } catch (\Exception $e) {
-            \Log::error('Logout error: ' . $e->getMessage());
-            session()->flash('error', 'Có lỗi khi đăng xuất: ' . $e->getMessage());
-        }
-    }
-}; ?>
+?>
 
 <nav class="bg-white/80 dark:bg-[#161615]/80 backdrop-blur-sm border-b border-gray-200 dark:border-[#3E3E3A] px-4 py-3 sticky top-0 z-50">
     <div class="flex flex-wrap justify-between items-center max-w-7xl mx-auto">
         <div class="flex justify-start items-center">
             <!-- Logo -->
-            <a href="{{ route('home') }}"
+            <a href="<?php echo e(route('home')); ?>"
                 class="flex items-center justify-center mr-6 hover:opacity-80 transition-opacity">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -54,8 +25,8 @@ new class extends Component {
 
             <!-- Desktop Navigation -->
             <div class="hidden md:flex items-center space-x-2">
-                <a href="{{ route('home') }}"
-                    class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 {{ request()->routeIs('home') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }}">
+                <a href="<?php echo e(route('home')); ?>"
+                    class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 <?php echo e(request()->routeIs('home') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'); ?>">
                     <div class="flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -65,8 +36,8 @@ new class extends Component {
                     </div>
                 </a>
 
-                <a href="{{ route('recipes.index') }}"
-                    class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 {{ request()->routeIs('recipes.*') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }}">
+                <a href="<?php echo e(route('recipes.index')); ?>"
+                    class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 <?php echo e(request()->routeIs('recipes.*') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'); ?>">
                     <div class="flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -76,18 +47,7 @@ new class extends Component {
                     </div>
                 </a>
 
-                {{-- <a href="{{ route('restaurants.index') }}"
-                    class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 {{ request()->routeIs('restaurants.*') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }}">
-                    <div class="flex items-center space-x-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span>Nhà hàng</span>
-                    </div>
-                </a> --}}
+                
 
                 <button onclick="openIngredientSubstituteModal()"
                     class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-800/50">
@@ -100,8 +60,8 @@ new class extends Component {
                     </div>
                 </button>
 
-                <a href="{{ route('disease-analysis.index') }}"
-                    class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 {{ request()->routeIs('disease-analysis.*') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }}">
+                <a href="<?php echo e(route('disease-analysis.index')); ?>"
+                    class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 <?php echo e(request()->routeIs('disease-analysis.*') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'); ?>">
                     <div class="flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -111,10 +71,10 @@ new class extends Component {
                     </div>
                 </a>
 
-                @auth
+                <!--[if BLOCK]><![endif]--><?php if(auth()->guard()->check()): ?>
                 <div class="relative group">
-                    <a href="{{ route('shopping-lists.dashboard') }}"
-                        class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 {{ request()->routeIs('shopping-lists.*') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }}">
+                    <a href="<?php echo e(route('shopping-lists.dashboard')); ?>"
+                        class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 <?php echo e(request()->routeIs('shopping-lists.*') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'); ?>">
                         <div class="flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -127,23 +87,23 @@ new class extends Component {
                     <!-- Dropdown Menu -->
                     <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                         <div class="py-1">
-                            <a href="{{ route('shopping-lists.dashboard') }}" 
+                            <a href="<?php echo e(route('shopping-lists.dashboard')); ?>" 
                                class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                 Dashboard
                             </a>
-                            <a href="{{ route('shopping-lists.index') }}" 
+                            <a href="<?php echo e(route('shopping-lists.index')); ?>" 
                                class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                 Quản lý chi tiết
                             </a>
                         </div>
                     </div>
                 </div>
-                @endauth
+                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                 </button>
 
-                @auth
-                    <a href="{{ route('meal-plans.index') }}"
-                        class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 {{ request()->routeIs('meal-plans.index') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }}">
+                <!--[if BLOCK]><![endif]--><?php if(auth()->guard()->check()): ?>
+                    <a href="<?php echo e(route('meal-plans.index')); ?>"
+                        class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 <?php echo e(request()->routeIs('meal-plans.index') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'); ?>">
                         <div class="flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -153,8 +113,8 @@ new class extends Component {
                         </div>
                     </a>
                     
-                    <a href="{{ route('weekly-meal-plan') }}"
-                        class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 {{ request()->routeIs('weekly-meal-plan') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }}">
+                    <a href="<?php echo e(route('weekly-meal-plan')); ?>"
+                        class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 <?php echo e(request()->routeIs('weekly-meal-plan') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'); ?>">
                         <div class="flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -165,17 +125,8 @@ new class extends Component {
                     </a>
 
                     <!-- VIP Package Link - Hidden -->
-                    {{-- <a href="{{ route('subscriptions.packages') }}"
-                        class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                        <div class="flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>VIP</span>
-                        </div>
-                    </a> --}}
-                @endauth
+                    
+                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
             </div>
         </div>
 
@@ -192,7 +143,7 @@ new class extends Component {
                 </svg>
             </button>
 
-            @auth
+            <!--[if BLOCK]><![endif]--><?php if(auth()->guard()->check()): ?>
                 <!-- User menu -->
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open" type="button"
@@ -201,7 +152,8 @@ new class extends Component {
                         data-dropdown-placement="bottom">
                         <span class="sr-only">Open user menu</span>
                         <div class="w-8 h-8 rounded-xl bg-orange-500 flex items-center justify-center text-white font-semibold text-sm">
-                            {{ substr(auth()->user()->name, 0, 1) }}
+                            <?php echo e(substr(auth()->user()->name, 0, 1)); ?>
+
                         </div>
                     </button>
 
@@ -215,7 +167,7 @@ new class extends Component {
                         x-transition:leave-start="transform opacity-100 scale-100"
                         x-transition:leave-end="transform opacity-0 scale-95">
                         <div class="py-1">
-                            <a href="{{ route('profile') }}"
+                            <a href="<?php echo e(route('profile')); ?>"
                                 class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg mx-2 my-1 transition-colors">
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,7 +178,7 @@ new class extends Component {
                                 </div>
                             </a>
 
-                            <a href="{{ route('filament.user.pages.user-dashboard') }}"
+                            <a href="<?php echo e(route('filament.user.pages.user-dashboard')); ?>"
                                 class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg mx-2 my-1 transition-colors">
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,8 +189,8 @@ new class extends Component {
                                 </div>
                             </a>
 
-                            @if(auth()->user()->hasRole('admin'))
-                            <a href="{{ route('filament.admin.pages.dashboard') }}"
+                            <!--[if BLOCK]><![endif]--><?php if(auth()->user()->hasRole('admin')): ?>
+                            <a href="<?php echo e(route('filament.admin.pages.dashboard')); ?>"
                                 class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg mx-2 my-1 transition-colors">
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,10 +201,10 @@ new class extends Component {
                                     <span>Quản lý hệ thống (Admin)</span>
                                 </div>
                             </a>
-                            @endif
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-                            @if(auth()->user()->hasRole('manager'))
-                            <a href="{{ route('filament.manager.pages.manager-dashboard') }}"
+                            <?php if(auth()->user()->hasRole('manager')): ?>
+                            <a href="<?php echo e(route('filament.manager.pages.manager-dashboard')); ?>"
                                 class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg mx-2 my-1 transition-colors">
                                 <div class="flex items-center space-x-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,10 +214,10 @@ new class extends Component {
                                     <span>Quản lý hệ thống (Manager)</span>
                                 </div>
                             </a>
-                            @endif
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-                            <form method="POST" action="{{ route('logout') }}" class="w-full">
-                                @csrf
+                            <form method="POST" action="<?php echo e(route('logout')); ?>" class="w-full">
+                                <?php echo csrf_field(); ?>
                                 <button type="submit"
                                     class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg mx-2 my-1 transition-colors"
                                     role="menuitem" tabindex="-1" id="user-menu-item-3">
@@ -281,19 +233,19 @@ new class extends Component {
                         </div>
                     </div>
                 </div>
-            @else
+            <?php else: ?>
                 <!-- Guest buttons -->
                 <div class="flex items-center space-x-3">
-                    <a href="{{ route('login') }}"
+                    <a href="<?php echo e(route('login')); ?>"
                         class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                         Đăng nhập
                     </a>
-                    <a href="{{ route('register') }}"
+                    <a href="<?php echo e(route('register')); ?>"
                         class="text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:ring-orange-300 dark:focus:ring-orange-600 font-medium rounded-xl text-sm px-4 py-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                         Đăng ký
                     </a>
                 </div>
-            @endauth
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
             <!-- Mobile menu button -->
             <button data-collapse-toggle="navbar-user" type="button"
@@ -312,8 +264,8 @@ new class extends Component {
     <!-- Mobile menu -->
     <div class="items-center justify-between hidden w-full md:hidden md:w-auto md:order-1" id="navbar-user">
         <ul class="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-            <a href="{{ route('home') }}"
-                class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 {{ request()->routeIs('home') ? 'text-orange-600' : '' }}">
+            <a href="<?php echo e(route('home')); ?>"
+                class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 <?php echo e(request()->routeIs('home') ? 'text-orange-600' : ''); ?>">
                 <div class="flex items-center space-x-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -323,8 +275,8 @@ new class extends Component {
                 </div>
             </a>
 
-            <a href="{{ route('recipes.index') }}"
-                class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 {{ request()->routeIs('recipes.*') ? 'text-orange-600' : '' }}">
+            <a href="<?php echo e(route('recipes.index')); ?>"
+                class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 <?php echo e(request()->routeIs('recipes.*') ? 'text-orange-600' : ''); ?>">
                 <div class="flex items-center space-x-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -345,8 +297,8 @@ new class extends Component {
                 </div>
             </button>
 
-            <a href="{{ route('disease-analysis.index') }}"
-                class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 {{ request()->routeIs('disease-analysis.*') ? 'text-orange-600' : '' }}">
+            <a href="<?php echo e(route('disease-analysis.index')); ?>"
+                class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 <?php echo e(request()->routeIs('disease-analysis.*') ? 'text-orange-600' : ''); ?>">
                 <div class="flex items-center space-x-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -356,9 +308,9 @@ new class extends Component {
                 </div>
             </a>
 
-            @auth
-                <a href="{{ route('meal-plans.index') }}"
-                    class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 {{ request()->routeIs('meal-plans.*') ? 'text-orange-600' : '' }}">
+            <!--[if BLOCK]><![endif]--><?php if(auth()->guard()->check()): ?>
+                <a href="<?php echo e(route('meal-plans.index')); ?>"
+                    class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 <?php echo e(request()->routeIs('meal-plans.*') ? 'text-orange-600' : ''); ?>">
                     <div class="flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -368,8 +320,8 @@ new class extends Component {
                     </div>
                 </a>
 
-                <a href="{{ route('filament.user.pages.user-dashboard') }}"
-                    class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 {{ request()->routeIs('filament.user.*') ? 'text-orange-600' : '' }}">
+                <a href="<?php echo e(route('filament.user.pages.user-dashboard')); ?>"
+                    class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700 <?php echo e(request()->routeIs('filament.user.*') ? 'text-orange-600' : ''); ?>">
                     <div class="flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -379,8 +331,8 @@ new class extends Component {
                     </div>
                 </a>
 
-                @if(auth()->user()->hasRole('admin'))
-                <a href="{{ route('filament.admin.pages.dashboard') }}"
+                <!--[if BLOCK]><![endif]--><?php if(auth()->user()->hasRole('admin')): ?>
+                <a href="<?php echo e(route('filament.admin.pages.dashboard')); ?>"
                     class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">
                     <div class="flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -391,10 +343,10 @@ new class extends Component {
                         <span>Quản lý hệ thống (Admin)</span>
                     </div>
                 </a>
-                @endif
+                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-                @if(auth()->user()->hasRole('manager'))
-                <a href="{{ route('filament.manager.pages.manager-dashboard') }}"
+                <?php if(auth()->user()->hasRole('manager')): ?>
+                <a href="<?php echo e(route('filament.manager.pages.manager-dashboard')); ?>"
                     class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">
                     <div class="flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -404,20 +356,11 @@ new class extends Component {
                         <span>Quản lý hệ thống (Manager)</span>
                     </div>
                 </a>
-                @endif
+                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
                 <!-- VIP Package Link Mobile - Hidden -->
-                {{-- <a href="{{ route('subscriptions.packages') }}"
-                    class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-600 md:p-0 dark:text-white md:dark:hover:text-orange-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">
-                    <div class="flex items-center space-x-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>Gói VIP</span>
-                    </div>
-                </a> --}}
-            @endauth
+                
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
         </ul>
     </div>
-</nav>
+</nav><?php /**PATH D:\DuAn1\test\bee\resources\views\livewire/layout/navigation.blade.php ENDPATH**/ ?>
