@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import 'pagination-enhancements.css';
+@import "pagination-enhancements.css";
 
 /* Line clamp utilities */
 .line-clamp-1 {
@@ -86,7 +86,8 @@
 
 /* Custom animations */
 @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
         transform: translateY(0px);
     }
     50% {
@@ -162,12 +163,12 @@
         font-size: 1.5rem;
         line-height: 2rem;
     }
-    
+
     .text-responsive-2xl {
         font-size: 1.875rem;
         line-height: 2.25rem;
     }
-    
+
     .text-responsive-3xl {
         font-size: 2.25rem;
         line-height: 2.5rem;
@@ -179,16 +180,254 @@
         font-size: 1.875rem;
         line-height: 2.25rem;
     }
-    
+
     .text-responsive-2xl {
         font-size: 2.25rem;
         line-height: 2.5rem;
     }
-    
+
     .text-responsive-3xl {
         font-size: 3rem;
         line-height: 1;
     }
+}
+
+/* Hero Section Animations - Tailwind 3 Compatible */
+.animate-gradient {
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 8s ease infinite;
+}
+
+.animate-floating {
+    animation: floating 3s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+}
+
+.animate-slide-in-left {
+    animation: slideInLeft 0.5s ease-out;
+}
+
+.animate-bounce-slow {
+    animation: bounce 2s infinite;
+}
+
+.animate-pulse-slow {
+    animation: pulse 3s infinite;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes floating {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideInLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Hero Components - Tailwind 3 Compatible */
+.hero-btn-primary {
+    @apply bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50;
+}
+
+.hero-btn-secondary {
+    @apply bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50;
+}
+
+.hero-btn-outline {
+    @apply border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50;
+}
+
+.glass-effect {
+    backdrop-filter: blur(12px);
+    @apply bg-white bg-opacity-10 dark:bg-gray-900 dark:bg-opacity-10 border border-white border-opacity-20 dark:border-gray-700 dark:border-opacity-20;
+}
+
+/* Hero Dots */
+.hero-dot {
+    @apply w-3 h-3 rounded-full cursor-pointer transition-all duration-300;
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.hero-dot:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.hero-dot.active {
+    @apply transform scale-125;
+}
+
+.hero-dot[data-slide="0"].active {
+    background: linear-gradient(to right, #ef4444, #ec4899) !important;
+}
+
+.hero-dot[data-slide="1"].active {
+    background: linear-gradient(to right, #f97316, #dc2626) !important;
+}
+
+.hero-dot[data-slide="2"].active {
+    background: linear-gradient(to right, #eab308, #ea580c) !important;
+}
+
+/* Hero Background Animations */
+.hero-background {
+    @apply absolute inset-0 opacity-0 transition-all duration-1000 ease-in-out scale-110;
+}
+
+.hero-background.active {
+    @apply opacity-100 scale-100;
+}
+
+.hero-animate {
+    @apply transform transition-all duration-700 ease-out;
+}
+
+.hero-animate.slide-in {
+    @apply translate-y-0 opacity-100;
+}
+
+.hero-animate.slide-out {
+    @apply translate-y-4 opacity-0;
+}
+
+/* Animation keyframes for hero slider */
+@keyframes slideInFromBottom {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutToTop {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+}
+
+.slide-animation-in {
+    animation: slideInFromBottom 0.7s ease-out forwards;
+}
+
+.slide-animation-out {
+    animation: slideOutToTop 0.35s ease-out forwards;
+}
+
+/* Hero Search Styles */
+.hero-search-wrapper {
+    /* Ensure proper z-index stacking */
+    position: relative;
+    z-index: 20;
+}
+
+.hero-search-wrapper .group:hover .animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Enhanced placeholder styling for hero search */
+.hero-search-wrapper input::placeholder {
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
+/* Focus states for hero search */
+.hero-search-wrapper input:focus {
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+/* Custom scrollbar for search dropdown */
+.hero-search-wrapper .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+
+.hero-search-wrapper .overflow-y-auto::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.hero-search-wrapper .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #f97316, #dc2626);
+    border-radius: 3px;
+}
+
+.hero-search-wrapper .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #ea580c, #b91c1c);
+}
+
+/* Quick suggestions animation */
+.hero-search-wrapper .group:hover .translate-y-2 {
+    transform: translateY(0);
+}
+
+.hero-search-wrapper .group:not(:hover) .translate-y-2 {
+    transform: translateY(8px);
+}
+
+/* Smooth hover animation for suggestions */
+.hero-search-wrapper button:hover {
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Print styles */
@@ -196,7 +435,7 @@
     .no-print {
         display: none !important;
     }
-    
+
     .print-break {
         page-break-before: always;
     }
