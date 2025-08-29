@@ -132,7 +132,7 @@ $gradients = [
                 </div>
                 <div class="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-white">125K+</div>
+                    <div class="text-2xl font-bold text-gray-900 dark:text-white">500</div>
                     <div class="text-sm text-gray-600 dark:text-gray-400">Đầu bếp hạnh phúc</div>
                 </div>
                 <div class="w-px h-8 bg-gray-300 dark:bg-gray-600"></div>

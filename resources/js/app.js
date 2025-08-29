@@ -49,7 +49,7 @@ function initializeHeroSlider() {
             description:
                 "Hàng nghìn công thức nấu ăn ngon từ khắp thế giới, được chia sẻ bởi những người yêu thích ẩm thực như bạn.",
             buttonText: "Bắt đầu nấu ăn",
-            buttonLink: "/danh-muc",
+            buttonLink: "/recipes",
             accent: "from-red-500 to-pink-600",
             stats: { recipes: "1K+", community: "500" },
         },
