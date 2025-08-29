@@ -10,7 +10,7 @@
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Thông tin cơ bản</h3>
                     <div class="grid grid-cols-1 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên <span class="text-red-500">*</span></label>
                             <input wire:model.defer="name" type="text" class="w-full rounded-lg border border-gray-300 focus:ring-orange-500 focus:border-orange-500">
                             @error('name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>

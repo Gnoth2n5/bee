@@ -51,7 +51,7 @@ class RecipeDataSeeder extends Seeder
                 // Tạo recipe
                 $recipe = Recipe::create([
                     'title' => $recipeData['title'],
-                    'slug' => $recipeData['slug'] ?? Str::slug($recipeData['title']),
+                    'slug' => $recipeData['slug'] ?? (new \App\Models\Recipe())->generateUniqueSlug($recipeData['title']),
                     'description' => $recipeData['description'] ?? '',
                     'image_url' => $recipeData['image_url'] ?? null,
                     'cooking_time' => $recipeData['cooking_time'] ?? rand(15, 120),

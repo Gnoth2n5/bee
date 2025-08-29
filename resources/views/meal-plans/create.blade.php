@@ -44,7 +44,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                        Tên kế hoạch
+                                        Tên kế hoạch <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" 
                                            id="name" 
@@ -60,7 +60,7 @@
                                 
                                 <div>
                                     <label for="week_start" class="block text-sm font-medium text-gray-700 mb-2">
-                                        Tuần bắt đầu
+                                        Tuần bắt đầu <span class="text-red-500">*</span>
                                     </label>
                                     <input type="date" 
                                            id="week_start" 

@@ -48,12 +48,12 @@ use Illuminate\Support\Facades\App;
                                 </a>
                             @endif
                             
-                            @if(!$currentMealPlan)
-                                <button wire:click="createMealPlan" 
-                                        class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors">
-                                    Tạo kế hoạch mới
-                                </button>
-                            @endif
+                                                         @if(!$currentMealPlan)
+                                 <a href="{{ route('collections.index') }}" 
+                                    class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                     Quản lý bộ sưu tập
+                                 </a>
+                             @endif
                         </div>
                     </div>
 
@@ -149,14 +149,6 @@ use Illuminate\Support\Facades\App;
                                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
                                     Tạo món ăn theo tuần
                                 </button>
-                                                                 <button wire:click="saveMealPlan" 
-                                         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                                     Lưu kế hoạch
-                                 </button>
-                                <button wire:click="duplicateForNextWeek" 
-                                        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
-                                    Sao chép cho tuần sau
-                                </button>
                             </div>
                             
                             <div class="text-sm text-gray-500">
@@ -173,10 +165,10 @@ use Illuminate\Support\Facades\App;
                             </svg>
                             <h3 class="text-lg font-medium text-gray-900 mb-2">Chưa có kế hoạch bữa ăn</h3>
                             <p class="text-gray-600 mb-4">Tạo kế hoạch bữa ăn mới để bắt đầu lập lịch cho tuần này</p>
-                            <button wire:click="createMealPlan" 
-                                    class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-colors">
-                                Tạo kế hoạch mới
-                            </button>
+                                                         <a href="{{ route('collections.index') }}" 
+                                class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-colors">
+                                 Quản lý bộ sưu tập
+                             </a>
                         </div>
                     @endif
 
@@ -371,7 +363,7 @@ function showWeeklyMealsModal(weeklyMeals) {
                                         ${recipe.difficulty ? '• ' + recipe.difficulty : ''}
                                     </div>
                                 </div>
-                                <button onclick="viewRecipe(${recipe.id})" 
+                                <button onclick="viewRecipe('${recipe.slug}')" 
                                         class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                     Xem chi tiết
                                 </button>
@@ -405,9 +397,9 @@ function closeWeeklyMealsModal() {
     }
 }
 
-function viewRecipe(recipeId) {
+function viewRecipe(recipeSlug) {
     // Redirect to recipe detail page
-    window.open(`/recipes/${recipeId}`, '_blank');
+    window.open(`/recipes/${recipeSlug}`, '_blank');
 }
 
 // Close weekly meals modal when clicking outside

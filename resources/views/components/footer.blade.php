@@ -55,11 +55,11 @@
                             Công thức
                         </a>
                     </li>
-                    <li>
+                    {{-- <li>
                         <a href="{{ route('restaurants.index') }}" class="text-gray-600 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors">
                             Nhà hàng
                         </a>
-                    </li>
+                    </li> --}}
                     <li>
                         <a href="{{ route('meal-plans.index') }}" class="text-gray-600 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors">
                             Kế hoạch bữa ăn

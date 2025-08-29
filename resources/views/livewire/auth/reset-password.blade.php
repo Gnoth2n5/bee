@@ -11,17 +11,17 @@
             <div class="bg-green-50 text-green-700 rounded px-4 py-2 text-sm mb-2">{{ $status }}</div>
         @endif
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
             <input type="email" wire:model.defer="email" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="Nhập email...">
             @error('email')<span class="text-xs text-red-500">{{ $message }}</span>@enderror
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới <span class="text-red-500">*</span></label>
             <input type="password" wire:model.defer="password" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="Nhập mật khẩu mới...">
             @error('password')<span class="text-xs text-red-500">{{ $message }}</span>@enderror
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu <span class="text-red-500">*</span></label>
             <input type="password" wire:model.defer="password_confirmation" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="Nhập lại mật khẩu...">
             @error('password_confirmation')<span class="text-xs text-red-500">{{ $message }}</span>@enderror
         </div>

@@ -121,8 +121,8 @@
         </div>
     </section>
 
-    <!-- VIP Banner -->
-    @auth
+    <!-- VIP Banner - Hidden -->
+    {{-- @auth
         @unless(auth()->user()->isVip())
             <section class="bg-gradient-to-r from-yellow-400 to-orange-500 py-8">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -149,7 +149,7 @@
                 </div>
             </section>
         @endunless
-    @endauth
+    @endauth --}}
 
     <!-- Weather Recipe Slideshow -->
     <livewire:weather-slideshow-simple />

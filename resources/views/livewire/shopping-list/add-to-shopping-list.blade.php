@@ -33,7 +33,7 @@
             <h4 class="text-sm font-medium text-gray-900 mb-3">Tạo Shopping List mới</h4>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên Shopping List</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên Shopping List <span class="text-red-500">*</span></label>
                     <input type="text" wire:model="newShoppingListName" 
                            placeholder="Nhập tên shopping list..."
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">

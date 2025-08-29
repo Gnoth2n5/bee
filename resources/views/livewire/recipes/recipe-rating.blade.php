@@ -124,7 +124,7 @@
                                 <div class="mt-4">
                                     <!-- Star Rating -->
                                     <div class="mb-4">
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Số sao đánh giá</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Số sao đánh giá <span class="text-red-500">*</span></label>
                                         <div class="flex items-center space-x-1">
                                             @for($i = 1; $i <= 5; $i++)
                                                 <button 

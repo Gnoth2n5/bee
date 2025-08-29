@@ -18,6 +18,11 @@ class RecipeDetail extends Component
     {
         $this->recipe = $recipe->load(['user.profile', 'categories', 'tags', 'images', 'ratings.user', 'favorites']);
         $this->recipe->incrementViewCount();
+
+        // Đảm bảo ingredients và instructions được load
+        if (empty($this->recipe->ingredients)) {
+            $this->recipe->refresh();
+        }
     }
 
     public function openShareModal()

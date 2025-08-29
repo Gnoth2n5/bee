@@ -62,7 +62,7 @@
                                                                     @endif
                                                                 </div>
                                                             </div>
-                                                            <a href="{{ route('recipes.show', $recipe['id']) }}" 
+                                                            <a href="{{ route('recipes.show', $recipe['slug']) }}" 
                                                                target="_blank"
                                                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                                                 Xem chi tiết

@@ -87,7 +87,7 @@ class RecipeTestSeeder extends Seeder
                 ['title' => $recipeData['title']],
                 array_merge($recipeData, [
                     'user_id' => $user->id,
-                    'slug' => \Illuminate\Support\Str::slug($recipeData['title']),
+                    'slug' => (new \App\Models\Recipe())->generateUniqueSlug($recipeData['title']),
                     'ingredients' => json_encode(['Thịt', 'Gia vị', 'Rau']),
                     'instructions' => json_encode(['Bước 1: Chuẩn bị nguyên liệu', 'Bước 2: Nấu ăn', 'Bước 3: Thưởng thức']),
                     'servings' => 4,

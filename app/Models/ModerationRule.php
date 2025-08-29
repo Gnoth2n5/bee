@@ -69,15 +69,16 @@ class ModerationRule extends Model
 
         $keywords = $this->getKeywordsArrayAttribute();
         $content = mb_strtolower($content, 'UTF-8');
+        $foundKeywords = [];
 
         foreach ($keywords as $keyword) {
             $keyword = mb_strtolower(trim($keyword), 'UTF-8');
             if (!empty($keyword) && str_contains($content, $keyword)) {
-                return true;
+                $foundKeywords[] = $keyword;
             }
         }
 
-        return false;
+        return empty($foundKeywords) ? false : $foundKeywords;
     }
 
     /**
@@ -93,13 +94,17 @@ class ModerationRule extends Model
 
         foreach ($fieldsToCheck as $field) {
             $content = $this->getRecipeFieldContent($recipe, $field);
-            if ($content && $this->checkViolation($content)) {
-                return [
-                    'violated' => true,
-                    'field' => $field,
-                    'content' => $content,
-                    'rule' => $this
-                ];
+            if ($content) {
+                $violation = $this->checkViolation($content);
+                if ($violation) {
+                    return [
+                        'violated' => true,
+                        'field' => $field,
+                        'content' => $content,
+                        'found_keywords' => $violation,
+                        'rule' => $this
+                    ];
+                }
             }
         }
 

@@ -70,7 +70,21 @@ class RecipeResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn(string $state, callable $set) => $set('slug', Str::slug($state))),
+                            ->afterStateUpdated(function (string $state, callable $set) {
+                                if (!empty($state)) {
+                                    $slug = \Illuminate\Support\Str::slug($state);
+                                    // Kiểm tra xem slug đã tồn tại chưa
+                                    $existingRecipe = \App\Models\Recipe::where('slug', $slug)->first();
+                                    if ($existingRecipe) {
+                                        $counter = 1;
+                                        while (\App\Models\Recipe::where('slug', $slug . '-' . $counter)->exists()) {
+                                            $counter++;
+                                        }
+                                        $slug = $slug . '-' . $counter;
+                                    }
+                                    $set('slug', $slug);
+                                }
+                            }),
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug')
                             ->required()
@@ -239,7 +253,6 @@ class RecipeResource extends Resource
                                 'pending' => 'Chờ phê duyệt',
                                 'approved' => 'Đã phê duyệt',
                                 'rejected' => 'Từ chối',
-                                'published' => 'Đã xuất bản',
                             ])
                             ->default('pending')
                             ->required(),
@@ -285,7 +298,6 @@ class RecipeResource extends Resource
                         'pending' => 'warning',
                         'approved' => 'success',
                         'rejected' => 'danger',
-                        'published' => 'info',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn(string $state): string => match ($state) {
@@ -293,7 +305,6 @@ class RecipeResource extends Resource
                         'pending' => 'Chờ phê duyệt',
                         'approved' => 'Đã phê duyệt',
                         'rejected' => 'Từ chối',
-                        'published' => 'Đã xuất bản',
                         default => $state,
                     }),
                 Tables\Columns\TextColumn::make('difficulty')

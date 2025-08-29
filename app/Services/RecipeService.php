@@ -23,7 +23,7 @@ class RecipeService
 
         $recipe = new Recipe($recipeData);
         $recipe->user_id = $user->id;
-        $recipe->slug = Str::slug($data['title']);
+        $recipe->slug = $this->generateUniqueSlug($data['title']);
         $recipe->status = $data['status'] ?? 'pending';
         $recipe->save();
 
@@ -58,7 +58,7 @@ class RecipeService
         $recipeData = $this->prepareRecipeData($data);
 
         $recipe->update($recipeData);
-        $recipe->slug = Str::slug($data['title']);
+        $recipe->slug = $this->generateUniqueSlug($data['title'], $recipe->id);
         $recipe->status = $data['status'] ?? 'pending';
         $recipe->save();
 
@@ -384,5 +384,14 @@ class RecipeService
         unset($recipeData['category_ids'], $recipeData['tag_ids']);
 
         return $recipeData;
+    }
+
+    /**
+     * Generate a unique slug for recipe.
+     */
+    protected function generateUniqueSlug(string $title, ?int $excludeId = null): string
+    {
+        $recipe = new Recipe();
+        return $recipe->generateUniqueSlug($title, $excludeId);
     }
 }

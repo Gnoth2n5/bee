@@ -398,7 +398,7 @@ class RecipeApprovalSeeder extends Seeder
             $recipe = Recipe::create([
                 'user_id' => $users->random()->id,
                 'title' => $recipeData['title'],
-                'slug' => Str::slug($recipeData['title']),
+                'slug' => (new \App\Models\Recipe())->generateUniqueSlug($recipeData['title']),
                 'description' => $recipeData['description'],
                 'summary' => $recipeData['summary'],
                 'cooking_time' => $recipeData['cooking_time'],
@@ -431,7 +431,7 @@ class RecipeApprovalSeeder extends Seeder
             $recipe = Recipe::create([
                 'user_id' => $users->random()->id,
                 'title' => $recipeData['title'],
-                'slug' => Str::slug($recipeData['title']),
+                'slug' => (new \App\Models\Recipe())->generateUniqueSlug($recipeData['title']),
                 'description' => $recipeData['description'],
                 'summary' => $recipeData['summary'],
                 'cooking_time' => $recipeData['cooking_time'],

@@ -207,6 +207,7 @@ class RecipeCollectionManager extends Component
             $collectionService->addRecipe($collection, $this->recipe);
 
             $this->closeCreateModal();
+            $this->closeModal(); // Đóng modal chính
             $this->loadCollections();
             $this->selectedCollectionId = null;
 

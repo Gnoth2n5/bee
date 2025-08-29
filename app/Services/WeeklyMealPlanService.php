@@ -470,6 +470,7 @@ class WeeklyMealPlanService
                     if ($recipe) {
                         $mealInfo[] = [
                             'id' => $recipe->id,
+                            'slug' => $recipe->slug,
                             'title' => $recipe->title,
                             'description' => $recipe->description,
                             'calories' => $recipe->calories_per_serving,
