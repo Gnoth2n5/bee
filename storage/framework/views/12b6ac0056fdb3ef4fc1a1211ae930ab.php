@@ -302,12 +302,26 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
 
                     <!--[if BLOCK]><![endif]--><?php if(!empty($suitableRecipes)): ?>
                         <div class="mb-10">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                                <svg class="w-8 h-8 mr-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                ⭐ Món ăn phù hợp
-                            </h3>
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+                                    <svg class="w-8 h-8 mr-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    ⭐ Món ăn phù hợp
+                                </h3>
+                                                         <div class="flex gap-3">
+                             <button wire:click="addAllSuitableToMealPlan()"
+                                     class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                 📅 Thêm tất cả vào Meal Plan
+                             </button>
+                             <!--[if BLOCK]><![endif]--><?php if(session()->has('meal_plan_recipes') && count(session('meal_plan_recipes', [])) > 0): ?>
+                                 <button wire:click="goToMealPlan()"
+                                         class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                     🚀 Đi đến Meal Plan
+                                 </button>
+                             <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                         </div>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $suitableRecipes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $recipe): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <div class="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100">
@@ -324,7 +338,7 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                         <div class="p-6">
                                             <h4 class="font-semibold text-gray-900 mb-3 text-lg"><?php echo e($recipe->title); ?></h4>
                                             <p class="text-gray-600 mb-4 text-sm leading-relaxed"><?php echo e(Str::limit($recipe->summary, 120)); ?></p>
-                                            <div class="flex items-center justify-between">
+                                            <div class="flex items-center justify-between mb-3">
                                                 <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
                                                     ⏱️ <?php echo e($recipe->cooking_time); ?> phút
                                                 </span>
@@ -332,6 +346,12 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                                    class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-105">
                                                     Xem chi tiết →
                                                 </a>
+                                            </div>
+                                            <div class="flex justify-center">
+                                                <button wire:click="addToMealPlan(<?php echo e($recipe->id); ?>)"
+                                                        class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-105 w-full">
+                                                    📅 Thêm vào Meal Plan
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -348,12 +368,26 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
 
                     <!--[if BLOCK]><![endif]--><?php if(!empty($moderateRecipes)): ?>
                         <div class="mb-10">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                                <svg class="w-8 h-8 mr-3 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                </svg>
-                                ⚠️ Món ăn cần điều chỉnh
-                            </h3>
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+                                    <svg class="w-8 h-8 mr-3 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    ⚠️ Món ăn cần điều chỉnh
+                                </h3>
+                                                                 <div class="flex gap-3">
+                                     <button wire:click="addAllModerateToMealPlan()"
+                                             class="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                         📅 Thêm tất cả vào Meal Plan
+                                     </button>
+                                     <!--[if BLOCK]><![endif]--><?php if(session()->has('meal_plan_recipes') && count(session('meal_plan_recipes', [])) > 0): ?>
+                                         <button wire:click="goToMealPlan()"
+                                                 class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                             🚀 Đi đến Meal Plan
+                                         </button>
+                                     <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                 </div>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $moderateRecipes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $recipe): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <div class="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-yellow-200">
@@ -370,13 +404,19 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                         <div class="p-6">
                                             <h4 class="font-semibold text-gray-900 mb-3 text-lg"><?php echo e($recipe->title); ?></h4>
                                             <p class="text-gray-600 mb-4 text-sm leading-relaxed"><?php echo e(Str::limit($recipe->summary, 120)); ?></p>
-                                            <div class="flex items-center justify-between">
+                                            <div class="flex items-center justify-between mb-3">
                                                 <span class="text-xs text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full">
                                                     ⚠️ Cần điều chỉnh
                                                 </span>
                                                 <button wire:click="checkRecipeSuitability(<?php echo e($recipe->id); ?>)"
                                                         class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-105">
                                                     Kiểm tra phù hợp
+                                                </button>
+                                            </div>
+                                            <div class="flex justify-center">
+                                                <button wire:click="addToMealPlan(<?php echo e($recipe->id); ?>)"
+                                                        class="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-105 w-full">
+                                                    📅 Thêm vào Meal Plan
                                                 </button>
                                             </div>
                                         </div>
@@ -395,5 +435,147 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
             <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
         </div>
     </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Meal Plan Selection Modal -->
+    <!--[if BLOCK]><![endif]--><?php if($showMealPlanModal): ?>
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-2xl font-bold text-gray-900">
+                            📅 Chọn Meal Plan cho: <?php echo e($selectedRecipeForMealPlan->title ?? 'Công thức'); ?>
+
+                        </h3>
+                        <button wire:click="closeMealPlanModal" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <!--[if BLOCK]><![endif]--><?php if($availableMealPlans->count() > 0): ?>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $availableMealPlans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $mealPlan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200 hover:border-blue-300 transition-all duration-200">
+                                    <div class="flex items-center mb-4">
+                                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-3">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <h4 class="font-semibold text-gray-900"><?php echo e($mealPlan->name); ?></h4>
+                                    </div>
+                                    
+                                    <div class="text-sm text-gray-600 mb-4">
+                                        <p>Tuần: <?php echo e($mealPlan->week_start->format('d/m/Y')); ?> - <?php echo e($mealPlan->week_end->format('d/m/Y')); ?></p>
+                                        <p>Calories: <?php echo e(number_format($mealPlan->total_calories)); ?></p>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <h5 class="font-medium text-gray-900 text-sm">Chọn bữa ăn:</h5>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <button wire:click="addRecipeToMealPlan(<?php echo e($mealPlan->id); ?>, 'monday', 'breakfast')"
+                                                    class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
+                                                🌅 Bữa sáng
+                                            </button>
+                                            <button wire:click="addRecipeToMealPlan(<?php echo e($mealPlan->id); ?>, 'monday', 'lunch')"
+                                                    class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
+                                                🌞 Bữa trưa
+                                            </button>
+                                            <button wire:click="addRecipeToMealPlan(<?php echo e($mealPlan->id); ?>, 'monday', 'dinner')"
+                                                    class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
+                                                🌙 Bữa tối
+                                            </button>
+                                            <button wire:click="addRecipeToMealPlan(<?php echo e($mealPlan->id); ?>, 'monday', 'snack')"
+                                                    class="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 transform hover:scale-105">
+                                                🍎 Bữa phụ
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    <?php else: ?>
+                        <div class="text-center py-12">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-2">Chưa có Meal Plan nào</h4>
+                            <p class="text-gray-600 mb-6">Bạn cần tạo Meal Plan trước khi thêm công thức</p>
+                            <a href="<?php echo e(route('meal-plans.create')); ?>" 
+                               class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                🚀 Tạo Meal Plan mới
+                            </a>
+                        </div>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                </div>
+            </div>
+        </div>
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+
+    <!-- Meal Plan Button -->
+    <!--[if BLOCK]><![endif]--><?php if(session()->has('meal_plan_recipes') && count(session('meal_plan_recipes', [])) > 0): ?>
+        <div class="fixed bottom-6 right-6 z-50">
+            <a href="<?php echo e(route('meal-plans.create')); ?>" 
+               class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-6 py-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                📅 Xem Meal Plan (<?php echo e(count(session('meal_plan_recipes', []))); ?> món)
+            </a>
+        </div>
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('meal-plan-success', (event) => {
+                showToast(event.message, 'success');
+            });
+
+            Livewire.on('meal-plan-error', (event) => {
+                showToast(event.message, 'error');
+            });
+        });
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const icon = type === 'success' ? '✅' : '❌';
+            
+            toast.className = `${bgColor} text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <span class="mr-2">${icon}</span>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (container.contains(toast)) {
+                        container.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+    </script>
 </div>
 <?php /**PATH D:\DuAn1\test\bee\resources\views/livewire/disease-analysis.blade.php ENDPATH**/ ?>

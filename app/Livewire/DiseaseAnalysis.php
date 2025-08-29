@@ -23,6 +23,9 @@ class DiseaseAnalysis extends Component
     public $showRecommendations = false;
     public $searchIngredients = '';
     public $searchResults = [];
+    public $showMealPlanModal = false;
+    public $selectedRecipeForMealPlan = null;
+    public $availableMealPlans = [];
 
     protected $listeners = ['diseaseSelected' => 'loadRecommendations'];
 
@@ -182,6 +185,131 @@ class DiseaseAnalysis extends Component
             }
         } catch (\Exception $e) {
             $this->addError('disease_creation', 'Không thể tạo bệnh mới: ' . $e->getMessage());
+        }
+    }
+
+    public function addToMealPlan($recipeId)
+    {
+        try {
+            $recipe = Recipe::find($recipeId);
+            if (!$recipe) {
+                $this->dispatch('meal-plan-error', ['message' => 'Không tìm thấy công thức']);
+                return;
+            }
+
+            $this->selectedRecipeForMealPlan = $recipe;
+            $this->availableMealPlans = \App\Models\WeeklyMealPlan::where('user_id', auth()->id())
+                ->where('is_active', true)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $this->showMealPlanModal = true;
+        } catch (\Exception $e) {
+            $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+        }
+    }
+
+    public function addRecipeToMealPlan($mealPlanId, $day = 'monday', $mealType = 'dinner')
+    {
+        try {
+            $mealPlan = \App\Models\WeeklyMealPlan::find($mealPlanId);
+            if (!$mealPlan || !$this->selectedRecipeForMealPlan) {
+                $this->dispatch('meal-plan-error', ['message' => 'Không tìm thấy meal plan hoặc công thức']);
+                return;
+            }
+
+            // Lấy meals hiện tại
+            $meals = $mealPlan->meals ?? [];
+
+            // Thêm recipe vào meal plan
+            if (!isset($meals[$day])) {
+                $meals[$day] = [];
+            }
+
+            // Nếu đã có meal type này, thêm vào array
+            if (isset($meals[$day][$mealType])) {
+                if (is_array($meals[$day][$mealType])) {
+                    $meals[$day][$mealType][] = $this->selectedRecipeForMealPlan->id;
+                } else {
+                    $meals[$day][$mealType] = [$meals[$day][$mealType], $this->selectedRecipeForMealPlan->id];
+                }
+            } else {
+                $meals[$day][$mealType] = [$this->selectedRecipeForMealPlan->id];
+            }
+
+            // Cập nhật meal plan
+            $mealPlan->update(['meals' => $meals]);
+
+            $recipeTitle = $this->selectedRecipeForMealPlan->title;
+
+            $this->showMealPlanModal = false;
+            $this->selectedRecipeForMealPlan = null;
+
+            $this->dispatch('meal-plan-success', [
+                'message' => "Đã thêm '{$recipeTitle}' vào {$mealPlan->name}",
+                'recipe' => $this->selectedRecipeForMealPlan
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+        }
+    }
+
+    public function closeMealPlanModal()
+    {
+        $this->showMealPlanModal = false;
+        $this->selectedRecipeForMealPlan = null;
+    }
+
+    public function goToMealPlan()
+    {
+        if (session()->has('meal_plan_recipes') && count(session('meal_plan_recipes', [])) > 0) {
+            return redirect()->route('meal-plans.create');
+        }
+
+        $this->dispatch('meal-plan-error', ['message' => 'Chưa có món ăn nào trong Meal Plan']);
+    }
+
+    public function addAllSuitableToMealPlan()
+    {
+        try {
+            $suitableRecipes = Recipe::where('status', 'approved')
+                ->where('cooking_time', '<=', 60)
+                ->get();
+
+            $addedCount = 0;
+            foreach ($suitableRecipes as $recipe) {
+                session()->push('meal_plan_recipes', $recipe->id);
+                $addedCount++;
+            }
+
+            $this->dispatch('meal-plan-success', [
+                'message' => "Đã thêm {$addedCount} món ăn phù hợp vào Meal Plan",
+                'count' => $addedCount
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+        }
+    }
+
+    public function addAllModerateToMealPlan()
+    {
+        try {
+            $moderateRecipes = Recipe::where('status', 'approved')
+                ->where('cooking_time', '>', 60)
+                ->get();
+
+            $addedCount = 0;
+            foreach ($moderateRecipes as $recipe) {
+                session()->push('meal_plan_recipes', $recipe->id);
+                $addedCount++;
+            }
+
+            $this->dispatch('meal-plan-success', [
+                'message' => "Đã thêm {$addedCount} món ăn cần điều chỉnh vào Meal Plan",
+                'count' => $addedCount
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
         }
     }
 
