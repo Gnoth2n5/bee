@@ -56,7 +56,7 @@
                 </div>
                 
                 <div>
-                    <label for="email" class="block mb-1 text-sm font-medium text-gray-700">Email</label>
+                    <label for="email" class="block mb-1 text-sm font-medium text-gray-700">Email <span class="text-red-500">*</span></label>
                     <input id="email" type="email" wire:model.defer="email" class="form-input block w-full rounded-md border border-gray-300 focus:ring-orange-500 focus:border-orange-500 text-sm py-2 px-3 @error('email') border-red-300 bg-red-50 @enderror" placeholder="Nhập email..." autocomplete="email" required>
                     @error('email')
                         <p class="mt-1 text-xs text-red-600 flex items-center">
@@ -68,7 +68,7 @@
                     @enderror
                 </div>
                 <div>
-                    <label for="password" class="block mb-1 text-sm font-medium text-gray-700">Mật khẩu</label>
+                    <label for="password" class="block mb-1 text-sm font-medium text-gray-700">Mật khẩu <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <input id="password" type="password" wire:model.defer="password" class="form-input block w-full rounded-md border border-gray-300 focus:ring-orange-500 focus:border-orange-500 text-sm py-2 px-3 pr-10 @error('password') border-red-300 bg-red-50 @enderror" placeholder="Nhập mật khẩu..." autocomplete="current-password" required>
                         <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center">

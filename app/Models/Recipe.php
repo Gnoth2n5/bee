@@ -71,7 +71,7 @@ class Recipe extends Model
 
         static::creating(function ($recipe) {
             if (empty($recipe->slug)) {
-                $recipe->slug = Str::slug($recipe->title);
+                $recipe->slug = $recipe->generateUniqueSlug($recipe->title);
             }
 
             if (empty($recipe->total_time) && ($recipe->cooking_time || $recipe->preparation_time)) {
@@ -82,6 +82,11 @@ class Recipe extends Model
         static::updating(function ($recipe) {
             if ($recipe->isDirty('cooking_time') || $recipe->isDirty('preparation_time')) {
                 $recipe->total_time = ($recipe->cooking_time ?? 0) + ($recipe->preparation_time ?? 0);
+            }
+
+            // Tự động set published_at khi status = approved
+            if ($recipe->isDirty('status') && $recipe->status === 'approved' && !$recipe->published_at) {
+                $recipe->published_at = now();
             }
         });
     }
@@ -289,7 +294,7 @@ class Recipe extends Model
      */
     public function getUserCollections(User $user)
     {
-        return $this->collections()->whereHas('user', function($query) use ($user) {
+        return $this->collections()->whereHas('user', function ($query) use ($user) {
             $query->where('id', $user->id);
         })->get();
     }
@@ -336,5 +341,27 @@ class Recipe extends Model
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    /**
+     * Generate a unique slug for recipe.
+     */
+    public function generateUniqueSlug(string $title, ?int $excludeId = null): string
+    {
+        $baseSlug = Str::slug($title);
+        $slug = $baseSlug;
+        $counter = 1;
+
+        // Kiểm tra xem slug đã tồn tại chưa
+        while (
+            static::where('slug', $slug)->when($excludeId, function ($query) use ($excludeId) {
+                return $query->where('id', '!=', $excludeId);
+            })->exists()
+        ) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 }

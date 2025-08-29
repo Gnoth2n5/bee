@@ -37,7 +37,7 @@
                     </div>
                 @endif
                 <div>
-                    <label for="email" class="block mb-1 text-sm font-medium text-gray-700">Email</label>
+                    <label for="email" class="block mb-1 text-sm font-medium text-gray-700">Email <span class="text-red-500">*</span></label>
                     <input id="email" type="email" wire:model.defer="email" class="form-input block w-full rounded-md border border-gray-300 focus:ring-orange-500 focus:border-orange-500 text-sm py-2 px-3 @error('email') border-red-300 bg-red-50 @enderror" placeholder="Nhập email..." autocomplete="email" required>
                     @error('email')
                         <p class="mt-1 text-xs text-red-600 flex items-center">

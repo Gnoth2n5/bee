@@ -50,7 +50,7 @@
                             @endforeach
                         </select>
                         @error('selectedCollectionId')
-                            <p class="text-red-500 text-sm mt-1">{{ $error->first() }}</p>
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                         
                         @if($this->recipeCollections->count() > 0)
@@ -153,7 +153,7 @@
                             placeholder="Mô tả về bộ sưu tập của bạn"
                         ></textarea>
                         @error('newCollectionDescription')
-                            <p class="text-red-500 text-sm mt-1">{{ $error->first() }}</p>
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 

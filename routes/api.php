@@ -57,3 +57,27 @@ Route::middleware('auth:sanctum')->prefix('restaurants')->name('restaurants.')->
     Route::get('/favorites', [RestaurantController::class, 'getFavorites'])->name('favorites.index');
     Route::post('/rate', [RestaurantController::class, 'rate'])->name('rate');
 });
+
+// Shopping List API routes
+Route::middleware('auth:sanctum')->prefix('shopping-lists')->name('shopping-lists.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\ShoppingListController::class, 'index'])->name('index');
+    Route::post('/', [\App\Http\Controllers\Api\ShoppingListController::class, 'store'])->name('store');
+    Route::get('/{shoppingList}', [\App\Http\Controllers\Api\ShoppingListController::class, 'show'])->name('show');
+    Route::put('/{shoppingList}', [\App\Http\Controllers\Api\ShoppingListController::class, 'update'])->name('update');
+    Route::delete('/{shoppingList}', [\App\Http\Controllers\Api\ShoppingListController::class, 'destroy'])->name('destroy');
+
+    // Items
+    Route::post('/{shoppingList}/items', [\App\Http\Controllers\Api\ShoppingListController::class, 'addItem'])->name('items.add');
+    Route::put('/{shoppingList}/items/{item}', [\App\Http\Controllers\Api\ShoppingListController::class, 'updateItem'])->name('items.update');
+    Route::delete('/{shoppingList}/items/{item}', [\App\Http\Controllers\Api\ShoppingListController::class, 'deleteItem'])->name('items.delete');
+    Route::patch('/{shoppingList}/items/{item}/toggle', [\App\Http\Controllers\Api\ShoppingListController::class, 'toggleItem'])->name('items.toggle');
+
+    // Actions
+    Route::delete('/{shoppingList}/clear-checked', [\App\Http\Controllers\Api\ShoppingListController::class, 'clearChecked'])->name('clear-checked');
+    Route::patch('/{shoppingList}/mark-completed', [\App\Http\Controllers\Api\ShoppingListController::class, 'markCompleted'])->name('mark-completed');
+    Route::get('/{shoppingList}/categories', [\App\Http\Controllers\Api\ShoppingListController::class, 'getByCategories'])->name('categories');
+
+    // Generate from other sources
+    Route::post('/generate/meal-plan', [\App\Http\Controllers\Api\ShoppingListController::class, 'generateFromMealPlan'])->name('generate.meal-plan');
+    Route::post('/generate/recipe', [\App\Http\Controllers\Api\ShoppingListController::class, 'generateFromRecipe'])->name('generate.recipe');
+});

@@ -46,7 +46,21 @@ class RecipeResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn(string $state, callable $set) => $set('slug', Str::slug($state))),
+                            ->afterStateUpdated(function (string $state, callable $set) {
+                                if (!empty($state)) {
+                                    $slug = \Illuminate\Support\Str::slug($state);
+                                    // Kiểm tra xem slug đã tồn tại chưa
+                                    $existingRecipe = \App\Models\Recipe::where('slug', $slug)->first();
+                                    if ($existingRecipe) {
+                                        $counter = 1;
+                                        while (\App\Models\Recipe::where('slug', $slug . '-' . $counter)->exists()) {
+                                            $counter++;
+                                        }
+                                        $slug = $slug . '-' . $counter;
+                                    }
+                                    $set('slug', $slug);
+                                }
+                            }),
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug')
                             ->required()
@@ -215,15 +229,9 @@ class RecipeResource extends Resource
                                 'pending' => 'Chờ phê duyệt',
                                 'approved' => 'Đã phê duyệt',
                                 'rejected' => 'Từ chối',
-                                'published' => 'Đã xuất bản',
                             ])
                             ->default('draft')
                             ->required(),
-                        Forms\Components\DateTimePicker::make('auto_approve_at')
-                            ->label('Tự động phê duyệt lúc')
-                            ->placeholder('Chọn thời gian tự động phê duyệt...')
-                            ->helperText('Nếu set thời gian, công thức sẽ tự động được phê duyệt khi đến thời gian này')
-                            ->visible(fn(string $context): bool => $context === 'edit'),
                         Forms\Components\Select::make('approved_by')
                             ->label('Phê duyệt bởi')
                             ->options(User::whereHas('roles', function ($query) {
@@ -236,8 +244,6 @@ class RecipeResource extends Resource
                             ->label('Lý do từ chối')
                             ->maxLength(500)
                             ->columnSpanFull(),
-                        Forms\Components\DateTimePicker::make('published_at')
-                            ->label('Thời gian xuất bản'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('SEO')
@@ -290,7 +296,6 @@ class RecipeResource extends Resource
                         'pending' => 'warning',
                         'approved' => 'success',
                         'rejected' => 'danger',
-                        'published' => 'info',
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('difficulty')
@@ -352,7 +357,6 @@ class RecipeResource extends Resource
                         'pending' => 'Chờ phê duyệt',
                         'approved' => 'Đã phê duyệt',
                         'rejected' => 'Từ chối',
-                        'published' => 'Đã xuất bản',
                     ]),
                 Tables\Filters\SelectFilter::make('difficulty')
                     ->label('Độ khó')
@@ -436,21 +440,7 @@ class RecipeResource extends Resource
                                 ->send();
                         })
                         ->visible(fn(Recipe $record): bool => $record->status === 'pending' && Auth::user()->hasRole(['admin', 'manager'])),
-                    Tables\Actions\Action::make('publish')
-                        ->label('Xuất bản')
-                        ->icon('heroicon-o-globe-alt')
-                        ->color('info')
-                        ->requiresConfirmation()
-                        ->modalHeading('Xuất bản công thức')
-                        ->modalDescription('Bạn có chắc chắn muốn xuất bản công thức này?')
-                        ->modalSubmitActionLabel('Xuất bản')
-                        ->action(function (Recipe $record) {
-                            $record->update([
-                                'status' => 'published',
-                                'published_at' => now(),
-                            ]);
-                        })
-                        ->visible(fn(Recipe $record): bool => $record->status === 'approved' && Auth::user()->hasRole('admin')),
+
                     Tables\Actions\Action::make('test_moderation')
                         ->label('Test kiểm duyệt')
                         ->icon('heroicon-o-shield-check')
@@ -614,28 +604,7 @@ class RecipeResource extends Resource
                         })
                         ->visible(fn(): bool => Auth::user()->hasRole(['admin', 'manager'])),
 
-                    Tables\Actions\BulkAction::make('publish_selected')
-                        ->label('Xuất bản đã chọn')
-                        ->icon('heroicon-o-globe-alt')
-                        ->color('info')
-                        ->requiresConfirmation()
-                        ->modalHeading('Xuất bản công thức đã chọn')
-                        ->modalDescription('Bạn có chắc chắn muốn xuất bản tất cả công thức đã chọn?')
-                        ->modalSubmitActionLabel('Xuất bản')
-                        ->action(function (Collection $records) {
-                            $count = 0;
-                            foreach ($records as $record) {
-                                if ($record->status === 'approved') {
-                                    $record->update([
-                                        'status' => 'published',
-                                        'published_at' => now(),
-                                    ]);
-                                    $count++;
-                                }
-                            }
-                            return $count . ' công thức đã được xuất bản.';
-                        })
-                        ->visible(fn(): bool => Auth::user()->hasRole('admin')), // Chỉ Admin mới được xuất bản hàng loạt
+
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
