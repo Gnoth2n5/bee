@@ -4,11 +4,13 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Recipe;
 use App\Models\WeatherData;
 use App\Models\VietnamCity;
+use App\Services\FavoriteService;
 
-class WeatherSlideshowSimple extends Component
+class WeatherRecipeSection extends Component
 {
     public $selectedCity = 'HCM';
     public $currentSlide = 0;
@@ -20,7 +22,7 @@ class WeatherSlideshowSimple extends Component
 
     public function mount()
     {
-        Log::info('WeatherSlideshowSimple mounted');
+        Log::info('WeatherRecipeSection mounted');
 
         // Kiểm tra xem có thông tin vị trí từ session không
         if (session('user_location')) {
@@ -207,11 +209,11 @@ class WeatherSlideshowSimple extends Component
 
     public function getLocationFromProfile()
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return;
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
 
         // Ưu tiên lấy từ cột province của user trước
         $provinceName = $user->province;
@@ -222,17 +224,17 @@ class WeatherSlideshowSimple extends Component
         }
 
         if (!$provinceName) {
-            \Log::info('User does not have province information');
+            Log::info('User does not have province information');
             return;
         }
 
-        \Log::info('Getting location from profile: ' . $provinceName);
+        Log::info('Getting location from profile: ' . $provinceName);
 
         // Tìm thành phố trong database
         $city = \App\Models\VietnamCity::where('name', 'LIKE', '%' . $provinceName . '%')->first();
 
         if ($city) {
-            \Log::info('Found city in database: ' . $city->name . ' (' . $city->code . ')');
+            Log::info('Found city in database: ' . $city->name . ' (' . $city->code . ')');
             $this->selectedCity = $city->code;
             $this->nearestCity = $city;
             $this->currentSlide = 0;
@@ -249,13 +251,13 @@ class WeatherSlideshowSimple extends Component
 
             $this->loadData();
         } else {
-            \Log::info('City not found in database: ' . $provinceName);
+            Log::info('City not found in database: ' . $provinceName);
         }
     }
 
     public function testMethod()
     {
-        Log::info('testMethod called in WeatherSlideshowSimple');
+        Log::info('testMethod called in WeatherRecipeSection');
         $this->selectedCity = 'NINHBINH';
         $this->loadData();
     }
@@ -298,14 +300,14 @@ class WeatherSlideshowSimple extends Component
      */
     public function toggleFavorite($recipeId)
     {
-        if (!\Illuminate\Support\Facades\Auth::check()) {
+        if (!Auth::check()) {
             session()->flash('message', 'Vui lòng đăng nhập để thêm vào yêu thích.');
             return redirect()->route('login');
         }
 
         $recipe = \App\Models\Recipe::findOrFail($recipeId);
         $favoriteService = app(\App\Services\FavoriteService::class);
-        $result = $favoriteService->toggle($recipe, \Illuminate\Support\Facades\Auth::user());
+        $result = $favoriteService->toggle($recipe, Auth::user());
 
         session()->flash('success', $result['message']);
         $this->dispatch('favorite-toggled', recipeId: $recipeId);
@@ -321,7 +323,7 @@ class WeatherSlideshowSimple extends Component
     public function confirmToggleFavorite($recipeId)
     {
         $recipe = \App\Models\Recipe::findOrFail($recipeId);
-        $isFavorited = $recipe->isFavoritedBy(\Illuminate\Support\Facades\Auth::user());
+        $isFavorited = $recipe->isFavoritedBy(Auth::user());
 
         if ($isFavorited) {
             $this->removeFavorite($recipe->slug);
@@ -356,6 +358,6 @@ class WeatherSlideshowSimple extends Component
 
     public function render()
     {
-        return view('livewire.weather-slideshow-simple');
+        return view('livewire.weather-recipe-section');
     }
 }

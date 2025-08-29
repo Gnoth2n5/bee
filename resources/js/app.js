@@ -34,6 +34,7 @@ import Alpine from "alpinejs";
 import Swal from "sweetalert2";
 import "./recipe-pagination";
 import "./vietqr-payment";
+import "./weather-slideshow";
 
 window.Alpine = Alpine;
 window.Swal = Swal;
@@ -352,4 +353,82 @@ window.LocationManager = {
             }
         });
     },
+};
+
+// Dark Mode Management
+window.ThemeManager = {
+    // Initialize theme on page load
+    init: function() {
+        // Check localStorage first, then system preference
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+        this.setTheme(theme);
+        
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                this.setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+        
+        console.log('Theme Manager initialized:', theme);
+    },
+
+    // Set theme and save to localStorage
+    setTheme: function(theme) {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('theme', theme);
+        console.log('Theme set to:', theme);
+    },
+
+    // Get current theme
+    getTheme: function() {
+        return localStorage.getItem('theme') || 
+               (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    },
+
+    // Toggle between light and dark
+    toggle: function() {
+        const currentTheme = this.getTheme();
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        this.setTheme(newTheme);
+        
+        // Show notification
+        if (typeof Swal !== 'undefined') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true,
+                background: newTheme === 'dark' ? '#1f2937' : '#ffffff',
+                color: newTheme === 'dark' ? '#ffffff' : '#1f2937',
+            });
+
+            Toast.fire({
+                icon: 'success',
+                title: newTheme === 'dark' ? '🌙 Chế độ tối' : '☀️ Chế độ sáng'
+            });
+        }
+        
+        return newTheme;
+    }
+};
+
+// Global function for navigation button
+window.toggleTheme = function() {
+    return window.ThemeManager.toggle();
+};
+
+// Initialize theme when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => window.ThemeManager.init());
+} else {
+    window.ThemeManager.init();
 };

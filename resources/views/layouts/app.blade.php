@@ -16,9 +16,25 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        <!-- Theme initialization script to prevent FOUC (Flash of Unstyled Content) -->
+        <script>
+            // Immediately apply theme before page renders
+            (function() {
+                const savedTheme = localStorage.getItem('theme');
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+                
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            })();
+        </script>
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
+        <div class="min-h-screen bg-gray-100 dark:bg-slate-900 transition-colors duration-300">
             <livewire:layout.navigation />
 
             <!-- Flash Messages -->

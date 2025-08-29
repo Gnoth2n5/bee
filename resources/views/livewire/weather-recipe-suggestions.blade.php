@@ -1,185 +1,245 @@
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden transition-colors duration-500">
+    <!-- Background Decorations -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-orange-200 to-red-200 dark:from-orange-800/30 dark:to-red-800/30 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+        <div class="absolute bottom-20 right-20 w-40 h-40 bg-gradient-to-r from-blue-200 to-cyan-200 dark:from-blue-800/30 dark:to-cyan-800/30 rounded-full blur-3xl opacity-20 animate-bounce" style="animation-delay: 1s"></div>
+        <div class="absolute top-1/2 left-1/2 w-24 h-24 bg-gradient-to-r from-yellow-200 to-orange-200 dark:from-yellow-800/30 dark:to-orange-800/30 rounded-full blur-2xl opacity-25 animate-ping" style="animation-delay: 2s"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">
-                🌤️ Đề Xuất Món Ăn Theo Thời Tiết
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 border border-orange-200 dark:border-orange-800 mb-6">
+                <x-lucide-cloud-sun class="w-4 h-4 mr-2 text-orange-500 animate-pulse" />
+                <span class="text-sm font-semibold text-orange-600 dark:text-orange-400">Đề xuất thông minh</span>
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-gray-800 dark:text-white mb-6 animate-fade-in-up">
+                Món Ăn Phù Hợp
+                <span class="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent animate-pulse">
+                    Với Thời Tiết
+                </span>
             </h1>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Khám phá những món ăn phù hợp với thời tiết hiện tại tại thành phố của bạn
+            
+            <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed animate-fade-in-up">
+                Khám phá những món ăn được lựa chọn đặc biệt dựa trên điều kiện thời tiết hiện tại tại thành phố của bạn. AI của chúng tôi phân tích thời tiết và gợi ý những món ăn phù hợp nhất.
             </p>
             
-            @if(!$nearestCity)
-                <!-- Nút lấy vị trí -->
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6 max-w-md mx-auto">
-                    <div class="text-center space-y-3">
-                        <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                            <button onclick="showLocationModal()" 
-                                    class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                                </svg>
-                                Lấy vị trí của tôi
-                            </button>
-                            <button wire:click="randomCity" 
-                                    class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd" />
-                                </svg>
-                                Chọn ngẫu nhiên
-                            </button>
+            <div class="mt-8">
+                @if(!$nearestCity)
+                    <!-- Location Controls -->
+                    <div class="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-orange-200/50 dark:border-orange-800/50 rounded-2xl p-6 mb-8 max-w-lg mx-auto shadow-xl">
+                        <div class="text-center space-y-4">
+                            <div class="flex items-center justify-center mb-4">
+                                <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                                    <x-lucide-map-pin class="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Chọn vị trí của bạn</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Để nhận đề xuất món ăn phù hợp với thời tiết</p>
+                            
+                            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                                <button onclick="showLocationModal()" 
+                                        class="group inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                                    <x-lucide-navigation class="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+                                    Lấy vị trí hiện tại
+                                </button>
+                                <button wire:click="randomCity" 
+                                        class="group inline-flex items-center justify-center px-6 py-3 bg-white/80 dark:bg-slate-700/80 hover:bg-white dark:hover:bg-slate-700 text-gray-800 dark:text-white font-semibold rounded-xl border border-gray-200 dark:border-slate-600 transition-all duration-300 hover:scale-105 hover:shadow-lg backdrop-blur-sm">
+                                    <x-lucide-shuffle class="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-300" />
+                                    Chọn ngẫu nhiên
+                                </button>
+                            </div>
                         </div>
-                        <p class="text-xs text-yellow-700">Click để lấy vị trí hoặc chọn thành phố ngẫu nhiên</p>
                     </div>
-                </div>
-            @else
-                <!-- Hiển thị thông tin thành phố hiện tại -->
-                <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-6 max-w-md mx-auto">
-                    <div class="text-center">
-                        <div class="flex items-center justify-center mb-2">
-                            <svg class="w-4 h-4 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-sm font-medium text-green-800">Thành phố <span class="text-red-500">*</span> hiện tại: {{ $nearestCity->name }}</span>
+                @else
+                    <!-- Current Location Display -->
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-6 mb-8 max-w-lg mx-auto shadow-xl">
+                        <div class="text-center">
+                            <div class="flex items-center justify-center mb-4">
+                                <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                                    <x-lucide-map-pin class="w-6 h-6 text-white" />
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-semibold text-green-800 dark:text-green-400 mb-2">Vị trí hiện tại</h3>
+                            <p class="text-xl font-bold text-green-900 dark:text-green-300">{{ $nearestCity->name }}</p>
+                            @if(session('user_location.is_random'))
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 mt-2">
+                                    <x-lucide-shuffle class="w-3 h-3 mr-1" />
+                                    Ngẫu nhiên
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 mt-2">
+                                    <x-lucide-navigation class="w-3 h-3 mr-1" />
+                                    GPS
+                                </span>
+                            @endif
                         </div>
-                        @if(session('user_location.is_random'))
-                            <p class="text-xs text-green-700">Được chọn ngẫu nhiên</p>
-                        @else
-                            <p class="text-xs text-green-700">Dựa trên vị trí của bạn</p>
-                        @endif
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
 
         <!-- Test Component -->
         
         
         <!-- City Selector -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 p-8 mb-12 animate-fade-in-up">
+            <div class="flex flex-col lg:flex-row lg:items-end gap-6">
                 <div class="flex-1">
-                    <label for="city-select" class="block text-sm font-medium text-gray-700 mb-2">
-                        Chọn thành phố
-                    </label>
-                    <select 
-                        wire:model.live="selectedCity" 
-                        id="city-select"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                        @foreach($cities as $region => $regionCities)
-                            <optgroup label="{{ $region }} Miền">
-                                @foreach($regionCities as $city)
-                                    <option value="{{ $city->code }}" {{ $selectedCity === $city->code ? 'selected' : '' }}>
-                                        {{ $city->name }}
-                                    </option>
-                                @endforeach
-                            </optgroup>
-                        @endforeach
-                    </select>
-
+                    <div class="flex items-center mb-3">
+                        <x-lucide-map class="w-5 h-5 mr-2 text-orange-500" />
+                        <label for="city-select" class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Chọn thành phố
+                        </label>
+                    </div>
+                    <div class="relative">
+                        <select 
+                            wire:model.live="selectedCity" 
+                            id="city-select"
+                            class="w-full px-4 py-4 pr-10 border border-gray-300 dark:border-slate-600 rounded-xl shadow-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 hover:border-orange-400 text-lg font-medium"
+                        >
+                            @foreach($cities as $region => $regionCities)
+                                <optgroup label="{{ $region }} Miền">
+                                    @foreach($regionCities as $city)
+                                        <option value="{{ $city->code }}" {{ $selectedCity === $city->code ? 'selected' : '' }}>
+                                            {{ $city->name }}
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <x-lucide-chevron-down class="w-5 h-5 text-gray-400" />
+                        </div>
+                    </div>
                 </div>
                 
                 <button 
                     wire:click="loadWeatherAndSuggestions"
-                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    class="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 min-w-[140px]"
                     :disabled="$wire.loading"
                 >
                     <svg wire:loading wire:target="loadWeatherAndSuggestions" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <svg wire:loading.remove wire:target="loadWeatherAndSuggestions" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                    </svg>
+                    <x-lucide-refresh-cw wire:loading.remove wire:target="loadWeatherAndSuggestions" class="w-5 h-5 mr-2 group-hover:rotate-180 transition-transform duration-300" />
                     Cập nhật
                 </button>
             </div>
         </div>
 
         @if($error)
-            <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-8">
-                <div class="flex">
+            <div class="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 mb-12 shadow-lg animate-fade-in-up">
+                <div class="flex items-start">
                     <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                        </svg>
+                        <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-rose-600 rounded-full flex items-center justify-center">
+                            <x-lucide-alert-circle class="w-6 h-6 text-white" />
+                        </div>
                     </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-red-800">{{ $error }}</p>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-lg font-semibold text-red-800 dark:text-red-400 mb-2">Có lỗi xảy ra</h3>
+                        <p class="text-red-700 dark:text-red-300 leading-relaxed">{{ $error }}</p>
                     </div>
                 </div>
             </div>
         @endif
 
         @if($loading)
-            <div class="text-center py-12">
-                <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-blue-600 transition ease-in-out duration-150">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Đang tải thông tin thời tiết và đề xuất món ăn...
+            <div class="text-center py-20">
+                <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-gray-200/50 dark:border-slate-700/50 max-w-md mx-auto">
+                    <div class="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                        <x-lucide-cloud-sun class="w-8 h-8 text-white" />
+                    </div>
+                    <div class="flex items-center justify-center mb-4">
+                        <svg class="animate-spin h-6 w-6 text-orange-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-lg font-semibold text-gray-800 dark:text-white">Đang phân tích...</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+                        Chúng tôi đang thu thập dữ liệu thời tiết và tìm kiếm những món ăn phù hợp nhất cho bạn.
+                    </p>
                 </div>
             </div>
         @elseif($weatherData)
             <!-- Weather Information -->
-            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 p-8 mb-12 animate-fade-in-up">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Current Weather -->
-                    <div class="text-center">
-                        <div class="flex justify-center mb-4">
-                            <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                                <svg class="w-8 h-8 text-white {{ $this->getWeatherIcon($weatherData['weather_category'] ?? 'normal') }}" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                                </svg>
+                    <div class="text-center group">
+                        <div class="flex justify-center mb-6">
+                            <div class="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <x-lucide-thermometer class="w-10 h-10 text-white" />
                             </div>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Thời tiết hiện tại</h3>
-                        <p class="text-3xl font-bold {{ $this->getTemperatureColor($weatherData['temperature']) }} mb-1">
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-3">Thời tiết hiện tại</h3>
+                        <p class="text-4xl font-black {{ $this->getTemperatureColor($weatherData['temperature']) }} mb-2 group-hover:scale-105 transition-transform duration-300">
                             {{ number_format($weatherData['temperature'], 1) }}°C
                         </p>
-                        <p class="text-gray-600">{{ $weatherData['description'] ?? 'Không có mô tả' }}</p>
+                        <p class="text-gray-600 dark:text-gray-400 font-medium">{{ $weatherData['description'] ?? 'Không có mô tả' }}</p>
                     </div>
 
                     <!-- Weather Details -->
-                    <div class="space-y-4">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Chi tiết thời tiết</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
-                                </svg>
-                                <span class="text-sm text-gray-600">Độ ẩm: {{ $weatherData['humidity'] }}%</span>
+                    <div class="space-y-6">
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6">Chi tiết thời tiết</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center p-3 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl">
+                                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center mr-3">
+                                    <x-lucide-droplets class="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Độ ẩm</p>
+                                    <p class="text-lg font-bold text-blue-700 dark:text-blue-400">{{ $weatherData['humidity'] }}%</p>
+                                </div>
                             </div>
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="text-sm text-gray-600">Cảm giác: {{ number_format($weatherData['feels_like'] ?? 0, 1) }}°C</span>
+                            <div class="flex items-center p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl">
+                                <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center mr-3">
+                                    <x-lucide-user class="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Cảm giác</p>
+                                    <p class="text-lg font-bold text-orange-700 dark:text-orange-400">{{ number_format($weatherData['feels_like'] ?? 0, 1) }}°C</p>
+                                </div>
                             </div>
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                </svg>
-                                <span class="text-sm text-gray-600">Gió: {{ number_format($weatherData['wind_speed'] ?? 0, 1) }} m/s</span>
+                            <div class="flex items-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl">
+                                <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mr-3">
+                                    <x-lucide-wind class="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Tốc độ gió</p>
+                                    <p class="text-lg font-bold text-green-700 dark:text-green-400">{{ number_format($weatherData['wind_speed'] ?? 0, 1) }} m/s</p>
+                                </div>
                             </div>
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="text-sm text-gray-600">Tầm nhìn: {{ number_format(($weatherData['visibility'] ?? 0) / 1000, 1) }} km</span>
+                            <div class="flex items-center p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl">
+                                <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mr-3">
+                                    <x-lucide-eye class="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Tầm nhìn</p>
+                                    <p class="text-lg font-bold text-purple-700 dark:text-purple-400">{{ number_format(($weatherData['visibility'] ?? 0) / 1000, 1) }} km</p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Suggestion Reason -->
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Lý do đề xuất</h3>
-                        <div class="bg-blue-50 rounded-lg p-4">
-                            <p class="text-sm text-blue-800 leading-relaxed">
-                                {{ $this->getSuggestionReason() }}
-                            </p>
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6">AI Giải thích</h3>
+                        <div class="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl p-6 border border-orange-200/50 dark:border-orange-800/50">
+                            <div class="flex items-start">
+                                <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                                    <x-lucide-brain class="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-orange-800 dark:text-orange-400 mb-2">Tại sao AI chọn những món này?</h4>
+                                    <p class="text-orange-700 dark:text-orange-300 leading-relaxed">
+                                        {{ $this->getSuggestionReason() }}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -187,87 +247,56 @@
 
             <!-- Recipe Suggestions -->
             @if($suggestions->count() > 0)
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
-                        🍽️ Món ăn phù hợp với thời tiết
-                    </h2>
+                <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 p-8">
+                    <div class="text-center mb-12">
+                        <div class="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border border-green-200 dark:border-green-800 mb-6">
+                            <x-lucide-chef-hat class="w-4 h-4 mr-2 text-green-500 animate-bounce" style="animation-delay: 0.5s" />
+                            <span class="text-sm font-semibold text-green-600 dark:text-green-400">Đề xuất AI</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-black text-gray-800 dark:text-white mb-4">
+                            Món Ăn
+                            <span class="bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
+                                Được Đề Xuất
+                            </span>
+                        </h2>
+                        <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                            Các món ăn được AI chọn lọc đặc biệt dựa trên điều kiện thời tiết hiện tại
+                        </p>
+                    </div>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         @foreach($suggestions as $recipe)
-                            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                                @if($recipe->featured_image)
-                                    <img src="{{ asset('storage/' . $recipe->featured_image) }}" 
-                                         alt="{{ $recipe->title }}" 
-                                         class="w-full h-48 object-cover">
-                                @else
-                                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-                                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                    </div>
-                                @endif
-                                
-                                <div class="p-4">
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                                        {{ $recipe->title }}
-                                    </h3>
-                                    
-                                    <p class="text-sm text-gray-600 mb-3 line-clamp-2">
-                                        {{ $recipe->summary }}
-                                    </p>
-                                    
-                                    <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            {{ $recipe->cooking_time }} phút
-                                        </div>
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                                            </svg>
-                                            {{ number_format($recipe->average_rating, 1) }}
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex flex-wrap gap-1 mb-3">
-                                        @foreach($recipe->categories->take(2) as $category)
-                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                {{ $category->name }}
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                    
-                                    <a href="{{ route('recipes.show', $recipe->slug) }}" 
-                                       class="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">
-                                        Xem chi tiết
-                                    </a>
-                                </div>
-                            </div>
+                            <x-recipe-card :recipe="$recipe" />
                         @endforeach
                     </div>
                 </div>
             @else
-                <div class="bg-white rounded-lg shadow-md p-6 text-center">
-                    <div class="text-gray-400 mb-4">
-                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 p-12 text-center">
+                    <div class="w-24 h-24 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <x-lucide-chef-hat class="w-12 h-12 text-white" />
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Không có đề xuất</h3>
-                    <p class="text-gray-600">Hiện tại chưa có món ăn phù hợp với thời tiết này.</p>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Chưa có đề xuất</h3>
+                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed max-w-md mx-auto">
+                        Hiện tại chưa có món ăn phù hợp với điều kiện thời tiết này. Hãy thử chọn thành phố khác hoặc quay lại sau.
+                    </p>
+                    <div class="mt-8">
+                        <button wire:click="loadWeatherAndSuggestions" 
+                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
+                            <x-lucide-refresh-cw class="w-4 h-4 mr-2" />
+                            Thử lại
+                        </button>
+                    </div>
                 </div>
             @endif
         @elseif(!$loading && !$error)
-            <div class="bg-white rounded-lg shadow-md p-6 text-center">
-                <div class="text-gray-400 mb-4">
-                    <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
-                    </svg>
+            <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 p-12 text-center">
+                <div class="w-20 h-20 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <x-lucide-cloud-off class="w-10 h-10 text-white" />
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Không có dữ liệu thời tiết</h3>
-                <p class="text-gray-600">Vui lòng chọn thành phố khác hoặc thử lại sau.</p>
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-3">Chưa có dữ liệu thời tiết</h3>
+                <p class="text-gray-600 dark:text-gray-400 leading-relaxed max-w-md mx-auto">
+                    Vui lòng chọn thành phố và nhấn "Cập nhật" để nhận đề xuất món ăn phù hợp với thời tiết.
+                </p>
             </div>
         @endif
     </div>
@@ -281,9 +310,68 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
+    
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    /* Fade in animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    /* Ensure proper theme transitions */
+    .bg-gradient-to-br, .bg-gradient-to-r {
+        transition: background-color 0.5s ease-in-out;
+    }
+    
+
+    
+
+    
+    /* Enhanced backdrop blur for supported browsers */
+    .backdrop-blur-sm {
+        backdrop-filter: blur(4px);
+    }
+    
+    /* Smooth transitions for all interactive elements */
+    .transition-all, .hover\\:scale-105, .hover\\:scale-110, .group-hover\\:scale-110 {
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+
     </style>
 
     <script>
+    // Debug theme state
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Weather page loaded');
+        console.log('HTML classList:', document.documentElement.classList.toString());
+        console.log('Theme in localStorage:', localStorage.getItem('theme'));
+        console.log('System prefers dark:', window.matchMedia('(prefers-color-scheme: dark)').matches);
+        
+        // Force apply theme if needed
+        if (typeof window.ThemeManager !== 'undefined') {
+            const currentTheme = window.ThemeManager.getTheme();
+            console.log('Current theme from ThemeManager:', currentTheme);
+            window.ThemeManager.setTheme(currentTheme);
+        }
+    });
+
     // Hàm hiển thị modal chia sẻ vị trí với SweetAlert
     function showLocationModal() {
         Swal.fire({
