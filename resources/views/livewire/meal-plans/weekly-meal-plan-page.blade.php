@@ -49,11 +49,11 @@ use Illuminate\Support\Facades\App;
                             @endif
                             
                                                          @if(!$currentMealPlan)
-                                 <a href="{{ route('collections.index') }}" 
-                                    class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors">
-                                     Quản lý bộ sưu tập
-                                 </a>
-                             @endif
+                                <button wire:click="createMealPlan" 
+                                        class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                    Tạo kế hoạch mới
+                                </button>
+                            @endif
                         </div>
                     </div>
 
@@ -165,10 +165,16 @@ use Illuminate\Support\Facades\App;
                             </svg>
                             <h3 class="text-lg font-medium text-gray-900 mb-2">Chưa có kế hoạch bữa ăn</h3>
                             <p class="text-gray-600 mb-4">Tạo kế hoạch bữa ăn mới để bắt đầu lập lịch cho tuần này</p>
-                                                         <a href="{{ route('collections.index') }}" 
-                                class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-colors">
-                                 Quản lý bộ sưu tập
-                             </a>
+                            <div class="flex justify-center space-x-4">
+                                <button wire:click="createMealPlan" 
+                                        class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-colors">
+                                    Tạo kế hoạch mới
+                                </button>
+                                <a href="{{ route('collections.index') }}" 
+                                   class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors">
+                                    Quản lý bộ sưu tập
+                                </a>
+                            </div>
                         </div>
                     @endif
 

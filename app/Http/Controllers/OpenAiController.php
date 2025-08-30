@@ -22,7 +22,7 @@ class OpenAiController extends Controller
      */
     public function index(): View
     {
-        // Check if OpenAI is configured
+        // Check if DeepSeek is configured
         if (!$this->openAiService->isConfigured()) {
             abort(503, 'Dịch vụ AI chưa được cấu hình. Vui lòng liên hệ admin.');
         }
@@ -31,7 +31,7 @@ class OpenAiController extends Controller
     }
 
     /**
-     * Send a message to OpenAI and get response
+     * Send a message to DeepSeek and get response
      */
     public function sendMessage(Request $request): JsonResponse
     {
