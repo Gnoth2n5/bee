@@ -99,7 +99,7 @@ class HomePage extends Component
     public function removeFavorite($recipeSlug)
     {
         \Log::info('removeFavorite called with slug: ' . $recipeSlug);
-        
+
         if (!Auth::check()) {
             \Log::warning('User not authenticated');
             session()->flash('message', 'Vui lòng đăng nhập để thực hiện thao tác này.');
@@ -111,12 +111,12 @@ class HomePage extends Component
             \Log::info('Recipe found: ' . $recipe->title);
             $favoriteService = app(FavoriteService::class);
             $favoriteService->removeFavorite($recipe, Auth::user());
-            
+
             \Log::info('Favorite removed successfully');
             session()->flash('success', 'Đã xóa khỏi danh sách yêu thích.');
             $this->dispatch('favorite-toggled', recipeId: $recipe->id);
             $this->dispatch('flash-message', message: 'Đã xóa khỏi danh sách yêu thích.', type: 'success');
-            
+
             // Refresh component để cập nhật UI
             $this->dispatch('$refresh');
         } else {
@@ -136,6 +136,16 @@ class HomePage extends Component
             'users' => User::count(),
             'categories' => Category::count(),
         ];
+    }
+
+    public function getFeaturedRecipeProperty()
+    {
+        return Recipe::where('status', 'approved')
+            ->orderBy('view_count', 'desc')
+            ->with(['user', 'categories'])
+            ->withCount('ratings')
+            ->withAvg('ratings', 'rating')
+            ->first();
     }
 
     public function getCategoriesProperty()
@@ -167,6 +177,7 @@ class HomePage extends Component
             'recipes' => $this->recipes,
             'categories' => $this->categories,
             'stats' => $this->stats,
+            'featuredRecipe' => $this->featuredRecipe,
         ]);
     }
 }

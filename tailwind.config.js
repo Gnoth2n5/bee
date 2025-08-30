@@ -69,7 +69,11 @@ export default {
             backdropBlur: {
                 xs: '2px',
             },
+            fontFamily: {
+                sans: ['Poppins', ...defaultTheme.fontFamily.sans],
+            }
         },
+        
     },
 
     plugins: [forms, require('flowbite/plugin')],

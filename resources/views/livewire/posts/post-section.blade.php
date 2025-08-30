@@ -1,22 +1,36 @@
 <div>
-    <div class="bg-white py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="py-20 bg-gradient-to-br from-slate-50 via-gray-100 to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
+        <!-- Background Decorations -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-amber-200 to-yellow-200 dark:from-amber-800/30 dark:to-yellow-800/30 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+            <div class="absolute bottom-20 right-20 w-40 h-40 bg-gradient-to-r from-teal-200 to-emerald-200 dark:from-teal-800/30 dark:to-emerald-800/30 rounded-full blur-3xl opacity-20 animate-bounce" style="animation-delay: 1s"></div>
+            <div class="absolute top-1/2 left-1/2 w-24 h-24 bg-gradient-to-r from-rose-200 to-pink-200 dark:from-rose-800/30 dark:to-pink-800/30 rounded-full blur-2xl opacity-25 animate-ping" style="animation-delay: 2s"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <!-- Tiêu đề section -->
-            <div class="text-center mb-12">
-                <div class="flex items-center justify-center mb-4">
-                    <h2 class="text-3xl font-bold text-gray-900">
-                        Bài viết nổi bật
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-teal-100 to-emerald-100 dark:from-teal-900/30 dark:to-emerald-900/30 border border-teal-200 dark:border-teal-800 mb-6">
+                    <x-lucide-newspaper class="w-4 h-4 mr-2 text-teal-500 animate-pulse" />
+                    <span class="text-sm font-semibold text-teal-600 dark:text-teal-400">Cộng đồng chia sẻ</span>
+                </div>
+                
+                <div class="flex items-center justify-center mb-6">
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-black text-gray-800 dark:text-white">
+                        Bài Viết 
+                        <span class="bg-gradient-to-r from-teal-500 to-emerald-600 bg-clip-text text-transparent">
+                            Nổi Bật
+                        </span>
                     </h2>
                     <button wire:click="loadPosts" 
-                            class="ml-4 p-2 text-gray-500 hover:text-orange-600 transition-colors duration-200"
+                            class="ml-6 group w-12 h-12 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl border border-gray-200/50 dark:border-slate-700/50 text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-all duration-300 hover:scale-110 flex items-center justify-center"
                             title="Làm mới dữ liệu">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
+                        <x-lucide-refresh-cw class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
                     </button>
                 </div>
-                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Khám phá những bài viết hay nhất về ẩm thực, công thức nấu ăn và mẹo vặt trong bếp
+                
+                <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                    Khám phá những bài viết hay nhất về ẩm thực, công thức nấu ăn và mẹo vặt trong bếp từ cộng đồng đam mê nấu nướng
                 </p>
             </div>
 
@@ -24,7 +38,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Cột trái - Slide bài viết phổ biến -->
                 <div class="lg:col-span-2">
-                    <div class="relative bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-gray-200/50 dark:border-slate-700/50">
                         @if($popularPosts->count() > 0)
                             <!-- Slide container -->
                             <div class="relative h-96">
@@ -126,11 +140,9 @@
 
                 <!-- Cột phải - Danh sách bài viết mới nhất -->
                 <div class="lg:col-span-1">
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                            </svg>
+                    <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-gray-200/50 dark:border-slate-700/50">
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
+                            <x-lucide-clock class="w-5 h-5 mr-2 text-teal-500" />
                             Bài viết mới nhất
                         </h3>
                         
