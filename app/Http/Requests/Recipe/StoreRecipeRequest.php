@@ -23,7 +23,7 @@ class StoreRecipeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'min:5', 'max:255'],
+            'title' => ['required', 'string', 'min:5', 'max:255', 'regex:/^[\p{L}\p{N}\s\-\.\,\!\?\(\)\:\;\'\"]+$/u'],
             'description' => ['required', 'string', 'min:20'],
             'summary' => ['required', 'string', 'max:500'],
             'cooking_time' => ['required', 'integer', 'min:5', 'max:1440'], // max 24 hours
@@ -56,7 +56,9 @@ class StoreRecipeRequest extends FormRequest
     {
         return [
             'title.required' => 'Tiêu đề công thức là bắt buộc.',
+            'title.min' => 'Tiêu đề phải có ít nhất 5 ký tự.',
             'title.max' => 'Tiêu đề không được vượt quá 255 ký tự.',
+            'title.regex' => 'Tiêu đề không được chứa ký hiệu đặc biệt.',
             'description.required' => 'Mô tả công thức là bắt buộc.',
             'description.min' => 'Mô tả phải có ít nhất 10 ký tự.',
             'summary.required' => 'Tóm tắt công thức là bắt buộc.',

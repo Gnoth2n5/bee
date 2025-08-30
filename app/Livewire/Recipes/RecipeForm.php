@@ -20,7 +20,7 @@ class RecipeForm extends Component
     public $isEditing = false;
 
     // Basic information
-    #[Rule('required|string|max:255')]
+    #[Rule('required|string|max:255|regex:/^[\p{L}\p{N}\s\-\.\,\!\?\(\)\:\;\'\"]+$/u')]
     public $title = '';
 
     #[Rule('required|string|min:10')]
@@ -216,6 +216,33 @@ class RecipeForm extends Component
     {
         $this->resetValidation();
         $this->reset(['featuredImage']);
+    }
+
+    protected function messages()
+    {
+        return [
+            'title.required' => 'Tiêu đề công thức là bắt buộc.',
+            'title.min' => 'Tiêu đề phải có ít nhất 5 ký tự.',
+            'title.max' => 'Tiêu đề không được vượt quá 255 ký tự.',
+            'title.regex' => 'Tiêu đề không được chứa ký hiệu đặc biệt.',
+            'description.required' => 'Mô tả công thức là bắt buộc.',
+            'description.min' => 'Mô tả phải có ít nhất 10 ký tự.',
+            'summary.required' => 'Tóm tắt công thức là bắt buộc.',
+            'summary.max' => 'Tóm tắt không được vượt quá 500 ký tự.',
+            'cookingTime.required' => 'Thời gian nấu là bắt buộc.',
+            'cookingTime.min' => 'Thời gian nấu phải ít nhất 1 phút.',
+            'preparationTime.required' => 'Thời gian chuẩn bị là bắt buộc.',
+            'difficulty.required' => 'Độ khó là bắt buộc.',
+            'difficulty.in' => 'Độ khó phải là: dễ, trung bình, hoặc khó.',
+            'servings.required' => 'Số khẩu phần là bắt buộc.',
+            'servings.min' => 'Số khẩu phần phải ít nhất 1.',
+            'ingredients.required' => 'Danh sách nguyên liệu là bắt buộc.',
+            'ingredients.min' => 'Phải có ít nhất 2 nguyên liệu.',
+            'instructions.required' => 'Hướng dẫn nấu là bắt buộc.',
+            'instructions.min' => 'Phải có ít nhất 2 bước hướng dẫn.',
+            'categoryIds.required' => 'Danh mục là bắt buộc.',
+            'categoryIds.min' => 'Phải chọn ít nhất 1 danh mục.',
+        ];
     }
 
     public function render()
