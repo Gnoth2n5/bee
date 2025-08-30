@@ -138,24 +138,7 @@
             </div>
         </div>
 
-        <!-- Newsletter Section -->
-        <div class="border-t border-gray-200 dark:border-[#3E3E3A] pt-8 mb-8">
-            <div class="max-w-2xl mx-auto text-center">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    Đăng ký nhận tin tức mới nhất
-                </h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-4">
-                    Nhận thông báo về công thức mới, mẹo nấu ăn và ưu đãi đặc biệt
-                </p>
-                <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                    <input type="email" placeholder="Email của bạn" 
-                           class="flex-1 px-4 py-3 border border-gray-300 dark:border-[#3E3E3A] rounded-xl bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all">
-                    <button class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                        Đăng ký
-                    </button>
-                </div>
-            </div>
-        </div>
+        
 
         <!-- Bottom Footer -->
         <div class="border-t border-gray-200 dark:border-[#3E3E3A] pt-8">
