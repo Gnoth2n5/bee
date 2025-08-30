@@ -45,6 +45,7 @@ class RecipeResource extends Resource
                             ->label('Tiêu đề')
                             ->required()
                             ->maxLength(255)
+                            ->regex('/^[\p{L}\p{N}\s\-\.\,\!\?\(\)\:\;\'\"]+$/u')
                             ->live(onBlur: true)
                             ->afterStateUpdated(function (string $state, callable $set) {
                                 if (!empty($state)) {
@@ -631,5 +632,12 @@ class RecipeResource extends Resource
     {
         return parent::getEloquentQuery()
             ->with(['user', 'categories', 'tags']);
+    }
+
+    public static function getValidationMessages(): array
+    {
+        return [
+            'title.regex' => 'Tiêu đề không được chứa ký hiệu đặc biệt.',
+        ];
     }
 }

@@ -22,6 +22,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\IngredientSubstituteController;
 use App\Http\Controllers\VietnamProvinceController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\DiseaseAnalysisController;
 
 use App\Livewire\MealPlans\WeeklyMealPlanPage;
 use App\Livewire\HomePage;
@@ -37,6 +38,7 @@ use App\Livewire\Admin\PendingPosts;
 use App\Livewire\StorageManager;
 use App\Livewire\Profile\ProfilePage;
 use App\Livewire\Recipes\RecipeDetail;
+use App\Livewire\DiseaseAnalysis;
 
 Route::get('/', HomePage::class)->name('home');
 
@@ -98,6 +100,17 @@ Route::get('/weekly-meal-plan', \App\Livewire\MealPlans\WeeklyMealPlanPage::clas
 
 // Weekly Meals Display
 Route::get('/weekly-meals/{mealPlan}', [WeeklyMealPlanController::class, 'showWeeklyMeals'])->name('weekly-meals.show');
+
+// Disease Analysis routes
+Route::get('/disease-analysis', DiseaseAnalysis::class)->name('disease-analysis.index');
+Route::prefix('api/disease-analysis')->name('api.disease-analysis.')->group(function () {
+    Route::post('/analyze-image', [DiseaseAnalysisController::class, 'analyzeImage'])->name('analyze-image');
+    Route::post('/recommendations', [DiseaseAnalysisController::class, 'getRecommendations'])->name('recommendations');
+    Route::post('/search-ingredients', [DiseaseAnalysisController::class, 'searchByIngredients'])->name('search-ingredients');
+    Route::post('/check-suitability', [DiseaseAnalysisController::class, 'checkRecipeSuitability'])->name('check-suitability');
+    Route::get('/diseases', [DiseaseAnalysisController::class, 'getDiseases'])->name('diseases');
+    Route::post('/create-disease', [DiseaseAnalysisController::class, 'createDisease'])->name('create-disease');
+});
 
 // Shopping List routes
 Route::middleware(['auth'])->group(function () {
