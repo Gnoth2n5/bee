@@ -21,9 +21,9 @@ class CollectionResource extends Resource
     protected static ?string $model = Collection::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-folder';
-    
+
     protected static ?string $navigationGroup = 'Quản lý nội dung';
-    
+
     protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
@@ -42,7 +42,7 @@ class CollectionResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
+                            ->afterStateUpdated(fn(string $state, callable $set) => $set('slug', Str::slug($state))),
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug')
                             ->required()
@@ -64,7 +64,7 @@ class CollectionResource extends Resource
                             ->label('Nổi bật')
                             ->default(false),
                     ])->columns(2),
-                
+
                 Forms\Components\Section::make('SEO')
                     ->schema([
                         Forms\Components\TextInput::make('meta_title')
@@ -140,13 +140,13 @@ class CollectionResource extends Resource
                     Tables\Actions\Action::make('toggle_public')
                         ->label('Chuyển trạng thái công khai')
                         ->icon('heroicon-o-globe-alt')
-                        ->action(fn (Collection $record) => $record->update(['is_public' => !$record->is_public]))
-                        ->color(fn (Collection $record) => $record->is_public ? 'warning' : 'success'),
+                        ->action(fn(Collection $record) => $record->update(['is_public' => !$record->is_public]))
+                        ->color(fn(Collection $record) => $record->is_public ? 'warning' : 'success'),
                     Tables\Actions\Action::make('toggle_featured')
                         ->label('Chuyển trạng thái nổi bật')
                         ->icon('heroicon-o-star')
-                        ->action(fn (Collection $record) => $record->update(['is_featured' => !$record->is_featured]))
-                        ->color(fn (Collection $record) => $record->is_featured ? 'warning' : 'success'),
+                        ->action(fn(Collection $record) => $record->update(['is_featured' => !$record->is_featured]))
+                        ->color(fn(Collection $record) => $record->is_featured ? 'warning' : 'success'),
                 ]),
             ])
             ->bulkActions([
@@ -155,25 +155,26 @@ class CollectionResource extends Resource
                         ->label('Đặt công khai')
                         ->icon('heroicon-o-globe-alt')
                         ->color('success')
-                        ->action(fn (CollectionSupport $records) => $records->each->update(['is_public' => true])),
+                        ->action(fn(CollectionSupport $records) => $records->each->update(['is_public' => true])),
                     Tables\Actions\BulkAction::make('make_private')
                         ->label('Đặt riêng tư')
                         ->icon('heroicon-o-lock-closed')
                         ->color('danger')
-                        ->action(fn (CollectionSupport $records) => $records->each->update(['is_public' => false])),
+                        ->action(fn(CollectionSupport $records) => $records->each->update(['is_public' => false])),
                     Tables\Actions\BulkAction::make('make_featured')
                         ->label('Đặt nổi bật')
                         ->icon('heroicon-o-star')
                         ->color('success')
-                        ->action(fn (CollectionSupport $records) => $records->each->update(['is_featured' => true])),
+                        ->action(fn(CollectionSupport $records) => $records->each->update(['is_featured' => true])),
                     Tables\Actions\BulkAction::make('remove_featured')
                         ->label('Bỏ nổi bật')
                         ->icon('heroicon-o-star')
                         ->color('warning')
-                        ->action(fn (CollectionSupport $records) => $records->each->update(['is_featured' => false])),
+                        ->action(fn(CollectionSupport $records) => $records->each->update(['is_featured' => false])),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
@@ -191,7 +192,7 @@ class CollectionResource extends Resource
             'edit' => Pages\EditCollection::route('/{record}/edit'),
         ];
     }
-    
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()

@@ -354,7 +354,8 @@ class UserRecipeResource extends Resource
                         return $count . ' công thức đã được gửi để phê duyệt.';
                     })
                     ->deselectRecordsAfterCompletion(),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getEloquentQuery(): Builder

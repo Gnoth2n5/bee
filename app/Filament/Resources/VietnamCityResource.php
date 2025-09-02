@@ -173,8 +173,6 @@ class VietnamCityResource extends Resource
                                 ->body("Đã cập nhật thông tin thành phố: {$provinceData['name']}")
                                 ->success()
                                 ->send();
-
-
                         } catch (\Exception $e) {
                             Log::error("Lỗi khi cập nhật thành phố {$record->name}: " . $e->getMessage());
 
@@ -254,7 +252,6 @@ class VietnamCityResource extends Resource
                                 ->body("Đã lấy " . count($districts) . " quận/huyện cho thành phố: {$record->name}")
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Log::error("Lỗi khi cập nhật thành phố {$record->name}: " . $e->getMessage());
                             \Filament\Notifications\Notification::make()
@@ -566,10 +563,9 @@ class VietnamCityResource extends Resource
                                 ->danger()
                                 ->send();
                         }
-
                     })
             ])
-            ->defaultSort('sort_order', 'asc');
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

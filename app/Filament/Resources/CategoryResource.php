@@ -133,7 +133,7 @@ class CategoryResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('sort_order', 'asc');
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
