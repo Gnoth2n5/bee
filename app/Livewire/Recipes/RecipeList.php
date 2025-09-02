@@ -55,14 +55,24 @@ class RecipeList extends Component
     public function mount()
     {
         // Initialize filters from URL parameters
-        if (is_string($this->selectedTags)) {
-            $this->selectedTags = explode(',', $this->selectedTags);
+        if (!is_array($this->selectedTags)) {
+            if (is_string($this->selectedTags) && !empty($this->selectedTags)) {
+                $this->selectedTags = explode(',', $this->selectedTags);
+            } else {
+                $this->selectedTags = [];
+            }
         }
     }
 
     public function updatedSearch()
     {
         $this->resetPage();
+    }
+
+    public function performSearch()
+    {
+        $this->resetPage();
+        $this->dispatch('scroll-to-results');
     }
 
     public function updatedCategory()
@@ -242,7 +252,7 @@ class RecipeList extends Component
             ]);
         } catch (\Exception $e) {
             // Log error for debugging
-            \Log::error('RecipeList render error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('RecipeList render error: ' . $e->getMessage());
 
             // Return empty results on error
             return view('livewire.recipes.recipe-list', [
