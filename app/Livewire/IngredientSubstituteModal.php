@@ -65,6 +65,12 @@ class IngredientSubstituteModal extends Component
         $this->resetMessages();
         $this->resetForm();
 
+        // Reset loading state
+        $this->loading = false;
+
+        // Clear validation errors
+        $this->resetErrorBag();
+
         // Focus vào input khi modal mở
         $this->dispatch('focus-ingredient-input');
     }
@@ -145,7 +151,8 @@ class IngredientSubstituteModal extends Component
      */
     public function resetForm()
     {
-        $this->reset(['ingredientVi', 'substitutes', 'error', 'success']);
+        $this->reset(['ingredientVi', 'substitutes', 'error', 'success', 'loading']);
+        $this->resetErrorBag();
     }
 
 

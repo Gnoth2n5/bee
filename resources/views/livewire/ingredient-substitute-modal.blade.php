@@ -47,14 +47,14 @@
                         <div class="flex gap-3">
                             <div class="flex-1">
                                 <div class="relative">
-                                    <input 
-                                        type="text" 
-                                        id="ingredient-input"
-                                        wire:model.live="ingredientVi"
-                                        placeholder="Ví dụ: bơ, trứng gà, hành tây..."
-                                        class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base"
-                                        {{ $loading ? 'disabled' : '' }}
-                                    />
+                                                                    <input 
+                                    type="text" 
+                                    id="ingredient-substitute-input"
+                                    wire:model.live="ingredientVi"
+                                    placeholder="Ví dụ: bơ, trứng gà, hành tây..."
+                                    class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base"
+                                    {{ $loading ? 'disabled' : '' }}
+                                />
                                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                         <x-heroicon-s-magnifying-glass class="h-5 w-5 text-gray-400" />
                                     </div>
@@ -88,7 +88,7 @@
                             @foreach($examples as $example)
                                 <button 
                                     type="button"
-                                    onclick="setIngredientValue('{{ $example }}')"
+                                    wire:click="$set('ingredientVi', '{{ $example }}')"
                                     class="inline-flex items-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
                                     {{ $loading ? 'disabled' : '' }}
                                 >
@@ -103,7 +103,7 @@
                         <div class="flex items-center justify-between mb-2">
                             <p class="text-sm text-gray-600">Tìm kiếm gần đây:</p>
                             <button 
-                                onclick="clearSearchHistory()"
+                                onclick="clearIngredientSearchHistory()"
                                 class="text-xs text-gray-500 hover:text-red-500 transition-colors"
                             >
                                 Xóa lịch sử
@@ -242,3 +242,88 @@
 
     @endif
 </div>
+
+<script>
+document.addEventListener('livewire:init', () => {
+    // Handle focus when modal opens
+    Livewire.on('focus-ingredient-input', () => {
+        setTimeout(() => {
+            const input = document.getElementById('ingredient-substitute-input');
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        }, 100);
+    });
+    
+    // Handle search success event
+    Livewire.on('search-success', () => {
+        // Add to search history using localStorage
+        const ingredient = @this.ingredientVi;
+        if (ingredient) {
+            addToIngredientSearchHistory(ingredient);
+            renderIngredientSearchHistory();
+        }
+    });
+});
+
+// Ingredient search history management
+function addToIngredientSearchHistory(ingredient) {
+    const maxHistory = 5;
+    let history = JSON.parse(localStorage.getItem('ingredient_search_history') || '[]');
+    
+    // Remove if already exists
+    history = history.filter(item => item !== ingredient);
+    
+    // Add to beginning
+    history.unshift(ingredient);
+    
+    // Limit size
+    history = history.slice(0, maxHistory);
+    
+    localStorage.setItem('ingredient_search_history', JSON.stringify(history));
+}
+
+function renderIngredientSearchHistory() {
+    const section = document.getElementById('search-history-section');
+    const list = document.getElementById('search-history-list');
+    
+    if (!section || !list) return;
+    
+    const history = JSON.parse(localStorage.getItem('ingredient_search_history') || '[]');
+    
+    if (history.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+    
+    section.style.display = 'block';
+    list.innerHTML = '';
+    
+    history.forEach(item => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'inline-flex items-center px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm rounded-full transition-colors';
+        button.innerHTML = `
+            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd" />
+            </svg>
+            ${item}
+        `;
+        button.onclick = () => {
+            @this.set('ingredientVi', item);
+        };
+        list.appendChild(button);
+    });
+}
+
+function clearIngredientSearchHistory() {
+    localStorage.removeItem('ingredient_search_history');
+    renderIngredientSearchHistory();
+}
+
+// Initialize on component load
+document.addEventListener('DOMContentLoaded', () => {
+    renderIngredientSearchHistory();
+});
+</script>
