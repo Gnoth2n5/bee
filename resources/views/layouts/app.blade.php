@@ -70,8 +70,8 @@
 
             // Handle flash message
             Livewire.on('flash-message', (event) => {
-                const message = event.message;
-                const type = event.type || 'success';
+                const message = event.message || event[0]?.message;
+                const type = event.type || event[0]?.type || 'success';
                 
                 // Tạo flash message element
                 const flashElement = document.createElement('div');
@@ -102,8 +102,8 @@
 
             // Handle show message (for post actions)
             Livewire.on('show-message', (data) => {
-                const message = data.message;
-                const type = data.type || 'success';
+                const message = data.message || data[0]?.message;
+                const type = data.type || data[0]?.type || 'success';
                 
                 // Tạo flash message element
                 const flashElement = document.createElement('div');
