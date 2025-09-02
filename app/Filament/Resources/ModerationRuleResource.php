@@ -27,6 +27,14 @@ class ModerationRuleResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    public static function canViewAny(): bool
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        // return Auth::check() && $user->hasRole(['admin']);
+        return false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -185,8 +193,8 @@ class ModerationRuleResource extends Resource
                         ->modalDescription(
                             fn(ModerationRule $record) =>
                             $record->is_active
-                            ? 'Bạn có chắc chắn muốn tắt quy tắc này?'
-                            : 'Bạn có chắc chắn muốn bật quy tắc này?'
+                                ? 'Bạn có chắc chắn muốn tắt quy tắc này?'
+                                : 'Bạn có chắc chắn muốn bật quy tắc này?'
                         )
                         ->modalSubmitActionLabel('Xác nhận'),
 

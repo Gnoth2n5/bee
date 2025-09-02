@@ -28,6 +28,8 @@ class RecipeResource extends Resource
 
     protected static ?string $navigationGroup = 'Quản lý nội dung';
 
+    protected static ?string $navigationLabel = 'Công thức';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form

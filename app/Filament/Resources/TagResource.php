@@ -23,6 +23,8 @@ class TagResource extends Resource
 
     protected static ?string $navigationGroup = 'Quản lý nội dung';
 
+    protected static ?string $navigationLabel = 'Thẻ';
+
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form

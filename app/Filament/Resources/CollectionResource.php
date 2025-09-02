@@ -24,6 +24,8 @@ class CollectionResource extends Resource
 
     protected static ?string $navigationGroup = 'Quản lý nội dung';
 
+    protected static ?string $navigationLabel = 'Bộ sưu tập';
+
     protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form

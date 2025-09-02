@@ -23,6 +23,8 @@ class RatingResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-star';
     
     protected static ?string $navigationGroup = 'Quản lý nội dung';
+
+    protected static ?string $navigationLabel = 'Đánh giá';
     
     protected static ?int $navigationSort = 6;
 
