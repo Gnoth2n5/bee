@@ -1,13 +1,13 @@
 @props(['collections', 'showCreateModal', 'newName', 'newDescription', 'newIsPublic', 'newCoverImage', 'newCoverImagePreview'])
 
 <div class="flex justify-between items-center mb-4">
-    <h2 class="text-xl font-semibold text-gray-900">Bộ sưu tập của bạn</h2>
+    <h2 class="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Bộ sưu tập của bạn</h2>
     <button 
-        class="inline-flex items-center px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+        class="group inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
         wire:click="$set('showCreateModal', true)"
         type="button"
     >
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
         </svg>
         Tạo bộ sưu tập
@@ -47,20 +47,22 @@
             </div>
         </a>
     @empty
-        <div class="col-span-full text-center py-12">
-            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-            </svg>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Chưa có bộ sưu tập nào</h3>
-            <p class="text-gray-500 mb-4">Tạo bộ sưu tập để tổ chức công thức yêu thích!</p>
+        <div class="col-span-full text-center py-16">
+            <div class="w-20 h-20 bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-3">Chưa có bộ sưu tập nào</h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">Tạo bộ sưu tập để tổ chức các công thức yêu thích của bạn!</p>
             <button 
                 wire:click="$set('showCreateModal', true)"
-                class="inline-flex items-center px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+                class="group inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
             >
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
-                Tạo bộ sưu tập
+                Tạo bộ sưu tập đầu tiên
             </button>
         </div>
     @endforelse
@@ -110,9 +112,15 @@
                     @endif
                     @error('newCoverImage')<p class="text-red-500 text-sm mt-1">{{ $error->first() }}</p>@enderror
                 </div>
-                <div class="flex gap-2 mt-4">
-                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg font-semibold transition">Lưu</button>
-                    <button type="button" wire:click="resetCollectionForm" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-5 py-2 rounded-lg font-semibold transition">Huỷ</button>
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" class="group inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                        <x-heroicon-o-check class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                        Lưu
+                    </button>
+                    <button type="button" wire:click="resetCollectionForm" class="inline-flex items-center px-4 py-2.5 bg-white/80 dark:bg-slate-700/80 hover:bg-gray-100 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg border border-gray-300 dark:border-slate-600 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                        <x-heroicon-o-x-mark class="w-4 h-4 mr-2" />
+                        Huỷ
+                    </button>
                 </div>
             </form>
         </div>

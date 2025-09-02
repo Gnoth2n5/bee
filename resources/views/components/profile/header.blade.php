@@ -34,7 +34,7 @@
                     </label>
                     
                     @if($user->hasLocalAvatar())
-                        <button wire:click="removeAvatar" type="button" class="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 cursor-pointer shadow-lg transition-colors" title="Xóa ảnh đại diện">
+                        <button wire:click="removeAvatar" type="button" class="absolute top-0 right-0 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full p-2 cursor-pointer shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300" title="Xóa ảnh đại diện">
                             <x-heroicon-o-x-mark class="w-4 h-4" />
                         </button>
                     @endif
@@ -90,15 +90,9 @@
 
         <!-- Action Buttons -->
         <div class="flex items-center space-x-3 mt-4 sm:mt-0">
-            @if($isEditing)
-                <button wire:click="saveProfile" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                    Lưu thay đổi
-                </button>
-                <button wire:click="toggleEdit" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors">
-                    Hủy
-                </button>
-            @else
-                <button wire:click="toggleEdit" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+            @if(!$isEditing)
+                <button wire:click="toggleEdit" class="group inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                    <x-heroicon-o-pencil class="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                     Chỉnh sửa hồ sơ
                 </button>
             @endif
@@ -106,9 +100,9 @@
             <!-- Nút lấy vị trí -->
             @if(!$nearestCity)
                 <button wire:click="getUserLocationFromBrowser" 
-                        class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                        class="group inline-flex items-center px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                    <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9z" clip-rule="evenodd" />
                     </svg>
                     Lấy vị trí của tôi
                 </button>

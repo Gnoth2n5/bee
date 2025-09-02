@@ -161,9 +161,16 @@ class ProfilePage extends Component
     public function toggleEdit()
     {
         $this->isEditing = !$this->isEditing;
-        if (!$this->isEditing) {
+        if ($this->isEditing) {
+            // When entering edit mode, switch to settings tab
+            $this->activeTab = 'settings';
+        } else {
             $this->loadProfileData(); // Reset form
             $this->avatar = null; // Reset avatar
+            // When exiting edit mode, switch back to recipes tab if currently on settings
+            if ($this->activeTab === 'settings') {
+                $this->activeTab = 'recipes';
+            }
         }
     }
 
@@ -269,6 +276,8 @@ class ProfilePage extends Component
 
             $this->isEditing = false;
             $this->avatar = null; // Reset avatar after save
+            // Switch back to recipes tab after successful save
+            $this->activeTab = 'recipes';
             $this->dispatch('profile-updated');
             session()->flash('success', 'Hồ sơ đã được cập nhật thành công!');
         } catch (\Exception $e) {
