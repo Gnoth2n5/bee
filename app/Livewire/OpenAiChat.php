@@ -64,6 +64,11 @@ class OpenAiChat extends Component
 
     public function mount()
     {
+        // Check if user is VIP, redirect if not
+        if (!Auth::check() || !Auth::user()->isVip()) {
+            return redirect()->route('vip.upgrade')->with('error', 'Tính năng AI Chat chỉ dành cho thành viên VIP. Vui lòng nâng cấp tài khoản.');
+        }
+
         $this->loadConversationFromSession();
 
         // Ensure string properties are properly initialized

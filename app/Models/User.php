@@ -204,6 +204,15 @@ class User extends Authenticatable
      */
     public function isVip()
     {
+        // Check profile-based VIP first (for simple VIP system)
+        if ($this->profile && $this->profile->isVipAccount) {
+            // Check if VIP hasn't expired
+            if (!$this->profile->vip_expires_at || $this->profile->vip_expires_at->isFuture()) {
+                return true;
+            }
+        }
+
+        // Fallback to subscription-based VIP (for complex subscription system)
         $subscription = $this->activeSubscription();
         return $subscription && $subscription->subscription_type === 'vip';
     }
@@ -225,6 +234,14 @@ class User extends Authenticatable
         return $this->hasMany(RestaurantAd::class);
     }
 
+    /**
+     * Get the user's payments.
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function paymentInvoices()
     {
         return $this->hasMany(PaymentInvoice::class);
@@ -240,5 +257,4 @@ class User extends Authenticatable
             ->where('start_date', '<=', now())
             ->where('end_date', '>=', now());
     }
-
 }

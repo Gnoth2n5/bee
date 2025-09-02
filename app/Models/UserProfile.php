@@ -20,13 +20,18 @@ class UserProfile extends Model
         'dietary_preferences',
         'allergies',
         'health_conditions',
-        'cooking_experience'
+        'cooking_experience',
+        'isVipAccount',
+        'vip_expires_at',
+        'vip_plan'
     ];
 
     protected $casts = [
         'dietary_preferences' => 'array',
         'allergies' => 'array',
-        'health_conditions' => 'array'
+        'health_conditions' => 'array',
+        'isVipAccount' => 'boolean',
+        'vip_expires_at' => 'datetime'
     ];
 
     /**

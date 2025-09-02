@@ -320,14 +320,8 @@ class OpenAiService
         try {
             Log::info('OpenRouter recipe suggestions', [
                 'prompt' => $prompt,
-                'user_id' => $user?->id,
-                'is_vip' => $user?->isVip() ?? false
+                'user_id' => $user?->id
             ]);
-
-            // Check if user has VIP access for enhanced features
-            if ($user && $user->isVip()) {
-                return $this->getVipRecipeSuggestions($prompt, $user);
-            }
 
             return $this->recommendFromSite($prompt);
         } catch (Exception $e) {

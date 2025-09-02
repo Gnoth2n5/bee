@@ -21,7 +21,8 @@ use App\Http\Controllers\RestaurantAdController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\IngredientSubstituteController;
 use App\Http\Controllers\VietnamProvinceController;
-use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\DiseaseAnalysisController;
 
 use App\Livewire\MealPlans\WeeklyMealPlanPage;
@@ -59,7 +60,7 @@ Route::get('/recipes', RecipeList::class)->name('recipes.index');
 Route::get('/recipes/{recipe}', RecipeDetail::class)->name('recipes.show');
 
 // Advanced Search route
-Route::get('/search', AdvancedSearch::class)->name('search.advanced');
+Route::get('/search', AdvancedSearch::class)->name('search.advanced')->middleware(['auth', 'vip']);
 
 // Weather-based recipe suggestions
 Route::get('/weather-suggestions', WeatherRecipeSuggestions::class)->name('weather.suggestions');
@@ -102,8 +103,12 @@ Route::get('/weekly-meal-plan', \App\Livewire\MealPlans\WeeklyMealPlanPage::clas
 Route::get('/weekly-meals/{mealPlan}', [WeeklyMealPlanController::class, 'showWeeklyMeals'])->name('weekly-meals.show');
 
 // Disease Analysis routes
-Route::get('/disease-analysis', DiseaseAnalysis::class)->name('disease-analysis.index');
-Route::prefix('api/disease-analysis')->name('api.disease-analysis.')->group(function () {
+// Disease Analysis - VIP only
+Route::middleware(['auth', 'vip'])->group(function () {
+    Route::get('/disease-analysis', DiseaseAnalysis::class)->name('disease-analysis.index');
+});
+
+Route::prefix('api/disease-analysis')->name('api.disease-analysis.')->middleware(['auth', 'vip'])->group(function () {
     Route::post('/analyze-image', [DiseaseAnalysisController::class, 'analyzeImage'])->name('analyze-image');
     Route::post('/recommendations', [DiseaseAnalysisController::class, 'getRecommendations'])->name('recommendations');
     Route::post('/search-ingredients', [DiseaseAnalysisController::class, 'searchByIngredients'])->name('search-ingredients');
@@ -256,15 +261,31 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/restaurant-ads/{ad}/increment-views', [RestaurantAdController::class, 'incrementViews'])->name('restaurant-ads.increment-views');
     Route::post('/restaurant-ads/{ad}/increment-clicks', [RestaurantAdController::class, 'incrementClicks'])->name('restaurant-ads.increment-clicks');
 
-    // VIP features routes
-    Route::middleware(['vip'])->group(function () {
-        Route::get('/vip/map-search', function () {
-            return view('vip.map-search');
-        })->name('vip.map-search');
+    // VIP payment routes
+    Route::get('/vip/upgrade', [PaymentController::class, 'upgrade'])->name('vip.upgrade');
+    Route::get('/vip/payment-history', [PaymentController::class, 'history'])->name('vip.payment-history');
 
-        Route::get('/vip/advanced-features', function () {
-            return view('vip.advanced-features');
-        })->name('vip.advanced-features');
+    // VIP features routes (require VIP access)
+    Route::middleware(['vip'])->group(function () {
+        Route::get('/vip/chatbox-advanced', function () {
+            return view('vip.chatbox-advanced');
+        })->name('vip.chatbox-advanced');
+
+        Route::get('/vip/meal-plans-personalized', function () {
+            return view('vip.meal-plans-personalized');
+        })->name('vip.meal-plans-personalized');
+
+        Route::get('/vip/advanced-search', function () {
+            return view('vip.advanced-search');
+        })->name('vip.advanced-search');
+
+        Route::get('/vip/shopping-list-smart', function () {
+            return view('vip.shopping-list-smart');
+        })->name('vip.shopping-list-smart');
+
+        Route::get('/vip/recipe-management', function () {
+            return view('vip.recipe-management');
+        })->name('vip.recipe-management');
     });
 
     // Test route để kiểm tra VIP
@@ -467,11 +488,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/pending-posts', PendingPosts::class)->name('pending-posts');
 
     // Payment management routes
-    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
-    Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
-    Route::post('/payments/{id}/approve', [PaymentController::class, 'approve'])->name('payments.approve');
-    Route::post('/payments/{id}/reject', [PaymentController::class, 'reject'])->name('payments.reject');
-    Route::get('/payments/statistics', [PaymentController::class, 'statistics'])->name('payments.statistics');
+    Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+    Route::get('/payments/{id}', [AdminPaymentController::class, 'show'])->name('payments.show');
+    Route::post('/payments/{id}/approve', [AdminPaymentController::class, 'approve'])->name('payments.approve');
+    Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])->name('payments.reject');
+    Route::get('/payments/statistics', [AdminPaymentController::class, 'statistics'])->name('payments.statistics');
 });
 
 // Admin logout route
@@ -569,6 +590,11 @@ Route::get('/test-auto-verify', function () {
     ]);
 })->middleware(['auth', 'admin'])->name('test.auto.verify');
 
+// VIP Payment webhook - excluded from CSRF protection (like old project)
+Route::post('/webhooks/payment', [PaymentController::class, 'webhook'])
+    ->name('webhooks.payment')
+    ->withoutMiddleware(['auth', 'web']);
+
 // Webhook cho PayOS
 Route::post('/webhook/payos', function (Request $request) {
     Log::info('PayOS Webhook received', $request->all());
@@ -646,6 +672,36 @@ Route::get('/check-vip-status', function () {
     ]);
 })->middleware('auth')->name('check.vip.status');
 
+// API endpoint để check VIP status và payment success
+Route::get('/api/check-vip-status', function () {
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['success' => false, 'message' => 'Chưa đăng nhập']);
+    }
+
+    $isVip = $user->isVip();
+
+    // Check payment success from cache
+    $paymentSuccess = \Cache::get("vip_payment_success_{$user->id}");
+
+    // Clear the cache after reading to show notification only once
+    if ($paymentSuccess) {
+        \Cache::forget("vip_payment_success_{$user->id}");
+    }
+
+    return response()->json([
+        'success' => true,
+        'is_vip' => $isVip,
+        'user_id' => $user->id,
+        'payment_success' => $paymentSuccess,
+        'profile' => $user->profile ? [
+            'isVipAccount' => $user->profile->isVipAccount,
+            'vip_expires_at' => $user->profile->vip_expires_at,
+            'vip_plan' => $user->profile->vip_plan
+        ] : null
+    ]);
+})->middleware('auth')->name('api.check.vip.status');
+
 // Test OpenAI API
 Route::get('/test-openai', function () {
     $openAiService = new \App\Services\OpenAiService();
@@ -653,6 +709,46 @@ Route::get('/test-openai', function () {
 
     return response()->json($result);
 })->name('test.openai');
+
+// Test VIP Payment webhook (for development only)
+Route::get('/test-vip-payment/{userId}', function ($userId) {
+    $user = \App\Models\User::find($userId);
+    if (!$user) {
+        return response()->json(['error' => 'User not found'], 404);
+    }
+
+    // Simulate webhook payload
+    $payload = [
+        'transferAmount' => 2000,
+        'description' => "DH{$userId}",
+        'gateway' => 'test',
+        'transactionDate' => now()->toISOString(),
+        'accountNumber' => '0975821009',
+        'code' => 'TEST_' . time(),
+        'content' => 'Test payment',
+        'transferType' => 'in',
+        'accumulated' => 2000,
+        'subAccount' => '',
+        'referenceCode' => 'TEST_REF_' . time()
+    ];
+
+    try {
+        $paymentService = new \App\Services\PaymentService();
+        $payment = $paymentService->createFromWebhook($payload);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Test payment processed successfully',
+            'payment_id' => $payment->id,
+            'user_vip_status' => $user->fresh()->isVip()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+})->name('test.vip.payment');
 
 // Test WeeklyMealPlan creation
 Route::get('/test-mealplan', function () {

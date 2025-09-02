@@ -24,10 +24,17 @@ class CheckVipAccess
         $user = Auth::user();
 
         if (!$user->isVip()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần nâng cấp lên gói VIP để sử dụng tính năng này'
-            ], 403);
+            // Check if it's an AJAX/API request
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn cần nâng cấp lên gói VIP để sử dụng tính năng này'
+                ], 403);
+            }
+
+            // For regular requests, redirect to VIP upgrade page
+            return redirect()->route('vip.upgrade')
+                ->with('error', 'Bạn cần nâng cấp lên gói VIP để sử dụng tính năng này');
         }
 
         return $next($request);
