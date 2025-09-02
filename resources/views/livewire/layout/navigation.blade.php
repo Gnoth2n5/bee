@@ -240,7 +240,7 @@ new class extends Component {
                         <span class="sr-only">Open user menu</span>
                         <div
                             class="w-8 h-8 rounded-xl bg-orange-500 flex items-center justify-center text-white font-semibold text-sm">
-                            {{ substr(auth()->user()->name, 0, 1) }}
+                            {{ substr(Auth::user()->name, 0, 1) }}
                         </div>
                     </button>
 
