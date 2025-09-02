@@ -45,10 +45,10 @@ class Dashboard extends BaseDashboard
             // 2 biểu đồ
             \App\Filament\Widgets\RecipeStatusChart::class,
             \App\Filament\Widgets\UserGrowthChart::class,
-            
+
             // 1 bảng công thức mới
             \App\Filament\Widgets\RecentRecipesWidget::class,
-            
+
             // 1 bảng hoạt động gần đây
             \App\Filament\Widgets\RecentActivityWidget::class,
         ];
