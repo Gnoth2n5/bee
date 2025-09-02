@@ -50,74 +50,85 @@ class RecipeList extends Component
     public $showAdvancedFilters = false;
     public $viewMode = 'grid'; // grid, list
 
+    // Disable Livewire's automatic scroll behavior
+    protected $paginationTheme = 'tailwind';
+
+    // Override to prevent scroll to top on updates
+    public function hydrate()
+    {
+        // This method runs on every request to prevent scroll behavior
+    }
+
 
 
     public function mount()
     {
         // Initialize filters from URL parameters
-        if (!is_array($this->selectedTags)) {
-            if (is_string($this->selectedTags) && !empty($this->selectedTags)) {
-                $this->selectedTags = explode(',', $this->selectedTags);
-            } else {
-                $this->selectedTags = [];
-            }
+        if (is_string($this->selectedTags) && $this->selectedTags !== '') {
+            $tagsString = (string) $this->selectedTags;
+            $this->selectedTags = array_filter(explode(',', $tagsString));
+        } else {
+            $this->selectedTags = [];
         }
     }
 
     public function updatedSearch()
     {
-        $this->resetPage();
+        // Reset page only for search, no scroll
+        $this->setPage(1);
     }
 
     public function performSearch()
     {
-        $this->resetPage();
+        $this->setPage(1);
         $this->dispatch('scroll-to-results');
     }
 
     public function updatedCategory()
     {
-        $this->resetPage();
+        // Reset page silently for filters
+        $this->setPage(1);
     }
 
     public function updatedDifficulty()
     {
-        $this->resetPage();
+        $this->setPage(1);
     }
 
     public function updatedCookingTime()
     {
-        $this->resetPage();
+        $this->setPage(1);
     }
 
     public function updatedSort()
     {
-        $this->resetPage();
+        // For sort, we might want to keep the current page
+        // $this->setPage(1);
     }
 
     public function updatedSelectedTags()
     {
-        $this->resetPage();
+        $this->setPage(1);
     }
 
     public function updatedMinRating()
     {
-        $this->resetPage();
+        $this->setPage(1);
     }
 
     public function updatedMaxCalories()
     {
-        $this->resetPage();
+        $this->setPage(1);
     }
 
     public function updatedServings()
     {
-        $this->resetPage();
+        $this->setPage(1);
     }
 
     public function updatedPriceRange()
     {
-        $this->resetPage();
+        $this->setPage(1);
     }
 
     public function toggleAdvancedFilters()
@@ -137,7 +148,7 @@ class RecipeList extends Component
         } else {
             $this->selectedTags[] = $tagId;
         }
-        $this->resetPage();
+        $this->setPage(1);
     }
 
     public function clearFilters()
@@ -154,7 +165,9 @@ class RecipeList extends Component
             'servings',
             'priceRange'
         ]);
-        $this->resetPage();
+        $this->setPage(1);
+        // Smooth scroll to filters section after clearing
+        $this->dispatch('scroll-to-filters');
     }
 
     public function confirmToggleFavorite($recipeId)
@@ -193,11 +206,20 @@ class RecipeList extends Component
     }
 
     /**
-     * Scroll to top when page changes
+     * Override to prevent automatic scroll on page changes
      */
     public function updatedPage()
     {
-        $this->dispatch('scroll-to-top');
+        // Do nothing - prevent automatic scroll
+        // Only scroll when explicitly called from pagination methods
+    }
+
+    /**
+     * Override updatingPage to prevent any automatic scroll behavior
+     */
+    public function updatingPage()
+    {
+        // Prevent Livewire's default scroll behavior
     }
 
     /**
@@ -206,21 +228,21 @@ class RecipeList extends Component
     public function nextPage()
     {
         $this->setPage($this->getPage() + 1);
-        $this->dispatch('scroll-to-top');
+        $this->dispatch('scroll-to-top', ['fromPagination' => true]);
     }
 
     public function previousPage()
     {
         if ($this->getPage() > 1) {
             $this->setPage($this->getPage() - 1);
-            $this->dispatch('scroll-to-top');
+            $this->dispatch('scroll-to-top', ['fromPagination' => true]);
         }
     }
 
     public function gotoPage($page)
     {
         $this->setPage($page);
-        $this->dispatch('scroll-to-top');
+        $this->dispatch('scroll-to-top', ['fromPagination' => true]);
     }
 
     public function render()

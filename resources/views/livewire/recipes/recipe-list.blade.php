@@ -140,10 +140,10 @@
                                 <span class="text-sm font-semibold text-orange-600 dark:text-orange-400">Đang lọc</span>
                             </div>
                         @endif
-                    </div>
+                </div>
 
-                    <!-- Export and View Mode Controls -->
-                    <div class="flex items-center space-x-3">
+                <!-- Export and View Mode Controls -->
+                <div class="flex items-center space-x-3">
                     <!-- Export Dropdown -->
                     <div class="relative" x-data="{ open: false }">
                         {{-- <button @click="open = !open" 
@@ -221,7 +221,7 @@
         </div>
 
         <!-- Enhanced Filters Section -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 relative z-10" data-filters-section>
             <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 dark:border-slate-700/50 p-8">
                 <!-- Filters Header -->
                 <div class="flex items-center justify-between mb-8">
@@ -386,7 +386,7 @@
                         </div>
                     </div>
                 </div>
-                @endif
+                        @endif
 
                 <!-- Toggle Advanced Filters -->
                 <div class="border-t border-gray-200 dark:border-slate-700 pt-6 text-center">
@@ -397,57 +397,57 @@
                         <x-lucide-filter class="w-5 h-5 mr-2" />
                         {{ $showAdvancedFilters ? 'Ẩn bộ lọc nâng cao' : 'Hiện bộ lọc nâng cao' }}
                     </button>
-                </div>
             </div>
         </div>
+    </div>
 
         <!-- Main Content Container -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <!-- Main Content -->
-            <div class="w-full">
+            <div class="w-full" data-results-section>
                     <!-- Active Filters Display -->
-                    @if (
-                        ($search ?? '') ||
-                            ($category ?? '') ||
-                            ($difficulty ?? '') ||
-                            ($cookingTime ?? '') ||
-                            !empty($selectedTags ?? []) ||
-                            ($minRating ?? '') ||
-                            ($maxCalories ?? '') ||
-                            ($servings ?? ''))
+                            @if (
+                                ($search ?? '') ||
+                                    ($category ?? '') ||
+                                    ($difficulty ?? '') ||
+                                    ($cookingTime ?? '') ||
+                                    !empty($selectedTags ?? []) ||
+                                    ($minRating ?? '') ||
+                                    ($maxCalories ?? '') ||
+                                    ($servings ?? ''))
                         <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-4 mb-6 border border-blue-200 dark:border-blue-800">
                             <div class="flex flex-wrap items-center gap-3">
                                 <div class="flex items-center">
                                     <x-lucide-filter class="w-4 h-4 mr-2 text-blue-500" />
                                     <span class="text-sm font-semibold text-blue-700 dark:text-blue-400">Bộ lọc đang áp dụng:</span>
-                                </div>
-                                <x-active-filters :filters="[
-                                    'search' => $search,
-                                    'category' => $category,
-                                    'difficulty' => $difficulty,
-                                    'cookingTime' => $cookingTime,
-                                    'selectedTags' => $selectedTags,
-                                    'minRating' => $minRating,
-                                    'maxCalories' => $maxCalories,
-                                    'servings' => $servings,
-                                ]" :categories="$categories" />
-                            </div>
                         </div>
+                        <x-active-filters :filters="[
+                            'search' => $search,
+                            'category' => $category,
+                            'difficulty' => $difficulty,
+                            'cookingTime' => $cookingTime,
+                            'selectedTags' => $selectedTags,
+                            'minRating' => $minRating,
+                            'maxCalories' => $maxCalories,
+                            'servings' => $servings,
+                        ]" :categories="$categories" />
+                    </div>
+                </div>
                     @endif
 
                     <!-- Enhanced Recipes Grid/List -->
-                    @if ($recipes->count() > 0)
+                @if ($recipes->count() > 0)
                         <div class="{{ $viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6' }}">
                             @foreach ($recipes as $index => $recipe)
                                 <div class="animate-fade-in-up" style="animation-delay: {{ $index * 50 }}ms">
-                                    @if ($viewMode === 'grid')
-                                        <x-recipe-grid-card :recipe="$recipe" />
-                                    @else
-                                        <x-recipe-list-item :recipe="$recipe" />
-                                    @endif
+                            @if ($viewMode === 'grid')
+                                <x-recipe-grid-card :recipe="$recipe" />
+                            @else
+                                <x-recipe-list-item :recipe="$recipe" />
+                            @endif
                                 </div>
-                            @endforeach
-                        </div>
+                        @endforeach
+                    </div>
 
                         <!-- Enhanced Pagination -->
                         <div class="mt-12">
@@ -511,8 +511,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    @else
+                    </div>
+                @else
                         <!-- Enhanced Empty State -->
                         <div class="text-center py-20">
                             <div class="w-24 h-24 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -530,14 +530,78 @@
                                 Xóa tất cả bộ lọc
                             </button>
                         </div>
-                    @endif
-                </div>
+                @endif
             </div>
         </div>
+    </div>
     </section>
 
 
 
     <!-- Export Modal -->
     <x-export-modal />
+
+    <!-- Smooth Scroll Script -->
+    <script>
+        document.addEventListener('livewire:init', () => {
+            // Store original scroll position
+            let shouldPreventScroll = false;
+            let originalScrollPosition = 0;
+
+            // Before Livewire update, store scroll position
+            Livewire.hook('morph.updating', ({ el, component, toEl, childrenOnly, skip }) => {
+                // Check if this is a filter update (not pagination)
+                if (component.fingerprint.name === 'recipes.recipe-list') {
+                    shouldPreventScroll = true;
+                    originalScrollPosition = window.pageYOffset;
+                }
+            });
+
+            // After Livewire update, restore scroll position if needed
+            Livewire.hook('morph.updated', ({ el, component }) => {
+                if (shouldPreventScroll && component.fingerprint.name === 'recipes.recipe-list') {
+                    // Small delay to ensure DOM is updated
+                    setTimeout(() => {
+                        window.scrollTo(0, originalScrollPosition);
+                        shouldPreventScroll = false;
+                    }, 10);
+                }
+            });
+
+            // Scroll to filters when clearing filters
+            Livewire.on('scroll-to-filters', () => {
+                shouldPreventScroll = false; // Allow this scroll
+                const filtersSection = document.querySelector('[data-filters-section]');
+                if (filtersSection) {
+                    filtersSection.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }
+            });
+
+            // Scroll to results when performing search
+            Livewire.on('scroll-to-results', () => {
+                shouldPreventScroll = false; // Allow this scroll
+                const resultsSection = document.querySelector('[data-results-section]');
+                if (resultsSection) {
+                    resultsSection.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }
+            });
+
+            // Handle pagination scroll
+            Livewire.on('scroll-to-top', (data) => {
+                shouldPreventScroll = false; // Allow pagination scroll
+                if (data && data.fromPagination) {
+                    window.scrollTo({ 
+                        top: 0, 
+                        behavior: 'smooth' 
+                    });
+                }
+            });
+        });
+    </script>
 </div>
