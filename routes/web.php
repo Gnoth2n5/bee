@@ -40,6 +40,10 @@ use App\Livewire\StorageManager;
 use App\Livewire\Profile\ProfilePage;
 use App\Livewire\Recipes\RecipeDetail;
 use App\Livewire\DiseaseAnalysis;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', HomePage::class)->name('home');
 
@@ -60,86 +64,14 @@ Route::get('/recipes', RecipeList::class)->name('recipes.index');
 Route::get('/recipes/{recipe}', RecipeDetail::class)->name('recipes.show');
 
 // Advanced Search route
-Route::get('/search', AdvancedSearch::class)->name('search.advanced')->middleware(['auth', 'vip']);
+Route::get('/search', AdvancedSearch::class)->name('search.advanced');
 
 // Weather-based recipe suggestions
 Route::get('/weather-suggestions', WeatherRecipeSuggestions::class)->name('weather.suggestions');
 
-// Weekly Meal Plan routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/meal-plans', [WeeklyMealPlanController::class, 'index'])->name('meal-plans.index');
-    Route::get('/meal-plans/create', [WeeklyMealPlanController::class, 'create'])->name('meal-plans.create');
-    Route::post('/meal-plans', [WeeklyMealPlanController::class, 'store'])->name('meal-plans.store');
-    Route::get('/meal-plans/{mealPlan}', [WeeklyMealPlanController::class, 'show'])->name('meal-plans.show');
-    Route::get('/meal-plans/{mealPlan}/json', [WeeklyMealPlanController::class, 'showJson'])->name('meal-plans.show-json');
-    Route::get('/meal-plans/{mealPlan}/edit', [WeeklyMealPlanController::class, 'edit'])->name('meal-plans.edit');
-    Route::put('/meal-plans/{mealPlan}', [WeeklyMealPlanController::class, 'update'])->name('meal-plans.update');
-    Route::delete('/meal-plans/{mealPlan}', [WeeklyMealPlanController::class, 'destroy'])->name('meal-plans.destroy');
-
-    // Export routes
-    Route::get('/meal-plans/{mealPlan}/export', [WeeklyMealPlanController::class, 'exportMealPlan'])->name('meal-plans.export');
-    Route::get('/meal-plans/{mealPlan}/export/csv', [WeeklyMealPlanController::class, 'exportMealPlanCsv'])->name('meal-plans.export-csv');
-    Route::get('/meal-plans/{mealPlan}/export/pdf', [WeeklyMealPlanController::class, 'exportMealPlanPdf'])->name('meal-plans.export-pdf');
-    Route::get('/meal-plans/{mealPlan}/export/zip', [WeeklyMealPlanController::class, 'exportMealPlanZip'])->name('meal-plans.export-zip');
-    Route::get('/meal-plans/{mealPlan}/export/xml', [WeeklyMealPlanController::class, 'exportMealPlanXml'])->name('meal-plans.export-xml');
-    Route::get('/meal-plans/{mealPlan}/export/markdown', [WeeklyMealPlanController::class, 'exportMealPlanMarkdown'])->name('meal-plans.export-markdown');
-    Route::get('/meal-plans/{mealPlan}/export/json', [WeeklyMealPlanController::class, 'exportMealPlanJson'])->name('meal-plans.export-json');
-    Route::get('/meal-plans/export/all', [WeeklyMealPlanController::class, 'exportAllMealPlans'])->name('meal-plans.export-all');
-    Route::get('/meal-plans/export/all/csv', [WeeklyMealPlanController::class, 'exportAllMealPlansCsv'])->name('meal-plans.export-all-csv');
-    Route::get('/meal-plans/export/all/pdf', [WeeklyMealPlanController::class, 'exportAllMealPlansPdf'])->name('meal-plans.export-all-pdf');
-    Route::get('/meal-plans/export/all/zip', [WeeklyMealPlanController::class, 'exportAllMealPlansZip'])->name('meal-plans.export-all-zip');
-    Route::get('/meal-plans/export/all/xml', [WeeklyMealPlanController::class, 'exportAllMealPlansXml'])->name('meal-plans.export-all-xml');
-    Route::get('/meal-plans/export/all/markdown', [WeeklyMealPlanController::class, 'exportAllMealPlansMarkdown'])->name('meal-plans.export-all-markdown');
-    Route::get('/meal-plans/export/all/json', [WeeklyMealPlanController::class, 'exportAllMealPlansJson'])->name('meal-plans.export-all-json');
-
-    // API routes for JSON responses
-    Route::get('/meal-plans/{mealPlan}/json', [WeeklyMealPlanController::class, 'showJson'])->name('meal-plans.show-json');
-});
-
 // Weekly Meal Plan Livewire Component
 Route::get('/weekly-meal-plan', \App\Livewire\MealPlans\WeeklyMealPlanPage::class)->name('weekly-meal-plan');
 
-// Weekly Meals Display
-Route::get('/weekly-meals/{mealPlan}', [WeeklyMealPlanController::class, 'showWeeklyMeals'])->name('weekly-meals.show');
-
-// Disease Analysis routes
-// Disease Analysis - VIP only
-Route::middleware(['auth', 'vip'])->group(function () {
-    Route::get('/disease-analysis', DiseaseAnalysis::class)->name('disease-analysis.index');
-});
-
-Route::prefix('api/disease-analysis')->name('api.disease-analysis.')->middleware(['auth', 'vip'])->group(function () {
-    Route::post('/analyze-image', [DiseaseAnalysisController::class, 'analyzeImage'])->name('analyze-image');
-    Route::post('/recommendations', [DiseaseAnalysisController::class, 'getRecommendations'])->name('recommendations');
-    Route::post('/search-ingredients', [DiseaseAnalysisController::class, 'searchByIngredients'])->name('search-ingredients');
-    Route::post('/check-suitability', [DiseaseAnalysisController::class, 'checkRecipeSuitability'])->name('check-suitability');
-    Route::get('/diseases', [DiseaseAnalysisController::class, 'getDiseases'])->name('diseases');
-    Route::post('/create-disease', [DiseaseAnalysisController::class, 'createDisease'])->name('create-disease');
-});
-
-// Shopping List routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/shopping-lists', \App\Livewire\ShoppingList\ShoppingListManager::class)->name('shopping-lists.index');
-    Route::get('/shopping-lists/dashboard', \App\Livewire\ShoppingList\ShoppingListDashboard::class)->name('shopping-lists.dashboard');
-});
-
-// Recipe search API for meal plans
-Route::get('/api/recipes/search', function (Request $request) {
-    $query = $request->get('q', '');
-
-    $recipes = Recipe::where('status', 'approved')
-        ->where(function ($q) use ($query) {
-            $q->where('title', 'like', "%{$query}%")
-                ->orWhere('description', 'like', "%{$query}%");
-        })
-        ->limit(10)
-        ->get(['id', 'title', 'description', 'calories_per_serving']);
-
-    return response()->json([
-        'success' => true,
-        'data' => $recipes
-    ]);
-})->name('api.recipes.search');
 
 // Restaurant routes
 Route::get('/restaurants', [RestaurantController::class, 'index'])->name('restaurants.index');
@@ -187,26 +119,6 @@ Route::prefix('api/restaurant-ads')->name('api.restaurant-ads.')->group(function
 
 // Protected routes
 Route::middleware(['auth'])->group(function () {
-    // Weekly Meal Plan page - REMOVED DUPLICATE ROUTE
-
-    // Weekly Meal Plan API routes
-    Route::prefix('meal-plans')->name('meal-plans.')->group(function () {
-        Route::post('/', [WeeklyMealPlanController::class, 'store'])->name('store');
-        Route::get('/current', [WeeklyMealPlanController::class, 'current'])->name('current');
-        Route::get('/suggestions', [WeeklyMealPlanController::class, 'generateSuggestions'])->name('suggestions');
-        Route::get('/personalized-suggestions', [WeeklyMealPlanController::class, 'getPersonalizedSuggestions'])->name('personalized-suggestions');
-
-        Route::prefix('{mealPlan}')->group(function () {
-            Route::get('/', [WeeklyMealPlanController::class, 'show'])->name('show');
-            Route::put('/', [WeeklyMealPlanController::class, 'update'])->name('update');
-            Route::delete('/', [WeeklyMealPlanController::class, 'destroy'])->name('destroy');
-            Route::post('/meals', [WeeklyMealPlanController::class, 'addMeal'])->name('add-meal');
-            Route::delete('/meals', [WeeklyMealPlanController::class, 'removeMeal'])->name('remove-meal');
-            Route::get('/shopping-list', [WeeklyMealPlanController::class, 'generateShoppingList'])->name('shopping-list');
-            Route::post('/duplicate', [WeeklyMealPlanController::class, 'duplicateForNextWeek'])->name('duplicate');
-            Route::get('/statistics', [WeeklyMealPlanController::class, 'getStatistics'])->name('statistics');
-        });
-    });
 
     // Recipe management
     Route::get('/recipes/create', [RecipeController::class, 'create'])->name('recipes.create');
@@ -265,32 +177,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/vip/upgrade', [PaymentController::class, 'upgrade'])->name('vip.upgrade');
     Route::get('/vip/payment-history', [PaymentController::class, 'history'])->name('vip.payment-history');
 
-    // VIP features routes (require VIP access)
-    Route::middleware(['vip'])->group(function () {
-        Route::get('/vip/chatbox-advanced', function () {
-            return view('vip.chatbox-advanced');
-        })->name('vip.chatbox-advanced');
-
-        Route::get('/vip/meal-plans-personalized', function () {
-            return view('vip.meal-plans-personalized');
-        })->name('vip.meal-plans-personalized');
-
-        Route::get('/vip/advanced-search', function () {
-            return view('vip.advanced-search');
-        })->name('vip.advanced-search');
-
-        Route::get('/vip/shopping-list-smart', function () {
-            return view('vip.shopping-list-smart');
-        })->name('vip.shopping-list-smart');
-
-        Route::get('/vip/recipe-management', function () {
-            return view('vip.recipe-management');
-        })->name('vip.recipe-management');
-    });
+    // VIP features routes - Moved to routes/vip.php
 
     // Test route để kiểm tra VIP
     Route::get('/test-vip', function () {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         return response()->json([
             'user_id' => $user->id,
             'user_name' => $user->name,
@@ -305,87 +197,7 @@ Route::middleware(['auth'])->group(function () {
         return view('test.qr-display');
     })->name('test.qr-display');
 
-    // Test QR generation
-    Route::get('/test-vietqr', function () {
-        try {
-            $vietqrService = new \App\Services\VietQrService();
-            $result = $vietqrService->generateVietQrCode([
-                'amount' => 1000,
-                'orderCode' => 'TEST_' . time()
-            ]);
 
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-        }
-    });
-
-    Route::get('/test-qr', function () {
-        $vietqrService = new \App\Services\VietQrService();
-        $qrData = $vietqrService->generateQrCode([
-            'transaction_id' => 'TEST_' . time(),
-            'amount' => 199000,
-            'message' => 'Test thanh toan - 199000 VND',
-        ]);
-
-        return view('test.qr-test', [
-            'qrCode' => $qrData['qr_code'] ?? null,
-            'qrText' => $qrData['qr_text'] ?? null,
-            'amount' => $qrData['amount'] ?? 199000,
-            'transactionId' => $qrData['transaction_id'] ?? null,
-            'message' => $qrData['message'] ?? null,
-            'isDemo' => $qrData['is_demo'] ?? false,
-        ]);
-    })->name('test.qr');
-
-    // Test simple QR generation (no auth required)
-    Route::get('/api/test-simple-qr', function () {
-        try {
-            $amount = 1000;
-            $transactionId = 'TEST_' . time();
-
-            // Tạo chuỗi VIETQR đơn giản
-            $vietqrString = "000201010212" .
-                "38580010A00000072701290006970422" .
-                "0112VQRQADWLF2921" .
-                "5204597053037045408" .
-                sprintf("%08d", $amount) .
-                "5802VN62" .
-                sprintf("%02d", strlen($transactionId)) . $transactionId .
-                "6304";
-
-            // Sử dụng Google Charts API để tạo QR code
-            $qrImageUrl = 'https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=' . urlencode($vietqrString);
-
-            return response()->json([
-                'success' => true,
-                'qr_code' => $qrImageUrl,
-                'amount' => $amount,
-                'transaction_id' => $transactionId,
-                'vietqr_string' => $vietqrString,
-                'message' => 'QR code đã được tạo thành công'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-        }
-    })->middleware('web');
-
-    // Test debug route
-    Route::get('/debug-qr', function () {
-        return response()->json([
-            'status' => 'ok',
-            'message' => 'Debug route working',
-            'time' => now()
-        ]);
-    });
 
     // Test PayOS API trực tiếp
     Route::get('/test-payos', function () {
@@ -509,7 +321,7 @@ Route::get('/storage-manager', StorageManager::class)->name('storage.manager');
 
 // Test route để kiểm tra admin access
 Route::get('/test-admin', function () {
-    $user = auth()->user();
+    $user = Auth::user();
     if (!$user) {
         return response()->json(['error' => 'Not logged in']);
     }
@@ -532,7 +344,7 @@ Route::get('/test-admin-middleware', function () {
 Route::get('/force-admin-login', function () {
     $admin = \App\Models\User::where('email', 'admin@beefood.com')->first();
     if ($admin) {
-        auth()->login($admin);
+        Auth::login($admin);
         return response()->json([
             'success' => 'Logged in as admin',
             'user' => [
@@ -545,48 +357,15 @@ Route::get('/force-admin-login', function () {
     return response()->json(['error' => 'Admin user not found']);
 })->name('force.admin.login');
 
-// Force login as tungnnpn00006@gmail.com for testing
-Route::get('/force-tung-login', function () {
-    $admin = \App\Models\User::where('email', 'tungnnpn00006@gmail.com')->first();
-    if ($admin) {
-        auth()->login($admin);
-        return response()->json([
-            'success' => 'Logged in as Tùng',
-            'user' => [
-                'id' => $admin->id,
-                'email' => $admin->email,
-                'is_admin' => $admin->is_admin
-            ]
-        ]);
-    }
-    return response()->json(['error' => 'Tùng user not found']);
-})->name('force.tung.login');
-
-// Force login as qaatsa80@gmail.com for testing
-Route::get('/force-qaatsa-login', function () {
-    $admin = \App\Models\User::where('email', 'qaatsa80@gmail.com')->first();
-    if ($admin) {
-        auth()->login($admin);
-        return response()->json([
-            'success' => 'Logged in as Tùng Nguyễn',
-            'user' => [
-                'id' => $admin->id,
-                'email' => $admin->email,
-                'is_admin' => $admin->is_admin
-            ]
-        ]);
-    }
-    return response()->json(['error' => 'qaatsa80 user not found']);
-})->name('force.qaatsa.login');
 
 // Test auto verification (admin only)
 Route::get('/test-auto-verify', function () {
     $minutes = request('minutes', 5);
-    \Artisan::call('payments:auto-verify', ['--minutes' => $minutes]);
+    Artisan::call('payments:auto-verify', ['--minutes' => $minutes]);
     return response()->json([
         'success' => true,
         'message' => 'Auto verification completed',
-        'output' => \Artisan::output()
+        'output' => Artisan::output()
     ]);
 })->middleware(['auth', 'admin'])->name('test.auto.verify');
 
@@ -651,6 +430,7 @@ Route::post('/webhook/payos', function (Request $request) {
 
 // Kiểm tra trạng thái VIP
 Route::get('/check-vip-status', function () {
+    /** @var \App\Models\User $user */
     $user = Auth::user();
     if (!$user) {
         return response()->json(['success' => false, 'message' => 'Chưa đăng nhập']);
@@ -674,6 +454,7 @@ Route::get('/check-vip-status', function () {
 
 // API endpoint để check VIP status và payment success
 Route::get('/api/check-vip-status', function () {
+    /** @var \App\Models\User $user */
     $user = Auth::user();
     if (!$user) {
         return response()->json(['success' => false, 'message' => 'Chưa đăng nhập']);
@@ -682,11 +463,11 @@ Route::get('/api/check-vip-status', function () {
     $isVip = $user->isVip();
 
     // Check payment success from cache
-    $paymentSuccess = \Cache::get("vip_payment_success_{$user->id}");
+    $paymentSuccess = Cache::get("vip_payment_success_{$user->id}");
 
     // Clear the cache after reading to show notification only once
     if ($paymentSuccess) {
-        \Cache::forget("vip_payment_success_{$user->id}");
+        Cache::forget("vip_payment_success_{$user->id}");
     }
 
     return response()->json([
@@ -709,6 +490,19 @@ Route::get('/test-openai', function () {
 
     return response()->json($result);
 })->name('test.openai');
+
+// Test VIP middleware protection
+Route::get('/test-vip-middleware', function () {
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    return response()->json([
+        'success' => true,
+        'message' => 'VIP middleware test passed',
+        'user_id' => $user->id,
+        'is_vip' => $user->isVip(),
+        'timestamp' => now()
+    ]);
+})->middleware(['auth', 'vip'])->name('test.vip.middleware');
 
 // Test VIP Payment webhook (for development only)
 Route::get('/test-vip-payment/{userId}', function ($userId) {
@@ -749,75 +543,5 @@ Route::get('/test-vip-payment/{userId}', function ($userId) {
         ], 500);
     }
 })->name('test.vip.payment');
-
-// Test WeeklyMealPlan creation
-Route::get('/test-mealplan', function () {
-    try {
-        $user = \App\Models\User::first();
-        if (!$user) {
-            return response()->json(['error' => 'No user found']);
-        }
-
-        $service = new \App\Services\WeeklyMealPlanService();
-
-        $mealPlan = $service->createMealPlan($user, 'Test Plan', now()->startOfWeek());
-
-        return response()->json([
-            'success' => true,
-            'meal_plan' => $mealPlan->toArray()
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-    }
-})->name('test.mealplan');
-
-// Test Livewire component
-Route::get('/test-livewire', function () {
-    return view('test-livewire');
-})->name('test.livewire');
-
-// Test weekly meals generation
-Route::get('/test-weekly-meals', function () {
-    try {
-        $user = \App\Models\User::first();
-        if (!$user) {
-            return response()->json(['error' => 'No user found']);
-        }
-
-        $mealPlanId = request()->get('meal_plan_id');
-
-        if ($mealPlanId) {
-            $mealPlan = \App\Models\WeeklyMealPlan::find($mealPlanId);
-        } else {
-            $mealPlan = \App\Models\WeeklyMealPlan::where('user_id', $user->id)
-                ->orderBy('created_at', 'desc')
-                ->first();
-        }
-
-        if (!$mealPlan) {
-            return response()->json(['error' => 'No meal plan found']);
-        }
-
-        $service = new \App\Services\WeeklyMealPlanService();
-        $weeklyMeals = $service->generateWeeklyMeals($mealPlan);
-
-        return response()->json([
-            'success' => true,
-            'meal_plan_id' => $mealPlan->id,
-            'weekly_meals' => $weeklyMeals,
-            'weekly_meals_count' => count($weeklyMeals)
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-    }
-})->name('test.weekly.meals');
-
-require __DIR__ . '/ai.php';
 
 require __DIR__ . '/auth.php';

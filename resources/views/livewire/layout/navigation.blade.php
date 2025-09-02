@@ -100,22 +100,7 @@ new class extends Component {
                     </div>
                 </button>
 
-                <!-- Disease Analysis - VIP Only -->
-                @if(auth()->check() && auth()->user()->isVip())
-                    <a href="{{ route('disease-analysis.index') }}"
-                        class="text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 {{ request()->routeIs('disease-analysis.*') ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50' }}">
-                        <div class="flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                            <span>Phân tích bệnh án</span>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
-                                VIP
-                            </span>
-                        </div>
-                    </a>
-                @endif
+
 
                 <!-- AI Chat - VIP Only -->
                 @if(auth()->check() && auth()->user()->isVip())
@@ -155,6 +140,13 @@ new class extends Component {
                                 <div class="flex items-center space-x-2">
                                     <x-heroicon-o-calendar class="w-4 h-4" />
                                     <span>Danh sách kế hoạch</span>
+                                    @auth
+                                        @if(auth()->user()->isVip())
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                                                VIP
+                                            </span>
+                                        @endif
+                                    @endauth
                                 </div>
                             </a>
                             <a href="{{ route('weekly-meal-plan') }}"
@@ -162,6 +154,13 @@ new class extends Component {
                                 <div class="flex items-center space-x-2">
                                     <x-heroicon-o-plus class="w-4 h-4" />
                                     <span>Tạo kế hoạch mới</span>
+                                    @auth
+                                        @if(auth()->user()->isVip())
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                                                VIP
+                                            </span>
+                                        @endif
+                                    @endauth
                                 </div>
                             </a>
                             
@@ -174,6 +173,13 @@ new class extends Component {
                                 <div class="flex items-center space-x-2">
                                     <x-heroicon-o-shopping-cart class="w-4 h-4" />
                                     <span>Dashboard</span>
+                                    @auth
+                                        @if(auth()->user()->isVip())
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                                                VIP
+                                            </span>
+                                        @endif
+                                    @endauth
                                 </div>
                             </a>
                             <a href="{{ route('shopping-lists.index') }}"
@@ -181,6 +187,35 @@ new class extends Component {
                                 <div class="flex items-center space-x-2">
                                     <x-heroicon-o-clipboard-document-list class="w-4 h-4" />
                                     <span>Quản lý chi tiết</span>
+                                    @auth
+                                        @if(auth()->user()->isVip())
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                                                VIP
+                                            </span>
+                                        @endif
+                                    @endauth
+                                </div>
+                            </a>
+                            
+                            <!-- Health & Analysis Section -->
+                            <div class="px-3 py-1 mt-2">
+                                <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sức khỏe & Phân tích</h3>
+                            </div>
+                            <a href="{{ route('disease-analysis.index') }}"
+                                class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span>Phân tích bệnh án</span>
+                                    @auth
+                                        @if(auth()->user()->isVip())
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                                                VIP
+                                            </span>
+                                        @endif
+                                    @endauth
                                 </div>
                             </a>
                         </div>
