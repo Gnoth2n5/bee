@@ -8,6 +8,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Rule;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\Auth;
 
 class DiseaseAnalysis extends Component
 {
@@ -25,11 +26,22 @@ class DiseaseAnalysis extends Component
     public $searchResults = [];
     public $showMealPlanModal = false;
     public $selectedRecipeForMealPlan = null;
-    public $availableMealPlans = [];
+    public $availableMealPlans;
     public $selectedDay = 'monday';
     public $selectedMealType = 'dinner';
 
+    // Bulk meal plan properties
+    public $showBulkMealPlanModal = false;
+    public $selectedMealPlanForBulk = null;
+    public $newMealPlanName = '';
+    public $distributionStrategy = 'smart'; // smart, manual, specific_day
+
     protected $listeners = ['diseaseSelected' => 'loadRecommendations'];
+
+    public function mount()
+    {
+        $this->availableMealPlans = collect();
+    }
 
     public function analyzeImage()
     {
@@ -194,7 +206,7 @@ class DiseaseAnalysis extends Component
     {
         try {
             // Check authentication
-            if (!auth()->check()) {
+            if (!Auth::check()) {
                 $this->dispatch('meal-plan-error', ['message' => 'Vui lòng đăng nhập để sử dụng chức năng này']);
                 return;
             }
@@ -212,7 +224,7 @@ class DiseaseAnalysis extends Component
             $this->selectedMealType = 'dinner';
 
             // Refresh danh sách meal plans với dữ liệu mới nhất
-            $this->availableMealPlans = \App\Models\WeeklyMealPlan::where('user_id', auth()->id())
+            $this->availableMealPlans = \App\Models\WeeklyMealPlan::where('user_id', Auth::id())
                 ->where('is_active', true)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -233,7 +245,7 @@ class DiseaseAnalysis extends Component
     {
         try {
             // Check authentication
-            if (!auth()->check()) {
+            if (!Auth::check()) {
                 $this->dispatch('meal-plan-error', ['message' => 'Vui lòng đăng nhập để sử dụng chức năng này']);
                 return;
             }
@@ -245,7 +257,7 @@ class DiseaseAnalysis extends Component
             }
 
             // Check if user owns this meal plan
-            if ($mealPlan->user_id !== auth()->id()) {
+            if ($mealPlan->user_id !== Auth::id()) {
                 $this->dispatch('meal-plan-error', ['message' => 'Bạn không có quyền chỉnh sửa meal plan này']);
                 return;
             }
@@ -262,7 +274,7 @@ class DiseaseAnalysis extends Component
             $recipeTitle = $this->selectedRecipeForMealPlan->title;
 
             // Refresh danh sách meal plans để hiển thị món ăn mới (fresh data)
-            $this->availableMealPlans = \App\Models\WeeklyMealPlan::where('user_id', auth()->id())
+            $this->availableMealPlans = \App\Models\WeeklyMealPlan::where('user_id', Auth::id())
                 ->where('is_active', true)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -289,38 +301,7 @@ class DiseaseAnalysis extends Component
         $this->selectedRecipeForMealPlan = null;
     }
 
-    public function createNewMealPlan()
-    {
-        try {
-            if (!auth()->check()) {
-                $this->dispatch('meal-plan-error', ['message' => 'Vui lòng đăng nhập để tạo meal plan']);
-                return;
-            }
 
-            // Create a new meal plan for current week
-            $weekStart = now()->startOfWeek();
-            $mealPlan = \App\Models\WeeklyMealPlan::create([
-                'user_id' => auth()->id(),
-                'name' => 'Meal Plan - ' . $weekStart->format('d/m/Y'),
-                'week_start' => $weekStart,
-                'meals' => [],
-                'is_active' => true
-            ]);
-
-            // Refresh available meal plans
-            $this->availableMealPlans = \App\Models\WeeklyMealPlan::where('user_id', auth()->id())
-                ->where('is_active', true)
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            $this->dispatch('meal-plan-success', [
-                'message' => 'Đã tạo meal plan mới: ' . $mealPlan->name,
-                'mealPlan' => $mealPlan
-            ]);
-        } catch (\Exception $e) {
-            $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra khi tạo meal plan: ' . $e->getMessage()]);
-        }
-    }
 
     public function getDaysOfWeek()
     {
@@ -369,19 +350,32 @@ class DiseaseAnalysis extends Component
     public function addAllSuitableToMealPlan()
     {
         try {
+            // Check authentication
+            if (!Auth::check()) {
+                $this->dispatch('meal-plan-error', ['message' => 'Vui lòng đăng nhập để sử dụng chức năng này']);
+                return;
+            }
+
             $suitableRecipes = Recipe::where('status', 'approved')
                 ->where('cooking_time', '<=', 60)
                 ->get();
 
-            $addedCount = 0;
-            foreach ($suitableRecipes as $recipe) {
-                session()->push('meal_plan_recipes', $recipe->id);
-                $addedCount++;
+            if ($suitableRecipes->isEmpty()) {
+                $this->dispatch('meal-plan-error', ['message' => 'Không có món ăn phù hợp nào được tìm thấy']);
+                return;
             }
 
-            $this->dispatch('meal-plan-success', [
-                'message' => "Đã thêm {$addedCount} món ăn phù hợp vào Meal Plan",
-                'count' => $addedCount
+            // Store recipes in session for modal selection
+            session()->put('pending_meal_plan_recipes', $suitableRecipes->pluck('id')->toArray());
+            session()->put('pending_recipes_type', 'suitable');
+
+            // Show meal plan selection modal
+            $this->showBulkMealPlanModal = true;
+            $this->loadAvailableMealPlans();
+
+            $this->dispatch('bulk-recipes-ready', [
+                'message' => "Đã chuẩn bị {$suitableRecipes->count()} món ăn phù hợp để thêm vào Meal Plan",
+                'count' => $suitableRecipes->count()
             ]);
         } catch (\Exception $e) {
             $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
@@ -391,23 +385,171 @@ class DiseaseAnalysis extends Component
     public function addAllModerateToMealPlan()
     {
         try {
+            // Check authentication
+            if (!Auth::check()) {
+                $this->dispatch('meal-plan-error', ['message' => 'Vui lòng đăng nhập để sử dụng chức năng này']);
+                return;
+            }
+
             $moderateRecipes = Recipe::where('status', 'approved')
                 ->where('cooking_time', '>', 60)
                 ->get();
 
-            $addedCount = 0;
-            foreach ($moderateRecipes as $recipe) {
-                session()->push('meal_plan_recipes', $recipe->id);
-                $addedCount++;
+            if ($moderateRecipes->isEmpty()) {
+                $this->dispatch('meal-plan-error', ['message' => 'Không có món ăn cần điều chỉnh nào được tìm thấy']);
+                return;
             }
 
-            $this->dispatch('meal-plan-success', [
-                'message' => "Đã thêm {$addedCount} món ăn cần điều chỉnh vào Meal Plan",
-                'count' => $addedCount
+            // Store recipes in session for modal selection
+            session()->put('pending_meal_plan_recipes', $moderateRecipes->pluck('id')->toArray());
+            session()->put('pending_recipes_type', 'moderate');
+
+            // Show meal plan selection modal
+            $this->showBulkMealPlanModal = true;
+            $this->loadAvailableMealPlans();
+
+            $this->dispatch('bulk-recipes-ready', [
+                'message' => "Đã chuẩn bị {$moderateRecipes->count()} món ăn cần điều chỉnh để thêm vào Meal Plan",
+                'count' => $moderateRecipes->count()
             ]);
         } catch (\Exception $e) {
             $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
         }
+    }
+
+    public function loadAvailableMealPlans()
+    {
+        $this->availableMealPlans = \App\Models\WeeklyMealPlan::where('user_id', Auth::id())
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function createNewMealPlan()
+    {
+        try {
+            if (empty($this->newMealPlanName)) {
+                $this->dispatch('meal-plan-error', ['message' => 'Vui lòng nhập tên meal plan']);
+                return;
+            }
+
+            $weekStart = \Carbon\Carbon::now()->startOfWeek();
+            $mealPlanService = app(\App\Services\WeeklyMealPlanService::class);
+
+            $newMealPlan = $mealPlanService->createMealPlan(
+                Auth::user(),
+                $this->newMealPlanName,
+                $weekStart
+            );
+
+            $this->selectedMealPlanForBulk = $newMealPlan->id;
+            $this->loadAvailableMealPlans();
+            $this->newMealPlanName = '';
+
+            $this->dispatch('meal-plan-success', ['message' => 'Tạo meal plan mới thành công']);
+        } catch (\Exception $e) {
+            $this->dispatch('meal-plan-error', ['message' => 'Lỗi tạo meal plan: ' . $e->getMessage()]);
+        }
+    }
+
+    public function distributeBulkRecipes()
+    {
+        try {
+            if (!$this->selectedMealPlanForBulk) {
+                $this->dispatch('meal-plan-error', ['message' => 'Vui lòng chọn meal plan']);
+                return;
+            }
+
+            $recipeIds = session('pending_meal_plan_recipes', []);
+            if (empty($recipeIds)) {
+                $this->dispatch('meal-plan-error', ['message' => 'Không có món ăn nào để thêm']);
+                return;
+            }
+
+            $mealPlan = \App\Models\WeeklyMealPlan::find($this->selectedMealPlanForBulk);
+            if (!$mealPlan || $mealPlan->user_id !== Auth::id()) {
+                $this->dispatch('meal-plan-error', ['message' => 'Không tìm thấy meal plan hoặc không có quyền truy cập']);
+                return;
+            }
+
+            $addedCount = $this->distributeRecipesIntelligently($mealPlan, $recipeIds);
+
+            // Clear session
+            session()->forget(['pending_meal_plan_recipes', 'pending_recipes_type']);
+            $this->showBulkMealPlanModal = false;
+            $this->selectedMealPlanForBulk = null;
+
+            $this->dispatch('meal-plan-success', [
+                'message' => "Đã thêm thành công {$addedCount} món ăn vào meal plan '{$mealPlan->name}'",
+                'count' => $addedCount
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('meal-plan-error', ['message' => 'Lỗi phân phối món ăn: ' . $e->getMessage()]);
+        }
+    }
+
+    private function distributeRecipesIntelligently($mealPlan, $recipeIds)
+    {
+        $recipes = Recipe::whereIn('id', $recipeIds)->get();
+        $addedCount = 0;
+
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        $mealTypes = ['breakfast', 'lunch', 'dinner'];
+
+        $currentDayIndex = 0;
+        $currentMealIndex = 0;
+
+        foreach ($recipes as $recipe) {
+            $day = $days[$currentDayIndex];
+            $mealType = $this->determineMealTypeByRecipe($recipe, $mealTypes[$currentMealIndex]);
+
+            try {
+                $mealPlan->addMealForDay($day, $mealType, $recipe->id);
+                $addedCount++;
+
+                // Move to next meal slot
+                $currentMealIndex++;
+                if ($currentMealIndex >= count($mealTypes)) {
+                    $currentMealIndex = 0;
+                    $currentDayIndex++;
+                    if ($currentDayIndex >= count($days)) {
+                        $currentDayIndex = 0;
+                    }
+                }
+            } catch (\Exception $e) {
+                // Skip this recipe if there's an error
+                continue;
+            }
+        }
+
+        $mealPlan->save();
+        return $addedCount;
+    }
+
+    private function determineMealTypeByRecipe($recipe, $defaultMealType)
+    {
+        $title = strtolower($recipe->title);
+
+        // Breakfast keywords
+        if (preg_match('/\b(sáng|bánh mì|cháo|phở|bún|chè|bánh|café|cà phê)\b/u', $title)) {
+            return 'breakfast';
+        }
+
+        // Dinner keywords (heavier meals)
+        if (preg_match('/\b(tối|cơm|thịt|cá|gà|heo|bò|canh|soup|lẩu|nướng)\b/u', $title)) {
+            return 'dinner';
+        }
+
+        // Default to lunch or provided meal type
+        return $defaultMealType ?: 'lunch';
+    }
+
+    public function closeBulkMealPlanModal()
+    {
+        $this->showBulkMealPlanModal = false;
+        $this->selectedMealPlanForBulk = null;
+        $this->newMealPlanName = '';
+        session()->forget(['pending_meal_plan_recipes', 'pending_recipes_type']);
     }
 
     public function resetAnalysis()

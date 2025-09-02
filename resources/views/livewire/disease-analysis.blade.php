@@ -567,6 +567,117 @@
         </div>
     @endif
 
+    <!-- Bulk Meal Plan Selection Modal -->
+    @if($showBulkMealPlanModal)
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" wire:click.self="closeBulkMealPlanModal">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Chọn Meal Plan</h3>
+                            <p class="text-sm text-gray-600">{{ count(session('pending_meal_plan_recipes', [])) }} món ăn sẽ được thêm vào meal plan</p>
+                        </div>
+                    </div>
+                    <button wire:click="closeBulkMealPlanModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Create New Meal Plan Section -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 mb-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-3">🆕 Tạo Meal Plan Mới</h4>
+                    <div class="flex gap-3">
+                        <input type="text" wire:model="newMealPlanName" placeholder="Nhập tên meal plan..."
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <button wire:click="createNewMealPlan" 
+                                class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105">
+                            Tạo mới
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Existing Meal Plans -->
+                @if($availableMealPlans->count() > 0)
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-3">📅 Meal Plans Hiện Có</h4>
+                    <div class="space-y-3 max-h-60 overflow-y-auto">
+                        @foreach($availableMealPlans as $mealPlan)
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer {{ $selectedMealPlanForBulk == $mealPlan->id ? 'ring-2 ring-blue-500 bg-blue-50' : '' }}"
+                             wire:click="$set('selectedMealPlanForBulk', {{ $mealPlan->id }})">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full {{ $selectedMealPlanForBulk == $mealPlan->id ? 'bg-blue-500' : 'bg-gray-300' }} mr-3"></div>
+                                    <div>
+                                        <h5 class="font-semibold text-gray-900">{{ $mealPlan->name }}</h5>
+                                        <p class="text-sm text-gray-600">Tuần: {{ $mealPlan->week_start ? \Carbon\Carbon::parse($mealPlan->week_start)->format('d/m/Y') : 'N/A' }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ $mealPlan->total_recipes ?? 0 }} món
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @else
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <p class="text-gray-500 mb-4">Chưa có meal plan nào. Hãy tạo meal plan mới!</p>
+                </div>
+                @endif
+
+                <!-- Distribution Strategy -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-3">🎯 Chiến lược phân phối</h4>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-blue-900">Phân phối thông minh</h5>
+                                <p class="text-sm text-blue-700">Tự động sắp xếp món ăn theo bữa sáng, trưa, tối phù hợp</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 justify-end">
+                    <button wire:click="closeBulkMealPlanModal" 
+                            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Hủy
+                    </button>
+                    <button wire:click="distributeBulkRecipes" 
+                            class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                            {{ !$selectedMealPlanForBulk ? 'disabled' : '' }}>
+                        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Thêm vào Meal Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <script>
         document.addEventListener('livewire:init', () => {
             Livewire.on('meal-plan-success', (event) => {
@@ -575,6 +686,10 @@
 
             Livewire.on('meal-plan-error', (event) => {
                 showToast(event.message, 'error');
+            });
+
+            Livewire.on('bulk-recipes-ready', (event) => {
+                showToast(event.message, 'success');
             });
         });
 
