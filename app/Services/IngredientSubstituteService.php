@@ -62,7 +62,7 @@ class IngredientSubstituteService
                     'temperature' => 0.1,
                     'topK' => 1,
                     'topP' => 1,
-                    'maxOutputTokens' => 50,
+                    'maxOutputTokens' => 500,
                 ]
             ];
 

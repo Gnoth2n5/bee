@@ -47,7 +47,7 @@ class DiseaseAnalysisService
                     'temperature' => 0.1,
                     'topK' => 32,
                     'topP' => 1,
-                    'maxOutputTokens' => 2048,
+                    'maxOutputTokens' => 4096,
                 ]
             ];
 
@@ -102,7 +102,6 @@ class DiseaseAnalysisService
                 'success' => false,
                 'error' => $errorMessage
             ];
-
         } catch (\Exception $e) {
             Log::error('Disease analysis error', [
                 'message' => $e->getMessage(),

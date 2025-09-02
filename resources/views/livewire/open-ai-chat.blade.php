@@ -495,6 +495,13 @@ document.addEventListener('livewire:init', () => {
             }
         }, 100);
     });
+
+    Livewire.on('start-ai-response', (event) => {
+        // Trigger AI response after user message is displayed
+        setTimeout(() => {
+            Livewire.dispatch('fetch-ai-response', { userMessage: event.userMessage });
+        }, 500); // Small delay to ensure user message is visible
+    });
 });
 
 // Auto-scroll to bottom when new messages are added

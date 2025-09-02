@@ -91,7 +91,7 @@ class OpenAiService
                         'content' => 'Xin chào! Hãy trả lời "API hoạt động tốt!"'
                     ]
                 ],
-                'max_tokens' => 50,
+                'max_tokens' => 200,
                 'temperature' => 0.7,
             ];
 
@@ -181,7 +181,7 @@ class OpenAiService
             $payload = [
                 'model' => 'deepseek/deepseek-chat-v3-0324:free',
                 'messages' => $messages,
-                'max_tokens' => 1000,
+                'max_tokens' => 2000,
                 'temperature' => 0.7,
                 'top_p' => 0.9,
                 'stream' => false,
@@ -832,7 +832,7 @@ class OpenAiService
             $payload = [
                 'model' => 'deepseek/deepseek-chat-v3-0324:free',
                 'messages' => $messages,
-                'max_tokens' => 300,
+                'max_tokens' => 1500,
                 'temperature' => 0.5,
                 'top_p' => 0.5,
                 'stream' => false,

@@ -95,7 +95,6 @@ class OpenAiChat extends Component
             return;
         }
 
-        $this->isLoading = true;
         $userMessage = trim($this->message);
 
         // Add user message to conversation
@@ -109,25 +108,19 @@ class OpenAiChat extends Component
         // Clear message input
         $this->message = '';
 
-                // Save conversation to session immediately
+        // Save conversation to session immediately
         $this->storeConversationInSession();
-        
+
         // Dispatch scroll to show user message immediately
         $this->dispatch('scroll-to-bottom');
 
-        // Prepare conversation history for API
-        $conversationHistory = collect($this->conversation)
-            ->where('role', '!=', 'system')
-            ->map(function ($msg) {
-                return [
-                    'role' => $msg['role'],
-                    'content' => $msg['content']
-                ];
-            })
-            ->slice(-10) // Keep last 10 messages
-            ->values()
-            ->toArray();
+        // Trigger AI response fetch on the client side
+        $this->dispatch('start-ai-response', userMessage: $userMessage);
+    }
 
+    #[On('fetch-ai-response')]
+    public function fetchAiResponse($userMessage): void
+    {
         try {
             // Send to OpenAI - use recipe suggestions method for better results
             $result = $this->openAiService->getRecipeSuggestions($userMessage, Auth::user());
@@ -158,13 +151,9 @@ class OpenAiChat extends Component
 
                 $this->conversation[] = $conversationEntry;
 
-                // Store in session
                 $this->storeConversationInSession();
-
-                // Scroll to bottom
                 $this->dispatch('scroll-to-bottom');
             } else {
-                // Add error message
                 $errorMessage = 'Xin lỗi, đã có lỗi xảy ra: ' . $result['error'];
                 $this->conversation[] = [
                     'role' => 'assistant',
@@ -174,8 +163,15 @@ class OpenAiChat extends Component
                     'avatar' => '/images/ai-avatar.png',
                     'is_error' => true
                 ];
+
+                $this->storeConversationInSession();
             }
         } catch (\Exception $e) {
+            Log::error('Error in fetchAiResponse', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             $errorMessage = 'Xin lỗi, đã có lỗi kết nối. Vui lòng thử lại sau.';
             $this->conversation[] = [
                 'role' => 'assistant',
@@ -185,9 +181,11 @@ class OpenAiChat extends Component
                 'avatar' => '/images/ai-avatar.png',
                 'is_error' => true
             ];
-        }
 
-        $this->isLoading = false;
+            $this->storeConversationInSession();
+        } finally {
+            $this->isLoading = false;
+        }
     }
 
     public function addIngredient()
@@ -271,12 +269,12 @@ class OpenAiChat extends Component
                     '/images/ai-avatar.png',
                 'is_error' => $msg['is_error'] ?? false
             ];
-            
+
             // Restore recipe data if available
             if (isset($msg['recipes'])) {
                 $conversationMsg['recipes'] = $msg['recipes'];
             }
-            
+
             return $conversationMsg;
         })->toArray();
     }
@@ -290,12 +288,12 @@ class OpenAiChat extends Component
                 'timestamp' => now()->toISOString(),
                 'is_error' => $msg['is_error'] ?? false
             ];
-            
+
             // Include recipe data if available
             if (isset($msg['recipes'])) {
                 $sessionMsg['recipes'] = $msg['recipes'];
             }
-            
+
             return $sessionMsg;
         })->slice(-20)->values()->toArray(); // Keep last 20 messages
 
