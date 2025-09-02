@@ -1,3 +1,5 @@
+@use('Illuminate\Support\Facades\Storage')
+
 <div id="chat-container" class="max-w-4xl mx-auto">
     <!-- Chat Header -->
     <div class="bg-white rounded-t-lg border border-gray-200 px-6 py-4">
@@ -9,8 +11,24 @@
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-lg font-semibold text-gray-900">AI Cooking Assistant</h3>
-                    <p class="text-sm text-gray-500">Sẵn sàng hỗ trợ bạn nấu ăn</p>
+                    <div class="flex items-center space-x-2">
+                        <h3 class="text-lg font-semibold text-gray-900">AI Cooking Assistant</h3>
+                        @if(auth()->user()?->isVip())
+                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-full">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                VIP
+                            </span>
+                        @endif
+                    </div>
+                    <p class="text-sm text-gray-500">
+                        @if(auth()->user()?->isVip())
+                            Trợ lý AI cao cấp với gợi ý cá nhân hóa
+                        @else
+                            Sẵn sàng hỗ trợ bạn nấu ăn
+                        @endif
+                    </p>
                 </div>
             </div>
             
@@ -152,8 +170,8 @@
                     <p class="text-gray-600">Hãy hỏi tôi bất cứ điều gì về nấu ăn, công thức món ăn, hoặc mẹo hay trong bếp!</p>
                 </div>
             @else
-                @foreach($conversation as $message)
-                    <div class="flex {{ $message['role'] === 'user' ? 'justify-end' : 'justify-start' }}">
+                @foreach($conversation as $index => $message)
+                    <div class="flex {{ $message['role'] === 'user' ? 'justify-end' : 'justify-start' }} animate-fade-in-up" style="animation-delay: {{ $index * 0.1 }}s">
                         <div class="flex max-w-xs lg:max-w-md {{ $message['role'] === 'user' ? 'flex-row-reverse' : 'flex-row' }}">
                             <div class="flex-shrink-0">
                                 <div class="w-8 h-8 rounded-full {{ $message['role'] === 'user' ? 'bg-gray-300 ml-3' : 'bg-orange-500 mr-3' }} flex items-center justify-center">
@@ -178,6 +196,157 @@
                                         <p class="text-sm whitespace-pre-wrap">{{ $message['content'] }}</p>
                                     @endif
                                 </div>
+                                
+                                <!-- Recipe Cards for AI messages -->
+                                @if($message['role'] === 'assistant' && isset($message['recipes']) && !empty($message['recipes']))
+                                    <div class="mt-3 space-y-3">
+                                        @foreach($message['recipes'] as $recipe)
+                                            <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow {{ isset($recipe['is_vip_recommendation']) ? 'border-yellow-300 bg-gradient-to-br from-yellow-50 to-white' : '' }}">
+                                                @if(isset($recipe['is_vip_recommendation']))
+                                                    <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-t-lg">
+                                                        <div class="flex items-center justify-between text-xs font-medium">
+                                                            <span class="flex items-center">
+                                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                                </svg>
+                                                                Gợi ý VIP cá nhân hóa
+                                                            </span>
+                                                            @if(isset($recipe['vip_bonus']) && $recipe['vip_bonus'] > 0)
+                                                                <span>+{{ round($recipe['vip_bonus'] * 100) }}% phù hợp</span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                <div class="p-4">
+                                                    <div class="flex items-start space-x-3">
+                                                        @if(!empty($recipe['featured_image']))
+                                                            <img src="{{ Storage::url($recipe['featured_image']) }}" 
+                                                                 alt="{{ $recipe['title'] }}"
+                                                                 class="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                            <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 hidden">
+                                                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                                                </svg>
+                                                            </div>
+                                                        @else
+                                                            <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                                                </svg>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        <div class="flex-1 min-w-0">
+                                                            <h4 class="text-sm font-medium text-gray-900 truncate">
+                                                                {{ $recipe['title'] }}
+                                                            </h4>
+                                                            @if(!empty($recipe['summary']))
+                                                                <p class="text-xs text-gray-600 mt-1 line-clamp-2">
+                                                                    {{ $recipe['summary'] }}
+                                                                </p>
+                                                            @endif
+                                                            
+                                                            <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                                                                @if(!empty($recipe['cooking_time']))
+                                                                    <span class="flex items-center">
+                                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                                        </svg>
+                                                                        {{ $recipe['cooking_time'] }} phút
+                                                                    </span>
+                                                                @endif
+                                                                
+                                                                @if(!empty($recipe['difficulty_level']))
+                                                                    <span class="flex items-center">
+                                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                                                        </svg>
+                                                                        {{ ucfirst($recipe['difficulty_level']) }}
+                                                                    </span>
+                                                                @endif
+                                                                
+                                                                @if(isset($recipe['similarity']))
+                                                                    <span class="text-orange-600 font-medium">
+                                                                        {{ round($recipe['similarity'] * 100) }}% phù hợp
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                            
+                                                            <!-- VIP Nutritional Info -->
+                                                            @if(isset($recipe['nutritional_info']))
+                                                                <div class="mt-3 p-2 bg-yellow-50 rounded-lg border border-yellow-200">
+                                                                    <h5 class="text-xs font-semibold text-yellow-800 mb-1">Thông tin dinh dưỡng (VIP)</h5>
+                                                                    <div class="grid grid-cols-3 gap-1 text-xs text-yellow-700">
+                                                                        <span>{{ $recipe['nutritional_info']['estimated_calories'] }} kcal</span>
+                                                                        <span>Protein: {{ $recipe['nutritional_info']['protein'] }}</span>
+                                                                        <span>Carbs: {{ $recipe['nutritional_info']['carbs'] }}</span>
+                                                                    </div>
+                                                                </div>
+                                                            @endif
+
+                                                            <!-- VIP Cooking Tips -->
+                                                            @if(isset($recipe['cooking_tips']) && !empty($recipe['cooking_tips']))
+                                                                <div class="mt-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                                                                    <h5 class="text-xs font-semibold text-blue-800 mb-1">Mẹo nấu ăn nâng cao (VIP)</h5>
+                                                                    <ul class="text-xs text-blue-700 space-y-1">
+                                                                        @foreach(array_slice($recipe['cooking_tips'], 0, 2) as $tip)
+                                                                            <li class="flex items-start">
+                                                                                <svg class="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                                                </svg>
+                                                                                {{ $tip }}
+                                                                            </li>
+                                                                        @endforeach
+                                                                    </ul>
+                                                                </div>
+                                                            @endif
+                                                            
+                                                            <div class="mt-2">
+                                                                <a href="{{ route('recipes.show', $recipe['slug']) }}" 
+                                                                   target="_blank"
+                                                                   class="inline-flex items-center px-3 py-1 text-xs font-medium text-orange-700 bg-orange-100 rounded-full hover:bg-orange-200 transition-colors">
+                                                                    Xem công thức
+                                                                    <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                                                    </svg>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    
+                                    <!-- VIP Upgrade Prompt for non-VIP users -->
+                                    @if(!auth()->user()?->isVip() && count($message['recipes']) > 0)
+                                        <div class="mt-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+                                            <div class="flex items-start space-x-3">
+                                                <div class="flex-shrink-0">
+                                                    <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h4 class="text-sm font-semibold text-gray-900">Nâng cấp lên VIP để có trải nghiệm tốt hơn!</h4>
+                                                    <p class="text-xs text-gray-600 mt-1">
+                                                        Thành viên VIP sẽ nhận được gợi ý cá nhân hóa, thông tin dinh dưỡng chi tiết, mẹo nấu ăn nâng cao và nhiều công thức phù hợp hơn.
+                                                    </p>
+                                                    <div class="mt-2">
+                                                        <a href="{{ route('subscriptions.packages') }}" 
+                                                           class="inline-flex items-center px-3 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full hover:bg-yellow-200 transition-colors">
+                                                            Xem gói VIP
+                                                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                                            </svg>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endif
                                 <p class="text-xs text-gray-500 mt-1 {{ $message['role'] === 'user' ? 'text-right' : 'text-left' }}">
                                     {{ $message['timestamp'] }}
                                 </p>
@@ -190,13 +359,26 @@
             <!-- Loading indicator -->
             @if($isLoading)
                 <div class="flex justify-start">
-                    <div class="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-lg">
-                        <div class="flex space-x-1">
-                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    <div class="flex max-w-xs lg:max-w-md flex-row">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 rounded-full bg-orange-500 mr-3 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
                         </div>
-                        <span class="text-sm text-gray-600">AI đang suy nghĩ...</span>
+                        <div>
+                            <div class="px-4 py-2 bg-gray-100 rounded-lg">
+                                <div class="flex items-center space-x-2">
+                                    <div class="flex space-x-1">
+                                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                    </div>
+                                    <span class="text-sm text-gray-600">AI đang suy nghĩ...</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -229,6 +411,21 @@
 
 @push('scripts')
 <style>
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fade-in-up 0.3s ease-out forwards;
+}
+
 .markdown-content h1, .markdown-content h2, .markdown-content h3, .markdown-content h4, .markdown-content h5, .markdown-content h6 {
     font-weight: bold;
     margin-top: 1rem;
@@ -308,6 +505,20 @@ document.addEventListener('DOMContentLoaded', function() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         });
         observer.observe(chatMessages, { childList: true, subtree: true });
+    }
+    
+    // Add enter key support for message input
+    const messageInput = document.querySelector('textarea[wire\\:model="message"]');
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const form = messageInput.closest('form');
+                if (form) {
+                    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                }
+            }
+        });
     }
 });
 </script>

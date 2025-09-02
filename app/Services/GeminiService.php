@@ -91,7 +91,7 @@ class GeminiService
 
             $errorData = $response->json();
             $errorMessage = 'Không thể phân tích ảnh. Vui lòng thử lại.';
-            
+
             if (isset($errorData['error']['code']) && $errorData['error']['code'] == 429) {
                 $errorMessage = 'API đã hết quota. Vui lòng thử lại sau hoặc liên hệ admin để nâng cấp.';
             } elseif (isset($errorData['error']['code']) && $errorData['error']['code'] == 400 && strpos($errorData['error']['message'], 'expired') !== false) {
@@ -99,7 +99,7 @@ class GeminiService
             } elseif (isset($errorData['error']['message'])) {
                 $errorMessage = $errorData['error']['message'];
             }
-            
+
             Log::error('Gemini API error', [
                 'status' => $response->status(),
                 'response' => $response->json()
@@ -109,7 +109,6 @@ class GeminiService
                 'success' => false,
                 'error' => $errorMessage
             ];
-
         } catch (\Exception $e) {
             Log::error('Gemini service error', [
                 'message' => $e->getMessage(),
@@ -119,6 +118,79 @@ class GeminiService
             return [
                 'success' => false,
                 'error' => 'Có lỗi xảy ra khi xử lý ảnh.'
+            ];
+        }
+    }
+
+    /**
+     * Chat với Gemini AI
+     */
+    public function chat($messages)
+    {
+        try {
+            // Convert messages format to Gemini format
+            $contents = [];
+            foreach ($messages as $message) {
+                $role = $message['role'] === 'user' ? 'user' : 'model';
+                $contents[] = [
+                    'role' => $role,
+                    'parts' => [
+                        ['text' => $message['content']]
+                    ]
+                ];
+            }
+
+            $payload = [
+                'contents' => $contents,
+                'generationConfig' => [
+                    'temperature' => 0.7,
+                    'topK' => 32,
+                    'topP' => 1,
+                    'maxOutputTokens' => 2048,
+                ]
+            ];
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post($this->baseUrl . '?key=' . $this->apiKey, $payload);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+                return [
+                    'success' => true,
+                    'message' => $text
+                ];
+            }
+
+            $errorData = $response->json();
+            $errorMessage = 'Không thể kết nối với AI. Vui lòng thử lại.';
+
+            if (isset($errorData['error']['code']) && $errorData['error']['code'] == 429) {
+                $errorMessage = 'API đã hết quota. Vui lòng thử lại sau.';
+            } elseif (isset($errorData['error']['message'])) {
+                $errorMessage = $errorData['error']['message'];
+            }
+
+            Log::error('Gemini chat error', [
+                'status' => $response->status(),
+                'response' => $response->json()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $errorMessage
+            ];
+        } catch (\Exception $e) {
+            Log::error('Gemini chat service error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => 'Có lỗi xảy ra khi chat với AI.'
             ];
         }
     }
@@ -189,19 +261,18 @@ class GeminiService
             $errorData = $response->json();
             $errorMessage = 'Không thể phân tích ảnh để tìm kiếm.';
 
-                        if (isset($errorData['error']['code']) && $errorData['error']['code'] == 429) {
+            if (isset($errorData['error']['code']) && $errorData['error']['code'] == 429) {
                 $errorMessage = 'API đã hết quota. Vui lòng thử lại sau hoặc liên hệ admin để nâng cấp.';
             } elseif (isset($errorData['error']['code']) && $errorData['error']['code'] == 400 && strpos($errorData['error']['message'], 'expired') !== false) {
                 $errorMessage = 'API key đã hết hạn. Vui lòng liên hệ admin để cập nhật.';
             } elseif (isset($errorData['error']['message'])) {
                 $errorMessage = $errorData['error']['message'];
             }
-            
+
             return [
                 'success' => false,
                 'error' => $errorMessage
             ];
-
         } catch (\Exception $e) {
             Log::error('Gemini search error', [
                 'message' => $e->getMessage()

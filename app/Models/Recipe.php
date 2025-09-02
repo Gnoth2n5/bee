@@ -37,6 +37,8 @@ class Recipe extends Model
         'meta_title',
         'meta_description',
         'meta_keywords',
+        'embedding',
+        'embedding_generated_at',
         'view_count',
         'favorite_count',
         'rating_count',
@@ -47,7 +49,9 @@ class Recipe extends Model
     protected $casts = [
         'ingredients' => 'array',
         'instructions' => 'array',
+        'embedding' => 'array',
         'approved_at' => 'datetime',
+        'embedding_generated_at' => 'datetime',
         'auto_approve_at' => 'datetime',
         'auto_reject_at' => 'datetime',
         'published_at' => 'datetime',
