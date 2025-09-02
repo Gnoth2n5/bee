@@ -129,6 +129,14 @@ class ShoppingListDashboard extends Component
         }
     }
 
+    public function confirmDeleteShoppingList($id)
+    {
+        $this->dispatch('confirm-delete-shopping-list', [
+            'id' => $id,
+            'message' => 'Bạn có chắc muốn xóa shopping list này không?'
+        ]);
+    }
+
     public function deleteShoppingList($id)
     {
         $shoppingList = ShoppingList::where('user_id', auth()->id())->find($id);

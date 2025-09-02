@@ -146,8 +146,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
                                     </a>
-                                    <button wire:click="deleteShoppingList({{ $shoppingList->id }})" 
-                                            onclick="return confirm('Bạn có chắc muốn xóa shopping list này?')"
+                                    <button wire:click="confirmDeleteShoppingList({{ $shoppingList->id }})" 
                                             class="text-red-600 hover:text-red-700">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -210,3 +209,16 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('livewire:init', () => {
+    Livewire.on('confirm-delete-shopping-list', (data) => {
+        const id = data.id || data[0]?.id;
+        const message = data.message || data[0]?.message || 'Bạn có chắc muốn xóa shopping list này không?';
+        
+        if (confirm(message)) {
+            @this.call('deleteShoppingList', id);
+        }
+    });
+});
+</script>
