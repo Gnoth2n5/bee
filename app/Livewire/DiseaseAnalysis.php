@@ -193,6 +193,12 @@ class DiseaseAnalysis extends Component
     public function addToMealPlan($recipeId)
     {
         try {
+            // Check authentication
+            if (!auth()->check()) {
+                $this->dispatch('meal-plan-error', ['message' => 'Vui lòng đăng nhập để sử dụng chức năng này']);
+                return;
+            }
+
             $recipe = Recipe::find($recipeId);
             if (!$recipe) {
                 $this->dispatch('meal-plan-error', ['message' => 'Không tìm thấy công thức']);
@@ -211,6 +217,12 @@ class DiseaseAnalysis extends Component
                 ->orderBy('created_at', 'desc')
                 ->get();
 
+            // Check if user has any meal plans
+            if ($this->availableMealPlans->isEmpty()) {
+                $this->dispatch('meal-plan-error', ['message' => 'Bạn chưa có meal plan nào. Vui lòng tạo meal plan trước.']);
+                return;
+            }
+
             $this->showMealPlanModal = true;
         } catch (\Exception $e) {
             $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
@@ -220,34 +232,32 @@ class DiseaseAnalysis extends Component
     public function addRecipeToMealPlan($mealPlanId)
     {
         try {
-            $mealPlan = \App\Models\WeeklyMealPlan::find($mealPlanId);
-            if (!$mealPlan || !$this->selectedRecipeForMealPlan) {
-                $this->dispatch('meal-plan-error', ['message' => 'Không tìm thấy meal plan hoặc công thức']);
+            // Check authentication
+            if (!auth()->check()) {
+                $this->dispatch('meal-plan-error', ['message' => 'Vui lòng đăng nhập để sử dụng chức năng này']);
                 return;
             }
 
-            // Lấy meals hiện tại từ database (fresh data)
-            $mealPlan->refresh();
-            $meals = $mealPlan->meals ?? [];
-
-            // Thêm recipe vào meal plan
-            if (!isset($meals[$this->selectedDay])) {
-                $meals[$this->selectedDay] = [];
+            $mealPlan = \App\Models\WeeklyMealPlan::find($mealPlanId);
+            if (!$mealPlan) {
+                $this->dispatch('meal-plan-error', ['message' => 'Không tìm thấy meal plan']);
+                return;
             }
 
-            // Nếu đã có meal type này, thêm vào array
-            if (isset($meals[$this->selectedDay][$this->selectedMealType])) {
-                if (is_array($meals[$this->selectedDay][$this->selectedMealType])) {
-                    $meals[$this->selectedDay][$this->selectedMealType][] = $this->selectedRecipeForMealPlan->id;
-                } else {
-                    $meals[$this->selectedDay][$this->selectedMealType] = [$meals[$this->selectedDay][$this->selectedMealType], $this->selectedRecipeForMealPlan->id];
-                }
-            } else {
-                $meals[$this->selectedDay][$this->selectedMealType] = [$this->selectedRecipeForMealPlan->id];
+            // Check if user owns this meal plan
+            if ($mealPlan->user_id !== auth()->id()) {
+                $this->dispatch('meal-plan-error', ['message' => 'Bạn không có quyền chỉnh sửa meal plan này']);
+                return;
             }
 
-            // Cập nhật meal plan
-            $mealPlan->update(['meals' => $meals]);
+            if (!$this->selectedRecipeForMealPlan) {
+                $this->dispatch('meal-plan-error', ['message' => 'Không tìm thấy công thức để thêm']);
+                return;
+            }
+
+            // Use the model's built-in method instead of manual array manipulation
+            $mealPlan->addMealForDay($this->selectedDay, $this->selectedMealType, $this->selectedRecipeForMealPlan->id);
+            $mealPlan->save();
 
             $recipeTitle = $this->selectedRecipeForMealPlan->title;
 
@@ -277,6 +287,39 @@ class DiseaseAnalysis extends Component
     {
         $this->showMealPlanModal = false;
         $this->selectedRecipeForMealPlan = null;
+    }
+
+    public function createNewMealPlan()
+    {
+        try {
+            if (!auth()->check()) {
+                $this->dispatch('meal-plan-error', ['message' => 'Vui lòng đăng nhập để tạo meal plan']);
+                return;
+            }
+
+            // Create a new meal plan for current week
+            $weekStart = now()->startOfWeek();
+            $mealPlan = \App\Models\WeeklyMealPlan::create([
+                'user_id' => auth()->id(),
+                'name' => 'Meal Plan - ' . $weekStart->format('d/m/Y'),
+                'week_start' => $weekStart,
+                'meals' => [],
+                'is_active' => true
+            ]);
+
+            // Refresh available meal plans
+            $this->availableMealPlans = \App\Models\WeeklyMealPlan::where('user_id', auth()->id())
+                ->where('is_active', true)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $this->dispatch('meal-plan-success', [
+                'message' => 'Đã tạo meal plan mới: ' . $mealPlan->name,
+                'mealPlan' => $mealPlan
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra khi tạo meal plan: ' . $e->getMessage()]);
+        }
     }
 
     public function getDaysOfWeek()

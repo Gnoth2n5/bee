@@ -537,10 +537,16 @@
                             </div>
                             <h4 class="text-lg font-semibold text-gray-900 mb-2">Chưa có Meal Plan nào</h4>
                             <p class="text-gray-600 mb-6">Bạn cần tạo Meal Plan trước khi thêm công thức</p>
-                            <a href="{{ route('meal-plans.create') }}" 
-                               class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                🚀 Tạo Meal Plan mới
-                            </a>
+                            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                                <button wire:click="createNewMealPlan"
+                                        class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                    ⚡ Tạo nhanh Meal Plan
+                                </button>
+                                <a href="{{ route('meal-plans.create') }}" 
+                                   class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                    🚀 Tạo Meal Plan chi tiết
+                                </a>
+                            </div>
                         </div>
                     @endif
                 </div>
