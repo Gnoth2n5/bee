@@ -47,22 +47,17 @@ class RecipeSeeder extends Seeder
                 'title' => $recipeData['title'],
                 'slug' => Str::slug($recipeData['title']) . '-' . time() . '-' . $index,
                 'description' => $recipeData['description'],
-                'image_url' => $recipeData['image_url'] ?? null,
-                'summary' => $recipeData['summary'],
                 'cooking_time' => $recipeData['cooking_time'],
-                'preparation_time' => $recipeData['preparation_time'],
                 'difficulty' => $recipeData['difficulty'],
                 'servings' => $recipeData['servings'],
-                'calories_per_serving' => $recipeData['calories_per_serving'],
                 'ingredients' => $recipeData['ingredients'],
                 'instructions' => $recipeData['instructions'],
-                'tips' => $recipeData['tips'],
-                'status' => $recipeData['status'],
+                'status' => 'approved',
                 'published_at' => now()->subDays(rand(1, 120)),
-                'view_count' => $recipeData['view_count'],
-                'favorite_count' => $recipeData['favorite_count'],
-                'rating_count' => $recipeData['rating_count'],
-                'average_rating' => $recipeData['average_rating']
+                'view_count' => 0,
+                'favorite_count' => 0,
+                'rating_count' => 0,
+                'average_rating' => 0
             ]);
 
             // Gán categories ngẫu nhiên
