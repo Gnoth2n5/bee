@@ -202,6 +202,13 @@ class UserPostResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('rejection_reason')
+                    ->label('Lý do từ chối')
+                    ->limit(100)
+                    ->tooltip(fn($state) => $state)
+                    ->color('danger')
+                    ->visible(fn($record) => $record->status === 'draft' && !empty($record->rejection_reason))
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('published_at')
                     ->label('Ngày xuất bản')
                     ->dateTime('d/m/Y H:i')
