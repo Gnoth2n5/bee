@@ -483,13 +483,6 @@ Route::get('/api/check-vip-status', function () {
     ]);
 })->middleware('auth')->name('api.check.vip.status');
 
-// Test OpenAI API
-Route::get('/test-openai', function () {
-    $openAiService = new \App\Services\OpenAiService();
-    $result = $openAiService->testConnection();
-
-    return response()->json($result);
-})->name('test.openai');
 
 // Test VIP middleware protection
 Route::get('/test-vip-middleware', function () {
