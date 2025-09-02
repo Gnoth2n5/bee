@@ -25,6 +25,8 @@ class UserPostResource extends Resource
 {
     protected static ?string $model = Post::class;
 
+    protected static ?string $slug = 'user-posts';
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $navigationLabel = 'Bài viết của tôi';
@@ -35,10 +37,12 @@ class UserPostResource extends Resource
 
     public static function canViewAny(): bool
     {
-        // Chỉ cho phép user VIP
+        // Chỉ cho phép user VIP (theo cách của ManagerPostResource)
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        return Auth::check() && $user->isVip();
+        $result = Auth::check() && $user && $user->isVip();
+
+        return $result;
     }
 
     public static function getNavigationBadge(): ?string
@@ -150,13 +154,7 @@ class UserPostResource extends Resource
                             ->default('draft')
                             ->required()
                             ->helperText('Chọn "Chờ duyệt" để gửi bài viết cho admin phê duyệt'),
-                        Forms\Components\Placeholder::make('created_at')
-                            ->label('Ngày tạo')
-                            ->content(fn(Post $record): ?string => $record?->created_at?->format('d/m/Y H:i')),
-                        Forms\Components\Placeholder::make('updated_at')
-                            ->label('Cập nhật lần cuối')
-                            ->content(fn(Post $record): ?string => $record?->updated_at?->format('d/m/Y H:i')),
-                    ])->columns(3)
+                    ])
                     ->collapsible(),
             ]);
     }
@@ -301,7 +299,8 @@ class UserPostResource extends Resource
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
                     ->label('Tạo bài viết đầu tiên')
-                    ->icon('heroicon-o-plus'),
+                    ->icon('heroicon-o-plus')
+                    ->url(fn(): string => static::getUrl('create')),
             ])
             ->emptyStateHeading('Chưa có bài viết nào')
             ->emptyStateDescription('Tạo bài viết đầu tiên để chia sẻ nội dung của bạn với cộng đồng.');

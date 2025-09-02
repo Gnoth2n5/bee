@@ -21,6 +21,7 @@ class PaymentController extends Controller
      */
     public function upgrade()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         // If user is already VIP, redirect to profile
@@ -54,6 +55,7 @@ class PaymentController extends Controller
      */
     public function history()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $payments = $user->payments()
             ->orderBy('created_at', 'desc')

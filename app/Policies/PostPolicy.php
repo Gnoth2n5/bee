@@ -15,8 +15,9 @@ class PostPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Chỉ admin/manager mới có thể xem danh sách bài viết
-        return $user->hasRole(['admin', 'manager']);
+        // Admin/manager có thể xem tất cả bài viết
+        // VIP users có thể xem bài viết của chính mình
+        return $user->hasRole(['admin', 'manager']) || $user->isVip();
     }
 
     /**
@@ -24,8 +25,10 @@ class PostPolicy
      */
     public function view(User $user, Post $post): bool
     {
-        // Chỉ admin/manager mới có thể xem chi tiết bài viết
-        return $user->hasRole(['admin', 'manager']);
+        // Admin/manager có thể xem tất cả bài viết
+        // VIP users chỉ có thể xem bài viết của chính mình
+        return $user->hasRole(['admin', 'manager']) ||
+            ($user->isVip() && $user->id === $post->user_id);
     }
 
     /**
@@ -33,8 +36,8 @@ class PostPolicy
      */
     public function create(User $user): bool
     {
-        // Chỉ admin/manager mới có thể tạo bài viết
-        return $user->hasRole(['admin', 'manager']);
+        // Admin/manager và VIP users có thể tạo bài viết
+        return $user->hasRole(['admin', 'manager']) || $user->isVip();
     }
 
     /**
@@ -42,8 +45,10 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {
-        // Chỉ admin/manager mới có thể cập nhật bài viết
-        return $user->hasRole(['admin', 'manager']);
+        // Admin/manager có thể cập nhật tất cả bài viết
+        // VIP users chỉ có thể cập nhật bài viết của chính mình
+        return $user->hasRole(['admin', 'manager']) ||
+            ($user->isVip() && $user->id === $post->user_id);
     }
 
     /**
@@ -51,8 +56,10 @@ class PostPolicy
      */
     public function delete(User $user, Post $post): bool
     {
-        // Chỉ admin/manager mới có thể xóa bài viết
-        return $user->hasRole(['admin', 'manager']);
+        // Admin/manager có thể xóa tất cả bài viết
+        // VIP users chỉ có thể xóa bài viết của chính mình
+        return $user->hasRole(['admin', 'manager']) ||
+            ($user->isVip() && $user->id === $post->user_id);
     }
 
     /**
@@ -90,4 +97,4 @@ class PostPolicy
         // Chỉ admin/manager mới có thể lưu trữ bài viết
         return $user->hasRole(['admin', 'manager']);
     }
-} 
+}

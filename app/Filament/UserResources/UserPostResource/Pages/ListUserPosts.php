@@ -25,24 +25,8 @@ class ListUserPosts extends ListRecords
         ];
     }
 
-    protected function getHeaderWidgets(): array
-    {
-        return [
-            // Có thể thêm widgets thống kê sau
-        ];
-    }
-
     public function getTitle(): string
     {
         return 'Bài viết của tôi';
-    }
-
-    protected function getActions(): array
-    {
-        return [
-            Actions\CreateAction::make()
-                ->label('Tạo bài viết mới')
-                ->icon('heroicon-o-plus'),
-        ];
     }
 }
