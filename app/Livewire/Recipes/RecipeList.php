@@ -232,7 +232,7 @@ class RecipeList extends Component
             $recipeService = app(RecipeService::class);
             $recipes = $recipeService->getFilteredRecipes($filters, $this->perPage);
 
-            $categories = Category::where('parent_id', null)->with('children')->get();
+            $categories = Category::all();
             $tags = Tag::orderBy('usage_count', 'desc')->limit(30)->get();
 
             return view('livewire.recipes.recipe-list', [

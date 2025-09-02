@@ -24,8 +24,7 @@ class RecipeController extends Controller
 {
     public function __construct(
         private RecipeService $recipeService
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -35,7 +34,7 @@ class RecipeController extends Controller
         $filters = $request->only(['category', 'difficulty', 'cooking_time', 'search', 'sort']);
         $recipes = $this->recipeService->getFilteredRecipes($filters);
 
-        $categories = Category::where('parent_id', null)->with('children')->get();
+        $categories = Category::all();
         $tags = Tag::orderBy('usage_count', 'desc')->limit(20)->get();
 
         return view('recipes.index', compact('recipes', 'categories', 'tags', 'filters'));

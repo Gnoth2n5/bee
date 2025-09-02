@@ -150,8 +150,8 @@ class HomePage extends Component
 
     public function getCategoriesProperty()
     {
-        return Category::where('parent_id', null)
-            ->with(['children', 'recipes'])
+        return Category::query()
+            ->with(['recipes'])
             ->withCount('recipes')
             ->limit(6)
             ->get();

@@ -136,7 +136,7 @@ class GlobalSearch extends Component
     {
         // Lấy các từ khóa tìm kiếm phổ biến từ tags và categories
         $popularTags = Tag::orderBy('usage_count', 'desc')->limit(5)->pluck('name')->toArray();
-        $popularCategories = Category::where('parent_id', null)->limit(3)->pluck('name')->toArray();
+        $popularCategories = Category::limit(3)->pluck('name')->toArray();
 
         $this->popularSearches = array_merge($popularTags, $popularCategories);
     }

@@ -20,9 +20,9 @@ class TagResource extends Resource
     protected static ?string $model = Tag::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
-    
+
     protected static ?string $navigationGroup = 'Quản lý nội dung';
-    
+
     protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
@@ -36,7 +36,7 @@ class TagResource extends Resource
                             ->required()
                             ->maxLength(100)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (string $state, callable $set) => $set('slug', Str::slug($state))),
+                            ->afterStateUpdated(fn(string $state, callable $set) => $set('slug', Str::slug($state))),
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug')
                             ->required()
@@ -46,9 +46,6 @@ class TagResource extends Resource
                             ->label('Mô tả')
                             ->maxLength(500)
                             ->columnSpanFull(),
-                        Forms\Components\ColorPicker::make('color')
-                            ->label('Màu sắc')
-                            ->default('#3B82F6'),
                         Forms\Components\TextInput::make('usage_count')
                             ->label('Số lần sử dụng')
                             ->numeric()
@@ -74,8 +71,6 @@ class TagResource extends Resource
                     ->label('Số công thức')
                     ->counts('recipes')
                     ->sortable(),
-                Tables\Columns\ColorColumn::make('color')
-                    ->label('Màu sắc'),
                 Tables\Columns\TextColumn::make('usage_count')
                     ->label('Số lần sử dụng')
                     ->numeric()

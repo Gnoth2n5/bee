@@ -15,33 +15,15 @@ class Category extends Model
         'description',
         'image',
         'icon',
-        'color',
-        'parent_id',
-        'level',
         'sort_order',
-        'is_active',
-        'created_by'
+        'is_active'
     ];
 
     protected $casts = [
         'is_active' => 'boolean'
     ];
 
-    /**
-     * Get the parent category.
-     */
-    public function parent()
-    {
-        return $this->belongsTo(Category::class, 'parent_id');
-    }
 
-    /**
-     * Get the child categories.
-     */
-    public function children()
-    {
-        return $this->hasMany(Category::class, 'parent_id');
-    }
 
     /**
      * Get the recipes for the category.
@@ -51,13 +33,7 @@ class Category extends Model
         return $this->belongsToMany(Recipe::class, 'recipe_categories');
     }
 
-    /**
-     * Get the user who created the category.
-     */
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
+
 
     /**
      * Scope a query to only include active categories.
@@ -65,13 +41,5 @@ class Category extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    /**
-     * Scope a query to only include root categories.
-     */
-    public function scopeRoot($query)
-    {
-        return $query->whereNull('parent_id');
     }
 }

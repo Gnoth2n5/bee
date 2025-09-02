@@ -40,8 +40,6 @@ class CategoryResource extends Resource
                         Forms\Components\TextInput::make('icon')
                             ->label('Icon Heroicon (ví dụ: heroicon-o-bookmark)')
                             ->maxLength(100),
-                        Forms\Components\ColorPicker::make('color')
-                            ->label('Màu sắc'),
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug')
                             ->required()
@@ -56,14 +54,7 @@ class CategoryResource extends Resource
                             ->image()
                             ->imageEditor()
                             ->columnSpanFull(),
-                        Forms\Components\Select::make('parent_id')
-                            ->label('Danh mục cha')
-                            ->options(fn() => \App\Models\Category::where('is_active', true)->pluck('name', 'id')->toArray())
-                            ->searchable()
-                            ->preload()
-                            ->placeholder('Không có')
-                            ->helperText('Chọn danh mục cha nếu đây là danh mục con')
-                            ->disableOptionWhen(fn($value, $get) => $value == $get('id')),
+
                         Forms\Components\Toggle::make('is_active')
                             ->label('Kích hoạt')
                             ->default(true),
