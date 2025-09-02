@@ -95,12 +95,7 @@ class QuickSearch extends Component
     {
         if (!empty($this->searchQuery)) {
             $this->showSuggestions = false;
-            // Nếu có kết quả tìm kiếm, chuyển đến công thức đầu tiên
-            if ($this->suggestions['recipes']->count() > 0) {
-                $firstRecipe = $this->suggestions['recipes']->first();
-                return redirect()->route('recipes.show', $firstRecipe);
-            }
-            // Nếu không có kết quả, chuyển đến trang tìm kiếm đầy đủ
+            // Luôn chuyển đến trang tìm kiếm đầy đủ thay vì redirect trực tiếp đến recipe
             return redirect()->route('recipes.index', ['search' => $this->searchQuery]);
         }
     }

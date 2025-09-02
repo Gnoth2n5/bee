@@ -115,14 +115,8 @@ class GlobalSearch extends Component
     public function goToSearchPage()
     {
         if (!empty($this->searchQuery)) {
-            // Nếu có kết quả tìm kiếm, chuyển đến công thức đầu tiên
-            if ($this->searchResults['recipes']->count() > 0) {
-                $firstRecipe = $this->searchResults['recipes']->first();
-                $this->closeSearch();
-                return redirect()->route('recipes.show', $firstRecipe);
-            }
-            // Nếu không có kết quả, chuyển đến trang tìm kiếm đầy đủ
             $this->closeSearch();
+            // Luôn chuyển đến trang tìm kiếm đầy đủ thay vì redirect trực tiếp đến recipe
             return redirect()->route('recipes.index', ['search' => $this->searchQuery]);
         }
     }
