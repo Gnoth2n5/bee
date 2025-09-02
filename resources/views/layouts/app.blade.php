@@ -60,7 +60,7 @@
             <x-footer />
 
             <!-- OpenAI Quick Chat Button (show on all pages except AI chat) -->
-            {{-- @unless(request()->routeIs('openai.*'))
+            {{ @unless(request()->routeIs('openai.*'))
                 <x-openai-quick-chat />
             @endunless --}}
         </div>

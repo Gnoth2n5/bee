@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Cache;
 class OpenAiService
 {
     protected $apiKey;
-    protected $baseUrl = 'https://api.openai.com/v1';
+    protected $baseUrl = 'https://openrouter.ai/api/v1';
     protected static $circuitBreakerKey = 'openai_service_circuit_breaker';
     protected static $failureThreshold = 5; // Number of failures before opening circuit
     protected static $recoveryTimeout = 300; // 5 minutes
@@ -178,7 +178,7 @@ class OpenAiService
 
 
             $payload = [
-                'model' => 'gpt-3.5-turbo',
+                'model' => 'deepseek/deepseek-chat-v3-0324:free',
                 'messages' => $messages,
                 'max_tokens' => 1000,
                 'temperature' => 0.7,

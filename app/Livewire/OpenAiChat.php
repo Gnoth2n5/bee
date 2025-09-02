@@ -21,7 +21,7 @@ class OpenAiChat extends Component
     public $ingredients = [];
     public $newIngredient = '';
     public $showHistory = false;
-    
+
     // Quick action suggestions
     public $quickSuggestions = [
         'general' => [
@@ -65,7 +65,7 @@ class OpenAiChat extends Component
     public function mount()
     {
         $this->loadConversationFromSession();
-        
+
         // Ensure string properties are properly initialized
         $this->message = is_string($this->message) ? $this->message : '';
         $this->newIngredient = is_string($this->newIngredient) ? $this->newIngredient : '';
@@ -79,13 +79,13 @@ class OpenAiChat extends Component
             'message_type' => gettype($this->message),
             'is_empty' => empty(trim($this->message ?? ''))
         ]);
-        
+
         if (is_array($this->message)) {
-          
+
             $this->message = '';
             return;
         }
-        
+
         if (empty(trim($this->message ?? ''))) {
             return;
         }
@@ -97,7 +97,7 @@ class OpenAiChat extends Component
 
         $this->isLoading = true;
         $userMessage = trim($this->message);
-        
+
         // Add user message to conversation
         $this->conversation[] = [
             'role' => 'user',
@@ -141,7 +141,7 @@ class OpenAiChat extends Component
 
                 // Store in session
                 $this->storeConversationInSession();
-                
+
                 // Scroll to bottom
                 $this->dispatch('scroll-to-bottom');
             } else {
@@ -178,17 +178,17 @@ class OpenAiChat extends Component
             $this->newIngredient = '';
             return;
         }
-        
+
         if (empty(trim($this->newIngredient))) {
             return;
         }
 
         $ingredient = trim($this->newIngredient);
-        
+
         if (!in_array($ingredient, $this->ingredients)) {
             $this->ingredients[] = $ingredient;
         }
-        
+
         $this->newIngredient = '';
     }
 
@@ -238,17 +238,17 @@ class OpenAiChat extends Component
     private function loadConversationFromSession()
     {
         $sessionConversation = Session::get('openai_conversation', []);
-        
+
         $this->conversation = collect($sessionConversation)->map(function ($msg) {
             return [
                 'role' => $msg['role'],
                 'content' => $msg['content'],
                 'content_html' => $msg['role'] === 'assistant' ? $this->parseMarkdown($msg['content']) : null,
-                'timestamp' => isset($msg['timestamp']) ? 
-                    \Carbon\Carbon::parse($msg['timestamp'])->format('H:i') : 
+                'timestamp' => isset($msg['timestamp']) ?
+                    \Carbon\Carbon::parse($msg['timestamp'])->format('H:i') :
                     now()->format('H:i'),
-                'avatar' => $msg['role'] === 'user' ? 
-                    (Auth::user()?->avatar ?? '/images/default-avatar.png') : 
+                'avatar' => $msg['role'] === 'user' ?
+                    (Auth::user()?->avatar ?? '/images/default-avatar.png') :
                     '/images/ai-avatar.png',
                 'is_error' => $msg['is_error'] ?? false
             ];
