@@ -178,7 +178,7 @@ class VipPostApprovalResource extends Resource
                     ->limit(50)
                     ->tooltip(fn($state) => $state)
                     ->color('danger')
-                    ->visible(fn($record) => !empty($record->rejection_reason))
+                    ->visible(fn(?Post $record): bool => $record && !empty($record->rejection_reason))
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')

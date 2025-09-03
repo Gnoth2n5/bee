@@ -244,30 +244,51 @@ class DiseaseAnalysis extends Component
     public function addRecipeToMealPlan($mealPlanId)
     {
         try {
+            \Log::info('DiseaseAnalysis: Starting addRecipeToMealPlan', [
+                'meal_plan_id' => $mealPlanId,
+                'user_id' => Auth::id(),
+                'recipe_id' => $this->selectedRecipeForMealPlan?->id,
+                'selected_day' => $this->selectedDay,
+                'selected_meal_type' => $this->selectedMealType
+            ]);
+
             // Check authentication
             if (!Auth::check()) {
+                \Log::warning('DiseaseAnalysis: User not authenticated');
                 $this->dispatch('meal-plan-error', ['message' => 'Vui lòng đăng nhập để sử dụng chức năng này']);
                 return;
             }
 
             $mealPlan = \App\Models\WeeklyMealPlan::find($mealPlanId);
             if (!$mealPlan) {
+                \Log::error('DiseaseAnalysis: Meal plan not found', ['meal_plan_id' => $mealPlanId]);
                 $this->dispatch('meal-plan-error', ['message' => 'Không tìm thấy meal plan']);
                 return;
             }
 
             // Check if user owns this meal plan
             if ($mealPlan->user_id !== Auth::id()) {
+                \Log::error('DiseaseAnalysis: User does not own meal plan', [
+                    'meal_plan_user_id' => $mealPlan->user_id,
+                    'current_user_id' => Auth::id()
+                ]);
                 $this->dispatch('meal-plan-error', ['message' => 'Bạn không có quyền chỉnh sửa meal plan này']);
                 return;
             }
 
             if (!$this->selectedRecipeForMealPlan) {
+                \Log::error('DiseaseAnalysis: No recipe selected');
                 $this->dispatch('meal-plan-error', ['message' => 'Không tìm thấy công thức để thêm']);
                 return;
             }
 
             // Use the model's built-in method instead of manual array manipulation
+            \Log::info('DiseaseAnalysis: Adding meal to plan', [
+                'day' => $this->selectedDay,
+                'meal_type' => $this->selectedMealType,
+                'recipe_id' => $this->selectedRecipeForMealPlan->id
+            ]);
+
             $mealPlan->addMealForDay($this->selectedDay, $this->selectedMealType, $this->selectedRecipeForMealPlan->id);
             $mealPlan->save();
 
@@ -286,11 +307,25 @@ class DiseaseAnalysis extends Component
             $dayName = $this->getDaysOfWeek()[$this->selectedDay];
             $mealName = $this->getMealTypes()[$this->selectedMealType];
 
+            $successMessage = "Đã thêm '{$recipeTitle}' vào {$mealPlan->name} - {$dayName} - {$mealName}";
+
+            \Log::info('DiseaseAnalysis: Recipe added successfully', [
+                'message' => $successMessage,
+                'meal_plan_id' => $mealPlan->id
+            ]);
+
             $this->dispatch('meal-plan-success', [
-                'message' => "Đã thêm '{$recipeTitle}' vào {$mealPlan->name} - {$dayName} - {$mealName}",
+                'message' => $successMessage,
                 'recipe' => $this->selectedRecipeForMealPlan
             ]);
         } catch (\Exception $e) {
+            \Log::error('DiseaseAnalysis: Exception in addRecipeToMealPlan', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
         }
     }
@@ -350,8 +385,14 @@ class DiseaseAnalysis extends Component
     public function addAllSuitableToMealPlan()
     {
         try {
+            \Log::info('DiseaseAnalysis: Starting addAllSuitableToMealPlan', [
+                'user_id' => Auth::id(),
+                'authenticated' => Auth::check()
+            ]);
+
             // Check authentication
             if (!Auth::check()) {
+                \Log::warning('DiseaseAnalysis: User not authenticated for bulk add');
                 $this->dispatch('meal-plan-error', ['message' => 'Vui lòng đăng nhập để sử dụng chức năng này']);
                 return;
             }
@@ -360,24 +401,50 @@ class DiseaseAnalysis extends Component
                 ->where('cooking_time', '<=', 60)
                 ->get();
 
+            \Log::info('DiseaseAnalysis: Found suitable recipes', [
+                'count' => $suitableRecipes->count()
+            ]);
+
             if ($suitableRecipes->isEmpty()) {
+                \Log::warning('DiseaseAnalysis: No suitable recipes found');
                 $this->dispatch('meal-plan-error', ['message' => 'Không có món ăn phù hợp nào được tìm thấy']);
                 return;
             }
 
             // Store recipes in session for modal selection
-            session()->put('pending_meal_plan_recipes', $suitableRecipes->pluck('id')->toArray());
+            $recipeIds = $suitableRecipes->pluck('id')->toArray();
+            session()->put('pending_meal_plan_recipes', $recipeIds);
             session()->put('pending_recipes_type', 'suitable');
+
+            \Log::info('DiseaseAnalysis: Stored recipes in session', [
+                'recipe_count' => count($recipeIds),
+                'first_few_ids' => array_slice($recipeIds, 0, 5)
+            ]);
 
             // Show meal plan selection modal
             $this->showBulkMealPlanModal = true;
             $this->loadAvailableMealPlans();
 
+            \Log::info('DiseaseAnalysis: Opened bulk modal', [
+                'available_meal_plans' => $this->availableMealPlans->count()
+            ]);
+
+            $message = "Đã chuẩn bị {$suitableRecipes->count()} món ăn phù hợp để thêm vào Meal Plan";
             $this->dispatch('bulk-recipes-ready', [
-                'message' => "Đã chuẩn bị {$suitableRecipes->count()} món ăn phù hợp để thêm vào Meal Plan",
+                'message' => $message,
                 'count' => $suitableRecipes->count()
             ]);
+
+            \Log::info('DiseaseAnalysis: Bulk recipes ready event dispatched', [
+                'message' => $message
+            ]);
         } catch (\Exception $e) {
+            \Log::error('DiseaseAnalysis: Exception in addAllSuitableToMealPlan', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+
             $this->dispatch('meal-plan-error', ['message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
         }
     }
@@ -455,35 +522,75 @@ class DiseaseAnalysis extends Component
     public function distributeBulkRecipes()
     {
         try {
+            \Log::info('DiseaseAnalysis: Starting distributeBulkRecipes', [
+                'selected_meal_plan_id' => $this->selectedMealPlanForBulk,
+                'user_id' => Auth::id()
+            ]);
+
             if (!$this->selectedMealPlanForBulk) {
+                \Log::warning('DiseaseAnalysis: No meal plan selected for bulk distribution');
                 $this->dispatch('meal-plan-error', ['message' => 'Vui lòng chọn meal plan']);
                 return;
             }
 
             $recipeIds = session('pending_meal_plan_recipes', []);
             if (empty($recipeIds)) {
+                \Log::warning('DiseaseAnalysis: No pending recipes in session');
                 $this->dispatch('meal-plan-error', ['message' => 'Không có món ăn nào để thêm']);
                 return;
             }
 
+            \Log::info('DiseaseAnalysis: Found pending recipes', [
+                'recipe_count' => count($recipeIds),
+                'first_few_ids' => array_slice($recipeIds, 0, 5)
+            ]);
+
             $mealPlan = \App\Models\WeeklyMealPlan::find($this->selectedMealPlanForBulk);
             if (!$mealPlan || $mealPlan->user_id !== Auth::id()) {
+                \Log::error('DiseaseAnalysis: Invalid meal plan or access denied', [
+                    'meal_plan_found' => $mealPlan ? 'yes' : 'no',
+                    'meal_plan_user_id' => $mealPlan?->user_id,
+                    'current_user_id' => Auth::id()
+                ]);
                 $this->dispatch('meal-plan-error', ['message' => 'Không tìm thấy meal plan hoặc không có quyền truy cập']);
                 return;
             }
 
+            \Log::info('DiseaseAnalysis: Starting intelligent distribution', [
+                'meal_plan_name' => $mealPlan->name,
+                'initial_recipe_count' => $mealPlan->getAllRecipes()->count()
+            ]);
+
             $addedCount = $this->distributeRecipesIntelligently($mealPlan, $recipeIds);
+
+            \Log::info('DiseaseAnalysis: Distribution completed', [
+                'added_count' => $addedCount,
+                'final_recipe_count' => $mealPlan->getAllRecipes()->count()
+            ]);
 
             // Clear session
             session()->forget(['pending_meal_plan_recipes', 'pending_recipes_type']);
             $this->showBulkMealPlanModal = false;
             $this->selectedMealPlanForBulk = null;
 
+            $successMessage = "Đã thêm thành công {$addedCount} món ăn vào meal plan '{$mealPlan->name}'";
+
             $this->dispatch('meal-plan-success', [
-                'message' => "Đã thêm thành công {$addedCount} món ăn vào meal plan '{$mealPlan->name}'",
+                'message' => $successMessage,
                 'count' => $addedCount
             ]);
+
+            \Log::info('DiseaseAnalysis: Success event dispatched', [
+                'message' => $successMessage
+            ]);
         } catch (\Exception $e) {
+            \Log::error('DiseaseAnalysis: Exception in distributeBulkRecipes', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             $this->dispatch('meal-plan-error', ['message' => 'Lỗi phân phối món ăn: ' . $e->getMessage()]);
         }
     }

@@ -207,7 +207,7 @@ class UserPostResource extends Resource
                     ->limit(100)
                     ->tooltip(fn($state) => $state)
                     ->color('danger')
-                    ->visible(fn($record) => $record->status === 'draft' && !empty($record->rejection_reason))
+                    ->visible(fn(?Post $record): bool => $record && $record->status === 'draft' && !empty($record->rejection_reason))
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('published_at')
                     ->label('Ngày xuất bản')

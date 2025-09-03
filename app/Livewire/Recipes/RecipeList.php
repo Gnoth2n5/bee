@@ -50,7 +50,7 @@ class RecipeList extends Component
     public $showAdvancedFilters = false;
     public $viewMode = 'grid'; // grid, list
 
-    // Disable Livewire's automatic scroll behavior
+    // Use Livewire's built-in pagination
     protected $paginationTheme = 'tailwind';
 
     // Override to prevent scroll to top on updates
@@ -206,12 +206,15 @@ class RecipeList extends Component
     }
 
     /**
-     * Override to prevent automatic scroll on page changes
+     * Override updatedPage to handle pagination properly
      */
     public function updatedPage()
     {
-        // Do nothing - prevent automatic scroll
-        // Only scroll when explicitly called from pagination methods
+        // Dispatch scroll event for pagination
+        $this->dispatch('scroll-to-top', ['fromPagination' => true]);
+
+        // Force component to re-render immediately
+        $this->render();
     }
 
     /**
@@ -228,21 +231,18 @@ class RecipeList extends Component
     public function nextPage()
     {
         $this->setPage($this->getPage() + 1);
-        $this->dispatch('scroll-to-top', ['fromPagination' => true]);
     }
 
     public function previousPage()
     {
         if ($this->getPage() > 1) {
             $this->setPage($this->getPage() - 1);
-            $this->dispatch('scroll-to-top', ['fromPagination' => true]);
         }
     }
 
     public function gotoPage($page)
     {
         $this->setPage($page);
-        $this->dispatch('scroll-to-top', ['fromPagination' => true]);
     }
 
     public function render()
@@ -279,8 +279,8 @@ class RecipeList extends Component
             // Return empty results on error
             return view('livewire.recipes.recipe-list', [
                 'recipes' => collect([])->paginate($this->perPage),
-                'categories' => collect([]),
-                'tags' => collect([]),
+                'categories' => $categories ?? collect([]),
+                'tags' => $tags ?? collect([]),
             ]);
         }
     }

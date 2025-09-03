@@ -452,28 +452,38 @@
                         <!-- Enhanced Pagination -->
                         <div class="mt-12">
                             <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 dark:border-slate-700/50 p-6">
-                                <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+                                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
                                     <!-- Pagination Info -->
-                                    <div class="flex items-center gap-4">
-                                        <div class="text-sm text-gray-600 dark:text-gray-400">
-                                            Hiển thị <span class="font-semibold text-gray-900 dark:text-white">{{ $recipes->firstItem() ?? 0 }}</span> - 
+                                    <div class="flex items-center gap-4 order-2 sm:order-1">
+                                        <div class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
+                                            <span class="hidden sm:inline">Hiển thị </span>
+                                            <span class="font-semibold text-gray-900 dark:text-white">{{ $recipes->firstItem() ?? 0 }}</span> - 
                                             <span class="font-semibold text-gray-900 dark:text-white">{{ $recipes->lastItem() ?? 0 }}</span> 
-                                            trong tổng số <span class="font-semibold text-gray-900 dark:text-white">{{ $recipes->total() }}</span> công thức
+                                            <span class="hidden sm:inline">trong tổng số</span>
+                                            <span class="sm:hidden">/</span>
+                                            <span class="font-semibold text-gray-900 dark:text-white">{{ $recipes->total() }}</span> 
+                                            <span class="hidden sm:inline">công thức</span>
                                         </div>
                                     </div>
 
                                     <!-- Pagination Links -->
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1 sm:gap-2 flex-wrap justify-center sm:justify-end order-1 sm:order-2">
+                                        <!-- Loading Indicator -->
+                                        <div wire:loading class="flex items-center gap-2 mr-4">
+                                            <div class="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                                            <span class="text-sm text-gray-600 dark:text-gray-400">Đang tải...</span>
+                                        </div>
+                                        
                                         @if ($recipes->hasPages())
                                             <!-- Previous Button -->
                                             @if ($recipes->onFirstPage())
-                                                <span class="px-3 py-2 text-sm text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                                                <span class="px-2 sm:px-3 py-2 text-sm text-gray-400 dark:text-gray-600 cursor-not-allowed rounded-lg border border-gray-200 dark:border-slate-700">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                                                     </svg>
                                                 </span>
                                             @else
-                                                <button wire:click="previousPage" class="px-3 py-2 text-sm bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
+                                                <button wire:click="previousPage" wire:loading.attr="disabled" class="px-2 sm:px-3 py-2 text-sm bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                                                     </svg>
@@ -481,27 +491,74 @@
                                             @endif
 
                                             <!-- Page Numbers -->
-                                            @foreach ($recipes->getUrlRange(1, $recipes->lastPage()) as $page => $url)
-                                                @if ($page == $recipes->currentPage())
-                                                    <span class="px-4 py-2 text-sm bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg font-semibold">
-                                                        {{ $page }}
-                                                    </span>
-                                                @else
-                                                    <button wire:click="gotoPage({{ $page }})" class="px-4 py-2 text-sm bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
-                                                        {{ $page }}
+                                            <!-- Mobile: Simple page indicator -->
+                                            <div class="sm:hidden">
+                                                <span class="px-3 py-2 text-sm bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg font-semibold shadow-md">
+                                                    {{ $recipes->currentPage() }} / {{ $recipes->lastPage() }}
+                                                </span>
+                                            </div>
+
+                                            <!-- Desktop: Full pagination -->
+                                            <div class="hidden sm:flex items-center gap-2">
+                                                @php
+                                                    $currentPage = $recipes->currentPage();
+                                                    $lastPage = $recipes->lastPage();
+                                                    $startPage = max(1, $currentPage - 2);
+                                                    $endPage = min($lastPage, $currentPage + 2);
+                                                    
+                                                    // Ensure we show at least 5 pages if available
+                                                    if ($endPage - $startPage < 4) {
+                                                        if ($startPage == 1) {
+                                                            $endPage = min($lastPage, $startPage + 4);
+                                                        } else {
+                                                            $startPage = max(1, $endPage - 4);
+                                                        }
+                                                    }
+                                                @endphp
+
+                                                <!-- First page -->
+                                                @if ($startPage > 1)
+                                                    <button wire:click="gotoPage(1)" wire:loading.attr="disabled" class="px-4 py-2 text-sm bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                                        1
+                                                    </button>
+                                                    @if ($startPage > 2)
+                                                        <span class="px-2 py-2 text-sm text-gray-400 dark:text-gray-600">...</span>
+                                                    @endif
+                                                @endif
+
+                                                <!-- Page range -->
+                                                @for ($page = $startPage; $page <= $endPage; $page++)
+                                                    @if ($page == $currentPage)
+                                                        <span class="px-4 py-2 text-sm bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg font-semibold shadow-md">
+                                                            {{ $page }}
+                                                        </span>
+                                                    @else
+                                                        <button wire:click="gotoPage({{ $page }})" wire:loading.attr="disabled" class="px-4 py-2 text-sm bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                                            {{ $page }}
+                                                        </button>
+                                                    @endif
+                                                @endfor
+
+                                                <!-- Last page -->
+                                                @if ($endPage < $lastPage)
+                                                    @if ($endPage < $lastPage - 1)
+                                                        <span class="px-2 py-2 text-sm text-gray-400 dark:text-gray-600">...</span>
+                                                    @endif
+                                                    <button wire:click="gotoPage({{ $lastPage }})" wire:loading.attr="disabled" class="px-4 py-2 text-sm bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                                        {{ $lastPage }}
                                                     </button>
                                                 @endif
-                                            @endforeach
+                                            </div>
 
                                             <!-- Next Button -->
                                             @if ($recipes->hasMorePages())
-                                                <button wire:click="nextPage" class="px-3 py-2 text-sm bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
+                                                <button wire:click="nextPage" wire:loading.attr="disabled" class="px-2 sm:px-3 py-2 text-sm bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                                     </svg>
                                                 </button>
                                             @else
-                                                <span class="px-3 py-2 text-sm text-gray-400 dark:text-gray-600 cursor-not-allowed">
+                                                <span class="px-2 sm:px-3 py-2 text-sm text-gray-400 dark:text-gray-600 cursor-not-allowed rounded-lg border border-gray-200 dark:border-slate-700">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                                     </svg>
@@ -541,36 +598,57 @@
     <!-- Export Modal -->
     <x-export-modal />
 
-    <!-- Smooth Scroll Script -->
+    <!-- Enhanced Pagination Script -->
     <script>
         document.addEventListener('livewire:init', () => {
-            // Store original scroll position
+            // Store original scroll position for filter updates only
             let shouldPreventScroll = false;
             let originalScrollPosition = 0;
+            let isPaginationAction = false;
 
-            // Before Livewire update, store scroll position
+            // Before Livewire update
             Livewire.hook('morph.updating', ({ el, component, toEl, childrenOnly, skip }) => {
                 // Check if this is a filter update (not pagination)
                 if (component.fingerprint.name === 'recipes.recipe-list') {
-                    shouldPreventScroll = true;
-                    originalScrollPosition = window.pageYOffset;
+                    if (!isPaginationAction) {
+                        shouldPreventScroll = true;
+                        originalScrollPosition = window.pageYOffset;
+                    }
                 }
             });
 
-            // After Livewire update, restore scroll position if needed
+            // After Livewire update
             Livewire.hook('morph.updated', ({ el, component }) => {
-                if (shouldPreventScroll && component.fingerprint.name === 'recipes.recipe-list') {
-                    // Small delay to ensure DOM is updated
-                    setTimeout(() => {
-                        window.scrollTo(0, originalScrollPosition);
-                        shouldPreventScroll = false;
-                    }, 10);
+                if (component.fingerprint.name === 'recipes.recipe-list') {
+                    if (shouldPreventScroll && !isPaginationAction) {
+                        setTimeout(() => {
+                            window.scrollTo(0, originalScrollPosition);
+                            shouldPreventScroll = false;
+                        }, 10);
+                    }
+                    isPaginationAction = false; // Reset flag
+                }
+            });
+
+            // Listen for pagination button clicks
+            document.addEventListener('click', function(e) {
+                const paginationButton = e.target.closest('[wire\\:click*="Page"], [wire\\:click*="gotoPage"]');
+                if (paginationButton) {
+                    isPaginationAction = true;
+                    shouldPreventScroll = false;
+                    
+                    // Add loading state to pagination buttons
+                    const allPaginationButtons = document.querySelectorAll('[wire\\:click*="Page"], [wire\\:click*="gotoPage"]');
+                    allPaginationButtons.forEach(btn => {
+                        btn.disabled = true;
+                        btn.classList.add('opacity-50', 'cursor-not-allowed');
+                    });
                 }
             });
 
             // Scroll to filters when clearing filters
             Livewire.on('scroll-to-filters', () => {
-                shouldPreventScroll = false; // Allow this scroll
+                shouldPreventScroll = false;
                 const filtersSection = document.querySelector('[data-filters-section]');
                 if (filtersSection) {
                     filtersSection.scrollIntoView({ 
@@ -582,7 +660,7 @@
 
             // Scroll to results when performing search
             Livewire.on('scroll-to-results', () => {
-                shouldPreventScroll = false; // Allow this scroll
+                shouldPreventScroll = false;
                 const resultsSection = document.querySelector('[data-results-section]');
                 if (resultsSection) {
                     resultsSection.scrollIntoView({ 
@@ -594,12 +672,30 @@
 
             // Handle pagination scroll
             Livewire.on('scroll-to-top', (data) => {
-                shouldPreventScroll = false; // Allow pagination scroll
+                shouldPreventScroll = false;
                 if (data && data.fromPagination) {
-                    window.scrollTo({ 
-                        top: 0, 
-                        behavior: 'smooth' 
-                    });
+                    setTimeout(() => {
+                        window.scrollTo({ 
+                            top: 0, 
+                            behavior: 'smooth' 
+                        });
+                    }, 100); // Small delay to ensure content is loaded
+                }
+            });
+
+            // Force refresh on pagination to ensure immediate update
+            Livewire.hook('message.sent', (message, component) => {
+                if (component.fingerprint.name === 'recipes.recipe-list') {
+                    // Check if this is a pagination action
+                    const updates = message.updates || [];
+                    const isPagination = updates.some(update => 
+                        update.payload && update.payload.method && 
+                        (update.payload.method.includes('Page') || update.payload.method.includes('gotoPage'))
+                    );
+                    
+                    if (isPagination) {
+                        isPaginationAction = true;
+                    }
                 }
             });
         });

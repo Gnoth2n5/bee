@@ -174,7 +174,7 @@
                         <div class="mt-8 text-center">
                             <button wire:click="createDiseaseFromAnalysis"
                                     class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                ➕ Tạo bệnh mới từ kết quả phân tích
+                                ➕ Tạo thông tin sức khỏe mới từ kết quả phân tích
                             </button>
                         </div>
                     @endif
@@ -297,10 +297,13 @@
                                     ⭐ Món ăn phù hợp
                                 </h3>
                                                          <div class="flex gap-3">
-                             <button wire:click="addAllSuitableToMealPlan()"
-                                     class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                 📅 Thêm tất cả vào Meal Plan
-                             </button>
+                                                     <button wire:click="addAllSuitableToMealPlan()"
+                                wire:loading.attr="disabled"
+                                wire:target="addAllSuitableToMealPlan"
+                                class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="addAllSuitableToMealPlan">📅 Thêm tất cả vào Meal Plan</span>
+                            <span wire:loading wire:target="addAllSuitableToMealPlan">⏳ Đang chuẩn bị...</span>
+                        </button>
                              @if(session()->has('meal_plan_recipes') && count(session('meal_plan_recipes', [])) > 0)
                                  <button wire:click="goToMealPlan()"
                                          class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
@@ -362,10 +365,13 @@
                                     ⚠️ Món ăn cần điều chỉnh
                                 </h3>
                                                                  <div class="flex gap-3">
-                                     <button wire:click="addAllModerateToMealPlan()"
-                                             class="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                         📅 Thêm tất cả vào Meal Plan
-                                     </button>
+                                                                         <button wire:click="addAllModerateToMealPlan()"
+                                            wire:loading.attr="disabled"
+                                            wire:target="addAllModerateToMealPlan"
+                                            class="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <span wire:loading.remove wire:target="addAllModerateToMealPlan">📅 Thêm tất cả vào Meal Plan</span>
+                                        <span wire:loading wire:target="addAllModerateToMealPlan">⏳ Đang chuẩn bị...</span>
+                                    </button>
                                      @if(session()->has('meal_plan_recipes') && count(session('meal_plan_recipes', [])) > 0)
                                          <button wire:click="goToMealPlan()"
                                                  class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
@@ -665,12 +671,22 @@
                         Hủy
                     </button>
                     <button wire:click="distributeBulkRecipes" 
+                            wire:loading.attr="disabled"
+                            wire:target="distributeBulkRecipes"
                             class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                             {{ !$selectedMealPlanForBulk ? 'disabled' : '' }}>
-                        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                        </svg>
-                        Thêm vào Meal Plan
+                        <span wire:loading.remove wire:target="distributeBulkRecipes">
+                            <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Thêm vào Meal Plan
+                        </span>
+                        <span wire:loading wire:target="distributeBulkRecipes">
+                            <svg class="w-5 h-5 mr-2 inline animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Đang thêm...
+                        </span>
                     </button>
                 </div>
             </div>
@@ -680,21 +696,38 @@
 
     <script>
         document.addEventListener('livewire:init', () => {
+            console.log('Disease Analysis: Livewire initialized');
+            
             Livewire.on('meal-plan-success', (event) => {
-                showToast(event.message, 'success');
+                console.log('Disease Analysis: meal-plan-success event received', event);
+                showToast(event.message || event[0]?.message, 'success');
             });
 
             Livewire.on('meal-plan-error', (event) => {
-                showToast(event.message, 'error');
+                console.log('Disease Analysis: meal-plan-error event received', event);
+                showToast(event.message || event[0]?.message, 'error');
             });
 
             Livewire.on('bulk-recipes-ready', (event) => {
-                showToast(event.message, 'success');
+                console.log('Disease Analysis: bulk-recipes-ready event received', event);
+                showToast(event.message || event[0]?.message, 'success');
             });
         });
 
         function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
+            console.log('Disease Analysis: showToast called', { message, type });
+            
+            let container = document.getElementById('toast-container');
+            
+            // Create container if it doesn't exist
+            if (!container) {
+                console.log('Disease Analysis: Creating toast container');
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'fixed top-4 right-4 z-50 space-y-2';
+                document.body.appendChild(container);
+            }
+            
             const toast = document.createElement('div');
             
             const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
@@ -704,15 +737,17 @@
             toast.innerHTML = `
                 <div class="flex items-center">
                     <span class="mr-2">${icon}</span>
-                    <span>${message}</span>
+                    <span>${message || 'Unknown message'}</span>
                 </div>
             `;
             
             container.appendChild(toast);
+            console.log('Disease Analysis: Toast added to container');
             
             // Animate in
             setTimeout(() => {
                 toast.classList.remove('translate-x-full');
+                console.log('Disease Analysis: Toast animated in');
             }, 100);
             
             // Animate out and remove
@@ -721,6 +756,7 @@
                 setTimeout(() => {
                     if (container.contains(toast)) {
                         container.removeChild(toast);
+                        console.log('Disease Analysis: Toast removed');
                     }
                 }, 300);
             }, 3000);
