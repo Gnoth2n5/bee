@@ -22,23 +22,59 @@ class WeatherRecipeSection extends Component
 
     public function mount()
     {
-        Log::info('WeatherRecipeSection mounted');
+        Log::info('🚀 [WeatherRecipeSection] Component mounting', [
+            'component' => 'WeatherRecipeSection',
+            'user_id' => auth()->id() ?? 'guest',
+            'session_id' => session()->getId(),
+            'timestamp' => now()->toDateTimeString()
+        ]);
 
         // Kiểm tra xem có thông tin vị trí từ session không
-        if (session('user_location')) {
-            $userLocation = session('user_location');
-            $this->userLatitude = $userLocation['latitude'];
-            $this->userLongitude = $userLocation['longitude'];
-            $this->selectedCity = $userLocation['nearest_city_code'];
-            $this->nearestCity = \App\Models\VietnamCity::where('code', $userLocation['nearest_city_code'])->first();
+        $sessionLocation = session('user_location');
+        if ($sessionLocation) {
+            Log::info('💾 [WeatherRecipeSection] Loading location from session', [
+                'component' => 'WeatherRecipeSection',
+                'session_data' => $sessionLocation,
+                'detection_method' => $sessionLocation['detection_method'] ?? 'unknown',
+                'detected_at' => $sessionLocation['detected_at'] ?? 'unknown',
+                'source_component' => $sessionLocation['component'] ?? 'unknown'
+            ]);
 
-            Log::info('Loaded user location from session: ' . $userLocation['nearest_city_name'] . ' (' . $userLocation['nearest_city_code'] . ')');
+            $this->userLatitude = $sessionLocation['latitude'];
+            $this->userLongitude = $sessionLocation['longitude'];
+            $this->selectedCity = $sessionLocation['nearest_city_code'];
+            $this->nearestCity = \App\Models\VietnamCity::where('code', $sessionLocation['nearest_city_code'])->first();
+
+            if ($this->nearestCity) {
+                Log::info('✅ [WeatherRecipeSection] Session location loaded successfully', [
+                    'loaded_city' => $this->nearestCity->name,
+                    'loaded_code' => $this->nearestCity->code,
+                    'coordinates' => [$this->userLatitude, $this->userLongitude]
+                ]);
+            } else {
+                Log::warning('❌ [WeatherRecipeSection] City from session not found in database', [
+                    'session_city_code' => $sessionLocation['nearest_city_code'],
+                    'session_city_name' => $sessionLocation['nearest_city_name'] ?? 'unknown'
+                ]);
+            }
         } else {
+            Log::info('📍 [WeatherRecipeSection] No session location, triggering auto-get-location', [
+                'component' => 'WeatherRecipeSection',
+                'will_request_gps' => true
+            ]);
+
             // Tự động lấy vị trí khi component được load
             $this->dispatch('auto-get-location');
         }
 
         $this->loadData();
+
+        Log::info('✅ [WeatherRecipeSection] Component mounted successfully', [
+            'component' => 'WeatherRecipeSection',
+            'final_selected_city' => $this->selectedCity,
+            'has_nearest_city' => $this->nearestCity ? true : false,
+            'recipes_count' => count($this->recipes)
+        ]);
     }
 
     public function loadData()
@@ -135,7 +171,15 @@ class WeatherRecipeSection extends Component
 
     public function setUserLocation($latitude, $longitude)
     {
-        Log::info('setUserLocation called with: ' . $latitude . ', ' . $longitude);
+        Log::info('🎯 [WeatherRecipeSection] setUserLocation called', [
+            'component' => 'WeatherRecipeSection',
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'user_id' => auth()->id() ?? 'guest',
+            'timestamp' => now()->toDateTimeString(),
+            'session_id' => session()->getId()
+        ]);
+
         $this->userLatitude = $latitude;
         $this->userLongitude = $longitude;
 
@@ -144,34 +188,82 @@ class WeatherRecipeSection extends Component
         $locationInfo = $locationService->getLocationInfo($latitude, $longitude);
 
         if ($locationInfo) {
+            Log::info('📍 LocationService response', [
+                'location_info' => $locationInfo,
+                'province_code' => $locationInfo['province_code'] ?? 'null'
+            ]);
+
             // Tìm thành phố trong database
             $this->nearestCity = VietnamCity::where('code', $locationInfo['province_code'])->first();
 
             if ($this->nearestCity) {
                 $accuracyText = $locationInfo['is_exact'] ? 'chính xác' : 'gần nhất';
-                Log::info("Found {$accuracyText} city: " . $this->nearestCity->name . ' (' . $this->nearestCity->code . ')');
+
+                Log::info("✅ Location detection successful ({$accuracyText})", [
+                    'component' => 'WeatherRecipeSection',
+                    'detected_city' => $this->nearestCity->name,
+                    'detected_code' => $this->nearestCity->code,
+                    'accuracy' => $accuracyText,
+                    'is_exact' => $locationInfo['is_exact'],
+                    'city_coordinates' => [$this->nearestCity->latitude, $this->nearestCity->longitude],
+                    'input_coordinates' => [$latitude, $longitude]
+                ]);
 
                 $this->selectedCity = $this->nearestCity->code;
                 $this->currentSlide = 0; // Reset slide
 
-                // Lưu vào session để dùng ở trang khác
-                session([
-                    'user_location' => [
-                        'latitude' => $latitude,
-                        'longitude' => $longitude,
-                        'nearest_city_code' => $this->nearestCity->code,
-                        'nearest_city_name' => $this->nearestCity->name,
-                        'is_exact' => $locationInfo['is_exact']
-                    ]
+                // Lưu vào session với logging chi tiết
+                $oldSession = session('user_location');
+                $sessionData = [
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
+                    'nearest_city_code' => $this->nearestCity->code,
+                    'nearest_city_name' => $this->nearestCity->name,
+                    'is_exact' => $locationInfo['is_exact'],
+                    'detected_at' => now()->toDateTimeString(),
+                    'detection_method' => 'location_service',
+                    'component' => 'WeatherRecipeSection'
+                ];
+
+                session(['user_location' => $sessionData]);
+
+                Log::info('💾 Session location updated', [
+                    'component' => 'WeatherRecipeSection',
+                    'old_session' => $oldSession,
+                    'new_session' => $sessionData,
+                    'changed_fields' => $this->getChangedFields($oldSession, $sessionData)
                 ]);
 
                 $this->loadData();
             } else {
-                Log::info('City not found in database with code: ' . $locationInfo['province_code']);
+                Log::warning('❌ City not found in database', [
+                    'component' => 'WeatherRecipeSection',
+                    'province_code' => $locationInfo['province_code'],
+                    'location_info' => $locationInfo,
+                    'available_codes' => VietnamCity::pluck('code')->take(10)->toArray()
+                ]);
             }
         } else {
-            Log::info('No location info found');
+            Log::warning('❌ LocationService returned no info', [
+                'component' => 'WeatherRecipeSection',
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'service_class' => get_class($locationService)
+            ]);
         }
+    }
+
+    private function getChangedFields($old, $new)
+    {
+        if (!$old) return ['all_fields' => 'new_session'];
+
+        $changes = [];
+        foreach ($new as $key => $value) {
+            if (!isset($old[$key]) || $old[$key] !== $value) {
+                $changes[$key] = ['old' => $old[$key] ?? null, 'new' => $value];
+            }
+        }
+        return $changes;
     }
 
     public function findNearestCity($latitude, $longitude)
@@ -260,6 +352,78 @@ class WeatherRecipeSection extends Component
         Log::info('testMethod called in WeatherRecipeSection');
         $this->selectedCity = 'NINHBINH';
         $this->loadData();
+    }
+
+    /**
+     * Clear all location cache and force detect new location
+     */
+    public function clearLocationCache()
+    {
+        Log::info('🧹 [WeatherRecipeSection] Clearing location cache', [
+            'component' => 'WeatherRecipeSection',
+            'old_session' => session('user_location')
+        ]);
+
+        // Clear session
+        session()->forget('user_location');
+
+        // Clear component state
+        $this->userLatitude = null;
+        $this->userLongitude = null;
+        $this->nearestCity = null;
+        $this->selectedCity = 'HCM'; // Default
+
+        // Dispatch to clear browser localStorage
+        $this->dispatch('clear-location-cache');
+
+        Log::info('✅ [WeatherRecipeSection] Location cache cleared, requesting new location');
+
+        // Force new location detection
+        $this->dispatch('get-user-location');
+    }
+
+    /**
+     * Force set location to Ninh Bình for testing
+     */
+    public function forceNinhBinh()
+    {
+        Log::info('🎯 [WeatherRecipeSection] Force setting location to Ninh Bình');
+
+        $ninhBinhCity = \App\Models\VietnamCity::where('name', 'LIKE', '%Ninh Bình%')->first();
+
+        if ($ninhBinhCity) {
+            $this->selectedCity = $ninhBinhCity->code;
+            $this->nearestCity = $ninhBinhCity;
+            $this->userLatitude = $ninhBinhCity->latitude;
+            $this->userLongitude = $ninhBinhCity->longitude;
+
+            // Update session
+            $sessionData = [
+                'latitude' => $ninhBinhCity->latitude,
+                'longitude' => $ninhBinhCity->longitude,
+                'nearest_city_code' => $ninhBinhCity->code,
+                'nearest_city_name' => $ninhBinhCity->name,
+                'is_exact' => true,
+                'detected_at' => now()->toDateTimeString(),
+                'detection_method' => 'force_ninh_binh',
+                'component' => 'WeatherRecipeSection'
+            ];
+
+            session(['user_location' => $sessionData]);
+
+            Log::info('✅ [WeatherRecipeSection] Forced to Ninh Bình', [
+                'city' => $ninhBinhCity->name,
+                'code' => $ninhBinhCity->code,
+                'session_data' => $sessionData
+            ]);
+
+            $this->loadData();
+
+            // Show success message
+            $this->dispatch('location-forced', ['message' => 'Đã force location về Ninh Bình']);
+        } else {
+            Log::error('❌ [WeatherRecipeSection] Ninh Bình city not found in database');
+        }
     }
 
     public function getSuggestionReason()

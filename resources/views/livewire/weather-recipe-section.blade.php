@@ -46,6 +46,24 @@
                     <p class="text-lg opacity-90 max-w-2xl mx-auto drop-shadow-md">
                         Những món ăn được chọn lọc phù hợp với điều kiện thời tiết của bạn
                     </p>
+                    
+                    @if(config('app.debug'))
+                    <!-- Debug Tools (only in debug mode) -->
+                    <div class="mt-4 flex flex-wrap justify-center gap-2">
+                        <button onclick="debugLocation()" 
+                                class="px-3 py-1 bg-white/20 text-white text-sm rounded-lg hover:bg-white/30 transition-colors">
+                            🔍 Debug Info
+                        </button>
+                        <button onclick="clearLocationCache()" 
+                                class="px-3 py-1 bg-white/20 text-white text-sm rounded-lg hover:bg-white/30 transition-colors">
+                            🧹 Clear Cache
+                        </button>
+                        <button onclick="forceNinhBinh()" 
+                                class="px-3 py-1 bg-white/20 text-white text-sm rounded-lg hover:bg-white/30 transition-colors">
+                            🎯 Force Ninh Bình
+                        </button>
+                    </div>
+                    @endif
                 </div>
                 
                 @if(!$nearestCity)
@@ -552,6 +570,71 @@
                 }
             }, 100);
         });
+
+        // Listen for clear cache event
+        Livewire.on('clear-location-cache', () => {
+            console.log('🧹 Clearing browser location cache');
+            localStorage.removeItem('user_location');
+            sessionStorage.removeItem('user_location');
+            console.log('✅ Browser cache cleared');
+        });
+
+        // Listen for location forced event
+        Livewire.on('location-forced', (data) => {
+            console.log('🎯 Location forced:', data.message);
+            // Show toast notification
+            if (typeof showToast === 'function') {
+                showToast(data.message, 'success');
+            } else {
+                alert(data.message);
+            }
+        });
+
+        // Debug functions
+        window.debugLocation = function() {
+            console.log('📍 LOCATION DEBUG INFO:');
+            console.log('==================');
+            
+            // Check localStorage
+            const localStorage_location = localStorage.getItem('user_location');
+            console.log('🗄️ localStorage:', localStorage_location ? JSON.parse(localStorage_location) : 'None');
+            
+            // Check sessionStorage
+            const sessionStorage_location = sessionStorage.getItem('user_location');
+            console.log('💾 sessionStorage:', sessionStorage_location ? JSON.parse(sessionStorage_location) : 'None');
+            
+            // Check if geolocation is available
+            if (navigator.geolocation) {
+                console.log('🌐 Geolocation: Available');
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        console.log('📍 Current position:', {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        });
+                    },
+                    (error) => {
+                        console.log('❌ Geolocation error:', error.message);
+                    }
+                );
+            } else {
+                console.log('❌ Geolocation: Not available');
+            }
+        };
+
+        window.clearLocationCache = function() {
+            console.log('🧹 Clearing all location cache...');
+            localStorage.removeItem('user_location');
+            sessionStorage.removeItem('user_location');
+            console.log('✅ Browser cache cleared');
+            @this.clearLocationCache();
+        };
+
+        window.forceNinhBinh = function() {
+            console.log('🎯 Forcing location to Ninh Bình...');
+            @this.forceNinhBinh();
+        };
     });
     </script>
 </div> 

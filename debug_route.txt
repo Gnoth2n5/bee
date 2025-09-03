@@ -1,0 +1,23 @@
+
+// Add this to routes/web.php
+Route::get('/debug/set-location/{city}', function($city) {
+    $vietnamCity = \App\Models\VietnamCity::where('name', 'LIKE', '%' . $city . '%')->first();
+    
+    if ($vietnamCity) {
+        session([
+            'user_location' => [
+                'latitude' => $vietnamCity->latitude,
+                'longitude' => $vietnamCity->longitude,
+                'nearest_city_code' => $vietnamCity->code,
+                'nearest_city_name' => $vietnamCity->name,
+                'detected_at' => now()->toDateTimeString(),
+                'detection_method' => 'manual_debug',
+                'component' => 'debug_route'
+            ]
+        ]);
+        
+        return 'Location set to: ' . $vietnamCity->name;
+    }
+    
+    return 'City not found: ' . $city;
+})->name('debug.set-location');

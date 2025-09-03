@@ -186,10 +186,10 @@ class RecipeResource extends Resource
                             ->imageEditor()
                             ->directory('recipes')
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('video_url')
-                            ->label('URL Video')
-                            ->url()
-                            ->maxLength(500),
+                        // Forms\Components\TextInput::make('video_url')
+                        //     ->label('URL Video')
+                        //     ->url()
+                        //     ->maxLength(500),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Phân loại')
@@ -241,8 +241,8 @@ class RecipeResource extends Resource
                                 $query->whereIn('name', ['admin', 'manager']);
                             })->pluck('name', 'id'))
                             ->searchable(),
-                        Forms\Components\DateTimePicker::make('approved_at')
-                            ->label('Thời gian phê duyệt'),
+                        // Forms\Components\DateTimePicker::make('approved_at')
+                        //     ->label('Thời gian phê duyệt'),
                         Forms\Components\Textarea::make('rejection_reason')
                             ->label('Lý do từ chối')
                             ->maxLength(500)
@@ -333,24 +333,24 @@ class RecipeResource extends Resource
                     )
                     ->sortable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('auto_approve_at')
-                    ->label('Tự động phê duyệt')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->color('warning')
-                    ->icon('heroicon-o-clock'),
+                // Tables\Columns\TextColumn::make('auto_approve_at')
+                //     ->label('Tự động phê duyệt')
+                //     ->dateTime('d/m/Y H:i')
+                //     ->sortable()
+                //     ->toggleable(isToggledHiddenByDefault: true)
+                //     ->color('warning')
+                //     ->icon('heroicon-o-clock'),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Tạo lúc')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Cập nhật lúc')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                // Tables\Columns\TextColumn::make('created_at')
+                //     ->label('Tạo lúc')
+                //     ->dateTime('d/m/Y H:i')
+                //     ->sortable()
+                //     ->toggleable(isToggledHiddenByDefault: true),
+                // Tables\Columns\TextColumn::make('updated_at')
+                //     ->label('Cập nhật lúc')
+                //     ->dateTime('d/m/Y H:i')
+                //     ->sortable()
+                //     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -444,56 +444,56 @@ class RecipeResource extends Resource
                         })
                         ->visible(fn(Recipe $record): bool => $record->status === 'pending' && Auth::user()->hasRole(['admin', 'manager'])),
 
-                    Tables\Actions\Action::make('test_moderation')
-                        ->label('Test kiểm duyệt')
-                        ->icon('heroicon-o-shield-check')
-                        ->color('warning')
-                        ->modalHeading('Kết quả kiểm duyệt')
-                        ->modalContent(function (Recipe $record) {
-                            $moderationService = app(\App\Services\ModerationService::class);
-                            $results = $moderationService->testRecipeModeration($record);
+                    // Tables\Actions\Action::make('test_moderation')
+                    //     ->label('Test kiểm duyệt')
+                    //     ->icon('heroicon-o-shield-check')
+                    //     ->color('warning')
+                    //     ->modalHeading('Kết quả kiểm duyệt')
+                    //     ->modalContent(function (Recipe $record) {
+                    //         $moderationService = app(\App\Services\ModerationService::class);
+                    //         $results = $moderationService->testRecipeModeration($record);
 
-                            $violations = array_filter($results, fn($result) => $result['violated']);
+                    //         $violations = array_filter($results, fn($result) => $result['violated']);
 
-                            if (empty($violations)) {
-                                return view('filament.modals.moderation-test', [
-                                    'recipe' => $record,
-                                    'results' => $results,
-                                    'hasViolations' => false
-                                ]);
-                            }
+                    //         if (empty($violations)) {
+                    //             return view('filament.modals.moderation-test', [
+                    //                 'recipe' => $record,
+                    //                 'results' => $results,
+                    //                 'hasViolations' => false
+                    //             ]);
+                    //         }
 
-                            return view('filament.modals.moderation-test', [
-                                'recipe' => $record,
-                                'results' => $results,
-                                'violations' => $violations,
-                                'hasViolations' => true
-                            ]);
-                        })
-                        ->modalSubmitAction(false)
-                        ->modalCancelActionLabel('Đóng')
-                        ->visible(fn(Recipe $record): bool => Auth::user()->hasRole(['admin', 'manager'])),
-                    Tables\Actions\Action::make('set_auto_approve')
-                        ->label('Set lịch phê duyệt')
-                        ->icon('heroicon-o-clock')
-                        ->color('info')
-                        ->form([
-                            Forms\Components\DateTimePicker::make('auto_approve_at')
-                                ->label('Thời gian tự động phê duyệt')
-                                ->required()
-                                ->minDate(now())
-                                ->helperText('Công thức sẽ tự động được phê duyệt khi đến thời gian này'),
-                        ])
-                        ->modalHeading('Set lịch phê duyệt tự động')
-                        ->modalDescription('Chọn thời gian để công thức tự động được phê duyệt')
-                        ->modalSubmitActionLabel('Set lịch')
-                        ->action(function (Recipe $record, array $data) {
-                            $record->update([
-                                'auto_approve_at' => $data['auto_approve_at'],
-                                'status' => 'pending'
-                            ]);
-                        })
-                        ->visible(fn(Recipe $record): bool => $record->status === 'pending' && Auth::user()->hasRole(['admin', 'manager'])),
+                    //         return view('filament.modals.moderation-test', [
+                    //             'recipe' => $record,
+                    //             'results' => $results,
+                    //             'violations' => $violations,
+                    //             'hasViolations' => true
+                    //         ]);
+                    //     })
+                    //     ->modalSubmitAction(false)
+                    //     ->modalCancelActionLabel('Đóng')
+                    //     ->visible(fn(Recipe $record): bool => Auth::user()->hasRole(['admin', 'manager'])),
+                    // Tables\Actions\Action::make('set_auto_approve')
+                    //     ->label('Set lịch phê duyệt')
+                    //     ->icon('heroicon-o-clock')
+                    //     ->color('info')
+                    //     ->form([
+                    //         Forms\Components\DateTimePicker::make('auto_approve_at')
+                    //             ->label('Thời gian tự động phê duyệt')
+                    //             ->required()
+                    //             ->minDate(now())
+                    //             ->helperText('Công thức sẽ tự động được phê duyệt khi đến thời gian này'),
+                    //     ])
+                    //     ->modalHeading('Set lịch phê duyệt tự động')
+                    //     ->modalDescription('Chọn thời gian để công thức tự động được phê duyệt')
+                    //     ->modalSubmitActionLabel('Set lịch')
+                    //     ->action(function (Recipe $record, array $data) {
+                    //         $record->update([
+                    //             'auto_approve_at' => $data['auto_approve_at'],
+                    //             'status' => 'pending'
+                    //         ]);
+                    //     })
+                    //     ->visible(fn(Recipe $record): bool => $record->status === 'pending' && Auth::user()->hasRole(['admin', 'manager'])),
 
                     Tables\Actions\DeleteAction::make()
                         ->label('Xóa')

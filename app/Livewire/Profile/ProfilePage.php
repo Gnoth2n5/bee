@@ -211,6 +211,37 @@ class ProfilePage extends Component
         ]);
 
         try {
+            // Log trước khi update
+            $oldUserData = [
+                'name' => $this->user->name,
+                'email' => $this->user->email,
+                'province' => $this->user->province,
+                'bio' => $this->user->bio,
+            ];
+
+            $oldProfileData = [
+                'city' => $this->profile->city ?? null,
+                'country' => $this->profile->country ?? null,
+            ];
+
+            Log::info('📝 [ProfilePage] Saving profile changes', [
+                'component' => 'ProfilePage',
+                'user_id' => $this->user->id,
+                'old_user_data' => $oldUserData,
+                'new_user_data' => [
+                    'name' => $this->name,
+                    'email' => $this->email,
+                    'province' => $this->province,
+                    'bio' => $this->bio,
+                ],
+                'old_profile_data' => $oldProfileData,
+                'new_profile_data' => [
+                    'city' => $this->city,
+                    'country' => $this->country,
+                ],
+                'location_changed' => ($oldUserData['province'] !== $this->province || ($oldProfileData['city'] ?? null) !== $this->city)
+            ]);
+
             // Handle avatar upload first
             if ($this->avatar) {
                 // Delete old avatar if exists (only if it's a local file)
@@ -270,6 +301,44 @@ class ProfilePage extends Component
                 ]);
             }
 
+            // Nếu location thay đổi, update session
+            if ($oldUserData['province'] !== $this->province || ($oldProfileData['city'] ?? null) !== $this->city) {
+                $oldSession = session('user_location');
+
+                // Tìm city trong database
+                $cityInDb = \App\Models\VietnamCity::where('name', 'LIKE', '%' . $this->province . '%')
+                    ->orWhere('name', 'LIKE', '%' . $this->city . '%')
+                    ->first();
+
+                if ($cityInDb) {
+                    $newSessionData = [
+                        'latitude' => $cityInDb->latitude,
+                        'longitude' => $cityInDb->longitude,
+                        'nearest_city_code' => $cityInDb->code,
+                        'nearest_city_name' => $cityInDb->name,
+                        'detected_at' => now()->toDateTimeString(),
+                        'detection_method' => 'profile_save',
+                        'component' => 'ProfilePage',
+                        'updated_via_profile' => true
+                    ];
+
+                    session(['user_location' => $newSessionData]);
+
+                    Log::info('💾 [ProfilePage] Session updated due to profile location change', [
+                        'old_session' => $oldSession,
+                        'new_session' => $newSessionData,
+                        'matched_city' => $cityInDb->name,
+                        'trigger' => 'profile_save'
+                    ]);
+                } else {
+                    Log::warning('❌ [ProfilePage] Could not find city in database for profile update', [
+                        'province' => $this->province,
+                        'city' => $this->city,
+                        'session_not_updated' => true
+                    ]);
+                }
+            }
+
             // Refresh user data
             $this->user->refresh();
             $this->profile->refresh();
@@ -280,10 +349,19 @@ class ProfilePage extends Component
             $this->activeTab = 'recipes';
             $this->dispatch('profile-updated');
             session()->flash('success', 'Hồ sơ đã được cập nhật thành công!');
+
+            Log::info('✅ [ProfilePage] Profile saved successfully', [
+                'user_id' => $this->user->id,
+                'location_updated' => ($oldUserData['province'] !== $this->province || ($oldProfileData['city'] ?? null) !== $this->city)
+            ]);
         } catch (\Exception $e) {
             // Log the error for debugging
-            Log::error('Profile save error: ' . $e->getMessage(), [
+            Log::error('❌ [ProfilePage] Profile save error', [
+                'component' => 'ProfilePage',
                 'user_id' => $this->user->id,
+                'error_message' => $e->getMessage(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
 
@@ -499,7 +577,16 @@ class ProfilePage extends Component
 
     public function setUserLocation($latitude, $longitude)
     {
-        Log::info('ProfilePage setUserLocation called with: ' . $latitude . ', ' . $longitude);
+        Log::info('🎯 [ProfilePage] setUserLocation called', [
+            'component' => 'ProfilePage',
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'user_id' => auth()->id() ?? 'guest',
+            'user_email' => auth()->user()?->email ?? 'guest',
+            'timestamp' => now()->toDateTimeString(),
+            'session_id' => session()->getId()
+        ]);
+
         $this->userLatitude = $latitude;
         $this->userLongitude = $longitude;
 
@@ -507,22 +594,58 @@ class ProfilePage extends Component
         $this->nearestCity = $this->findNearestCity($latitude, $longitude);
 
         if ($this->nearestCity) {
-            Log::info('Nearest city found: ' . $this->nearestCity->name . ' (' . $this->nearestCity->code . ')');
+            Log::info('✅ [ProfilePage] Location detection successful', [
+                'component' => 'ProfilePage',
+                'detected_city' => $this->nearestCity->name,
+                'detected_code' => $this->nearestCity->code,
+                'city_coordinates' => [$this->nearestCity->latitude, $this->nearestCity->longitude],
+                'input_coordinates' => [$latitude, $longitude],
+                'will_update_profile' => true
+            ]);
+
             // Tự động điền thông tin địa chỉ
+            $oldCity = $this->city;
+            $oldCountry = $this->country;
+
             $this->city = $this->nearestCity->name;
             $this->country = 'Vietnam';
 
-            // Lưu vào session để dùng ở trang khác
-            session([
-                'user_location' => [
-                    'latitude' => $latitude,
-                    'longitude' => $longitude,
-                    'nearest_city_code' => $this->nearestCity->code,
-                    'nearest_city_name' => $this->nearestCity->name
-                ]
+            Log::info('📝 [ProfilePage] Profile fields updated', [
+                'old_city' => $oldCity,
+                'new_city' => $this->city,
+                'old_country' => $oldCountry,
+                'new_country' => $this->country
+            ]);
+
+            // Lưu vào session với logging
+            $oldSession = session('user_location');
+            $sessionData = [
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'nearest_city_code' => $this->nearestCity->code,
+                'nearest_city_name' => $this->nearestCity->name,
+                'detected_at' => now()->toDateTimeString(),
+                'detection_method' => 'profile_page_gps',
+                'component' => 'ProfilePage',
+                'auto_filled_profile' => true
+            ];
+
+            session(['user_location' => $sessionData]);
+
+            Log::info('💾 [ProfilePage] Session location updated', [
+                'component' => 'ProfilePage',
+                'old_session' => $oldSession,
+                'new_session' => $sessionData,
+                'profile_auto_filled' => true
             ]);
         } else {
-            Log::info('No nearest city found');
+            Log::warning('❌ [ProfilePage] No nearest city found', [
+                'component' => 'ProfilePage',
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'total_cities_in_db' => \App\Models\VietnamCity::count(),
+                'profile_update' => false
+            ]);
         }
     }
 

@@ -144,13 +144,13 @@ class WeatherConditionRuleResource extends Resource
                                     ->helperText('Độ ưu tiên (1-10, cao hơn = ưu tiên hơn)'),
                             ]),
 
-                        KeyValue::make('seasonal_rules')
-                            ->label('Quy Tắc Theo Mùa')
-                            ->keyLabel('Mùa')
-                            ->valueLabel('Tháng Hoạt Động')
-                            ->helperText('Quy tắc theo mùa (tùy chọn)')
-                            ->addActionLabel('Thêm Mùa')
-                            ->columnSpanFull(),
+                        // KeyValue::make('seasonal_rules')
+                        //     ->label('Quy Tắc Theo Mùa')
+                        //     ->keyLabel('Mùa')
+                        //     ->valueLabel('Tháng Hoạt Động')
+                        //     ->helperText('Quy tắc theo mùa (tùy chọn)')
+                        //     ->addActionLabel('Thêm Mùa')
+                        //     ->columnSpanFull(),
                     ]),
             ]);
     }

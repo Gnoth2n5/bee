@@ -50,6 +50,27 @@
                                     Chọn ngẫu nhiên
                                 </button>
                             </div>
+                            
+                            <!-- Debug Tools (only show in development) -->
+                            @if(config('app.debug'))
+                            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2 text-center">Debug Tools</p>
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <button onclick="debugLocationInfo()" 
+                                            class="text-xs px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors">
+                                        Debug Info
+                                    </button>
+                                    <button wire:click="clearLocationCache" 
+                                            class="text-xs px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors">
+                                        Clear Cache
+                                    </button>
+                                    <button onclick="forceLocationRefresh()" 
+                                            class="text-xs px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors">
+                                        Force Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </div>
                 @else
@@ -63,6 +84,19 @@
                             </div>
                             <h3 class="text-lg font-semibold text-green-800 dark:text-green-400 mb-2">Vị trí hiện tại</h3>
                             <p class="text-xl font-bold text-green-900 dark:text-green-300">{{ $nearestCity->name }}</p>
+                            
+                            @if(config('app.debug'))
+                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    Code: {{ $nearestCity->code }} | 
+                                    Coordinates: {{ round($nearestCity->latitude, 4) }}, {{ round($nearestCity->longitude, 4) }}
+                                </p>
+                                @if($userLatitude && $userLongitude)
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                                        Your GPS: {{ round($userLatitude, 4) }}, {{ round($userLongitude, 4) }}
+                                    </p>
+                                @endif
+                            @endif
+                            
                             @if(session('user_location.is_random'))
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 mt-2">
                                     <x-lucide-shuffle class="w-3 h-3 mr-1" />
@@ -73,6 +107,25 @@
                                     <x-lucide-navigation class="w-3 h-3 mr-1" />
                                     GPS
                                 </span>
+                            @endif
+                            
+                            @if(config('app.debug'))
+                            <div class="mt-3 pt-3 border-t border-green-200 dark:border-green-700">
+                                <div class="flex flex-wrap gap-2 justify-center">
+                                    <button onclick="debugLocationInfo()" 
+                                            class="text-xs px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors">
+                                        Debug Info
+                                    </button>
+                                    <button wire:click="clearLocationCache" 
+                                            class="text-xs px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors">
+                                        Clear & Reset
+                                    </button>
+                                    <button onclick="forceLocationRefresh()" 
+                                            class="text-xs px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors">
+                                        Force Refresh
+                                    </button>
+                                </div>
+                            </div>
                             @endif
                         </div>
                     </div>
@@ -546,6 +599,44 @@
                 alert('Trình duyệt không hỗ trợ lấy vị trí');
             }
         });
+        
+        // Xử lý clear location cache
+        Livewire.on('clear-location-cache', () => {
+            console.log('Clearing location cache from localStorage...');
+            localStorage.removeItem('user_location');
+            console.log('Location cache cleared');
+        });
+        
+        // Debug function - show location info in console
+        window.debugLocationInfo = function() {
+            const stored = localStorage.getItem('user_location');
+            console.log('=== LOCATION DEBUG INFO ===');
+            console.log('localStorage data:', stored ? JSON.parse(stored) : 'No data');
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        console.log('Current browser location:', {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy + 'm',
+                            timestamp: new Date().toLocaleString()
+                        });
+                    },
+                    (error) => {
+                        console.log('Cannot get current location:', error.message);
+                    },
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                );
+            }
+            console.log('=== END DEBUG INFO ===');
+        };
+        
+        // Force clear and refresh function
+        window.forceLocationRefresh = function() {
+            console.log('Forcing location refresh...');
+            @this.forceLocationRefresh();
+        };
     });
     </script>
 </div> 
